@@ -1,0 +1,31 @@
+{
+  "name": "@niedax/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run tests"
+  },
+  "dependencies": {
+    "@fastify/cookie": "11.1.2",
+    "@fastify/rate-limit": "11.2.0",
+    "@niedax/calculation-engine": "workspace:*",
+    "@node-rs/argon2": "2.0.2",
+    "fastify": "5.11.3",
+    "pg": "8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.2.0",
+    "@types/pg": "8.21.0",
+    "tsx": "4.23.12",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  }
+}

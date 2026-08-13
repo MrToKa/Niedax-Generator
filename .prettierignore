@@ -1,0 +1,7 @@
+.next
+coverage
+data
+dist
+node_modules
+pnpm-lock.yaml
+Codex_Prompt_Local_Docker_Modular_Initialization_EN.md

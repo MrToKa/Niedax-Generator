@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Niedax: validate",
+      "type": "shell",
+      "command": "corepack pnpm validate",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Niedax: start",
+      "type": "shell",
+      "command": "corepack pnpm start",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

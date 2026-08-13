@@ -1,0 +1,46 @@
+services:
+  frontend:
+    build:
+      target: development
+    read_only: false
+    environment:
+      NODE_ENV: development
+    volumes:
+      - type: bind
+        source: ./apps/frontend
+        target: /workspace/apps/frontend
+      - type: bind
+        source: ./catalogue
+        target: /workspace/catalogue
+        read_only: true
+      - type: bind
+        source: ./rules
+        target: /workspace/rules
+        read_only: true
+      - type: volume
+        target: /workspace/apps/frontend/.next
+    command: ["pnpm", "--filter", "@niedax/frontend", "dev"]
+
+  backend:
+    build:
+      target: development
+    read_only: false
+    environment:
+      NODE_ENV: development
+    volumes:
+      - type: bind
+        source: ./apps/backend
+        target: /workspace/apps/backend
+      - type: bind
+        source: ./packages/calculation-engine
+        target: /workspace/packages/calculation-engine
+        read_only: true
+      - type: bind
+        source: ./catalogue
+        target: /workspace/catalogue
+        read_only: true
+      - type: bind
+        source: ./rules
+        target: /workspace/rules
+        read_only: true
+    command: ["pnpm", "--filter", "@niedax/backend", "dev"]

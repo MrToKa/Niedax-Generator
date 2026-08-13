@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:18.4-alpine3.23@sha256:996d0920e4ff9df1fc19dacb904492f3c1ec0ec1cc338f0ad7123be7731c5f5e
+    environment:
+      POSTGRES_DB: niedax_generator
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_CHECK_PASSWORD:?set DB_CHECK_PASSWORD}
+      MIGRATOR_PASSWORD: ${DB_CHECK_PASSWORD:?set DB_CHECK_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+      TZ: Europe/Sofia
+    volumes:
+      - ../scripts/initialize-test.sh:/docker-entrypoint-initdb.d/010-test-role.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d niedax_generator"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    networks: [database]
+
+  migrations:
+    build:
+      context: ../..
+      dockerfile: database/Dockerfile.migrations
+    environment: &test-database
+      NODE_ENV: test
+      ALLOW_EPHEMERAL_TEST_PASSWORD: "1"
+      PGHOST: postgres
+      PGDATABASE: niedax_generator
+      PGUSER: niedax_generator_migrator
+      PGPASSWORD: ${DB_CHECK_PASSWORD:?set DB_CHECK_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [database]
+
+  verify:
+    build:
+      context: ../..
+      dockerfile: database/Dockerfile.migrations
+    environment:
+      <<: *test-database
+      DATABASE_TEST_FILE: /app/tests/foundation.sql
+    command:
+      [
+        "sh",
+        "-c",
+        "node dist/migrate.js up && node dist/migrate.js verify && node dist/database-test.js"
+      ]
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    networks: [database]
+
+networks:
+  database:
+    internal: true

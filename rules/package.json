@@ -1,0 +1,12 @@
+{
+  "name": "@niedax/rules-manifest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./manifest.json": "./manifest.json"
+  },
+  "files": [
+    "manifest.json"
+  ]
+}

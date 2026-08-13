@@ -1,0 +1,270 @@
+name: niedax-generator
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "5"
+
+x-hardened: &hardened
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  postgres:
+    image: postgres:18.4-alpine3.23@sha256:996d0920e4ff9df1fc19dacb904492f3c1ec0ec1cc338f0ad7123be7731c5f5e
+    container_name: niedax-postgres
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    environment:
+      POSTGRES_DB: niedax_generator
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_admin_password
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+      PGDATA: /var/lib/postgresql/18/docker
+      TZ: Europe/Sofia
+      PGTZ: Europe/Sofia
+    secrets:
+      - postgres_admin_password
+      - postgres_app_password
+      - postgres_migrator_password
+      - postgres_backup_password
+    volumes:
+      - type: bind
+        source: ./data/postgres
+        target: /var/lib/postgresql/18/docker
+      - type: bind
+        source: ./database/scripts/initialize.sh
+        target: /docker-entrypoint-initdb.d/010-niedax-roles.sh
+        read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+      - /run/postgresql:rw,nosuid,size=16m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d niedax_generator"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+    networks:
+      - backend
+    logging: *default-logging
+
+  migrations:
+    image: niedax-generator/migrations:0.1.0
+    container_name: niedax-migrations
+    build:
+      context: .
+      dockerfile: database/Dockerfile.migrations
+    <<: *hardened
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGDATABASE: niedax_generator
+      PGUSER: niedax_generator_migrator
+      PGPASSWORD_FILE: /run/secrets/postgres_migrator_password
+      PGSSLMODE: disable
+      TZ: Europe/Sofia
+    secrets:
+      - postgres_migrator_password
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: "no"
+    logging: *default-logging
+
+  backend:
+    image: niedax-generator/backend:0.1.0
+    container_name: niedax-backend
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+      target: runtime
+    <<: *hardened
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3001"
+      NODE_ENV: production
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGDATABASE: niedax_generator
+      PGUSER: niedax_generator_app
+      PGPASSWORD_FILE: /run/secrets/postgres_app_password
+      PGSSLMODE: disable
+      PGPOOL_MAX: "10"
+      SESSION_PEPPER_FILE: /run/secrets/session_pepper
+      COOKIE_SECURE: "false"
+      TZ: Europe/Sofia
+    secrets:
+      - postgres_app_password
+      - session_pepper
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3001/api/v1/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    networks:
+      - backend
+    logging: *default-logging
+
+  frontend:
+    image: niedax-generator/frontend:0.1.0
+    container_name: niedax-frontend
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      target: runtime
+    <<: *hardened
+    restart: unless-stopped
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      TZ: Europe/Sofia
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+    networks:
+      - edge
+    logging: *default-logging
+
+  gateway:
+    image: niedax-generator/gateway:0.1.0
+    container_name: niedax-gateway
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    <<: *hardened
+    user: "1000:1000"
+    restart: unless-stopped
+    ports:
+      - target: 8080
+        published: "8080"
+        host_ip: 0.0.0.0
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: ./gateway/Caddyfile
+        target: /etc/caddy/Caddyfile
+        read_only: true
+    tmpfs:
+      - /config:rw,noexec,nosuid,size=16m
+      - /data:rw,noexec,nosuid,size=16m
+      - /tmp:rw,noexec,nosuid,size=16m
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:8080/api/v1/health/live"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks:
+      - ingress
+      - edge
+      - backend
+    logging: *default-logging
+
+  backup:
+    profiles: ["tools"]
+    image: niedax-generator/db-backup:0.1.0
+    container_name: niedax-db-backup
+    build:
+      context: .
+      dockerfile: database/Dockerfile.backup
+    <<: *hardened
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGDATABASE: niedax_generator
+      PGSSLMODE: disable
+      TZ: Europe/Sofia
+    secrets:
+      - postgres_backup_password
+      - postgres_migrator_password
+    volumes:
+      - type: bind
+        source: ./data/backups
+        target: /backups
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: "no"
+    logging: *default-logging
+
+networks:
+  ingress:
+    name: niedax-generator-ingress
+  edge:
+    name: niedax-generator-edge
+    internal: true
+  backend:
+    name: niedax-generator-backend
+    internal: true
+
+secrets:
+  postgres_admin_password:
+    file: ./data/secrets/postgres_admin_password
+  postgres_app_password:
+    file: ./data/secrets/postgres_app_password
+  postgres_migrator_password:
+    file: ./data/secrets/postgres_migrator_password
+  postgres_backup_password:
+    file: ./data/secrets/postgres_backup_password
+  session_pepper:
+    file: ./data/secrets/session_pepper

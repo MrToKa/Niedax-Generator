@@ -1,0 +1,28 @@
+packages:
+  - apps/*
+  - packages/*
+  - database
+  - rules
+
+injectWorkspacePackages: true
+preferWorkspacePackages: true
+saveExact: true
+strictPeerDependencies: true
+
+syncInjectedDepsAfterScripts:
+  - build
+
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - next@16.3.0
+  - react@19.2.8
+  - react-dom@19.2.8
+  - fastify@5.11.3
+  - pg@8.23.0
+  - typescript@6.0.3
+  - vitest@4.1.10
+  - pnpm@11.21.0

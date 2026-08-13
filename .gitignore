@@ -1,0 +1,29 @@
+# Local data, secrets, and dumps
+/data/
+*.dump
+*.dump.sha256
+*.sql.gz
+.env
+.env.*
+!.env.example
+*.secret
+
+# Dependencies and build output
+node_modules/
+dist/
+.next/
+coverage/
+*.tsbuildinfo
+
+# Logs and runtime state
+*.log
+*.pid
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json

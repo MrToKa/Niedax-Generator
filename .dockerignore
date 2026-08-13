@@ -1,0 +1,15 @@
+.git
+.github
+.idea
+.vscode
+data
+**/.next
+**/coverage
+**/dist
+**/node_modules
+*.dump
+*.log
+.env
+.env.*
+docs
+Codex_Prompt_Local_Docker_Modular_Initialization_EN.md
