@@ -1,6 +1,5 @@
-import { FoundationDashboard } from "./foundation-dashboard";
-import { versions } from "../lib/versions";
+import { UxPrototype } from "./ux-prototype";
 
 export default function Home() {
-  return <FoundationDashboard versions={versions} />;
+  return <UxPrototype />;
 }
