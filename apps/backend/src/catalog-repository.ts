@@ -1024,23 +1024,27 @@ export class PgCatalogAdminRepository implements CatalogAdminRepository {
       material_code: string;
       finish_code: string;
     }>(
-      `SELECT DISTINCT product.id, product.product_code, product.description_en, product.category,
-              product.family, product.engineering_verification_required, product.engineering_note,
-              rule.condition_payload->>'system' AS system,
-              rule.condition_payload->>'heightMm' AS height_mm,
-              rule.condition_payload->>'widthMm' AS width_mm,
-              rule.condition_payload->>'materialCode' AS material_code,
-              rule.condition_payload->>'finishCode' AS finish_code
-         FROM products product
-         JOIN catalog_versions version ON version.id = product.catalog_version_id
-         JOIN rule_sets ruleset ON ruleset.catalog_version_id = version.id AND ruleset.status = 'active'
-         JOIN compatibility_rules rule ON rule.rule_set_id = ruleset.id AND rule.status = 'active'
-        WHERE version.status = 'active'
-          AND product.availability_status = 'active' AND product.is_orderable = true
-          AND rule.decision = 'allowed'
-          AND rule.condition_payload->>'relationType' = 'project_selection'
-          AND rule.condition_payload->>'sourceProductCode' = product.product_code
-        ORDER BY system, height_mm::numeric, width_mm::numeric, finish_code, product.product_code`
+      `SELECT selection.*
+         FROM (
+           SELECT DISTINCT product.id, product.product_code, product.description_en, product.category,
+                  product.family, product.engineering_verification_required, product.engineering_note,
+                  rule.condition_payload->>'system' AS system,
+                  rule.condition_payload->>'heightMm' AS height_mm,
+                  rule.condition_payload->>'widthMm' AS width_mm,
+                  rule.condition_payload->>'materialCode' AS material_code,
+                  rule.condition_payload->>'finishCode' AS finish_code
+             FROM products product
+             JOIN catalog_versions version ON version.id = product.catalog_version_id
+             JOIN rule_sets ruleset ON ruleset.catalog_version_id = version.id AND ruleset.status = 'active'
+             JOIN compatibility_rules rule ON rule.rule_set_id = ruleset.id AND rule.status = 'active'
+            WHERE version.status = 'active'
+              AND product.availability_status = 'active' AND product.is_orderable = true
+              AND rule.decision = 'allowed'
+              AND rule.condition_payload->>'relationType' = 'project_selection'
+              AND rule.condition_payload->>'sourceProductCode' = product.product_code
+         ) selection
+        ORDER BY selection.system, selection.height_mm::numeric, selection.width_mm::numeric,
+                 selection.finish_code, selection.product_code`
     );
     return result.rows.map((row) => ({
       id: row.id,

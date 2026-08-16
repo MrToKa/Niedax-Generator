@@ -65,6 +65,15 @@ try {
     throw new Error("Current-session endpoint did not return the administrator");
   }
 
+  const catalogOptions = await api("/api/v1/catalog/options", { cookie: adminCookie });
+  if (!catalogOptions.ok) {
+    throw new Error(`Catalog selection options failed with ${catalogOptions.status}`);
+  }
+  const catalogBody = (await catalogOptions.json()) as { options?: unknown };
+  if (!Array.isArray(catalogBody.options)) {
+    throw new Error("Catalog selection options did not return an array");
+  }
+
   const createReviewer = await api("/api/v1/admin/users", {
     method: "POST",
     cookie: adminCookie,
@@ -111,7 +120,7 @@ try {
   const logout = await api("/api/v1/auth/logout", { method: "POST", cookie: adminCookie });
   if (logout.status !== 204) throw new Error(`Logout failed with ${logout.status}`);
   process.stdout.write(
-    "Container authentication, role enforcement, disable/revocation, and logout passed.\n"
+    "Container authentication, catalog selection, role enforcement, disable/revocation, and logout passed.\n"
   );
 } finally {
   if (createdIds.length > 0) {
