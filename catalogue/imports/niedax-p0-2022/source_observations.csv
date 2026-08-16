@@ -1,0 +1,5 @@
+product_code,field_name,value_text,source_document,source_printed_page,source_pdf_page,is_authoritative_for_candidate,resolution_policy
+DAM 6X5,pack_quantity,50,1.-Electrical-installation-materials.pdf,156,19,true,Stage 5 designated source: electrical-installation-materials printed page 156
+DAM 6X5,pack_quantity,100,KAT_NX_KR 2022.pdf,KR 139,143,false,Retained as an auditable source observation; not selected for this candidate
+DAM 6X10,pack_quantity,50,1.-Electrical-installation-materials.pdf,156,19,true,Stage 5 designated source: electrical-installation-materials printed page 156
+DAM 6X10,pack_quantity,100,KAT_NX_KR 2022.pdf,KR 139,143,false,Retained as an auditable source observation; not selected for this candidate

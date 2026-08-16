@@ -19,9 +19,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@niedax/domain": "workspace:*"
+    "@niedax/domain": "workspace:*",
+    "exceljs": "4.4.0"
   },
   "devDependencies": {
+    "@types/node": "26.2.0",
     "typescript": "6.0.3"
   }
 }

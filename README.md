@@ -8,9 +8,10 @@ not contain the real catalogue, engineering calculations, BOM logic, pricing, or
 Stage 3 adds versioned domain/runtime contracts and clean application, calculation, catalog-import,
 and export boundaries. Stage 4 adds the versioned catalog/rule/project data model, mutable
 calculation drafts, immutable saved-revision snapshots, deterministic synthetic seed, and real
-PostgreSQL constraint tests. Engineering formulas and authoritative Niedax catalog data remain
-deferred. Start with the [Stage 3 architecture overview](docs/architecture/architecture-overview.md)
-and [Stage 4 ER model](docs/database/stage4-er-model.md).
+PostgreSQL constraint tests. Stage 5 adds the verified official P0 Niedax catalog bundle, canonical
+CSV/XLSX pipeline, and protected draft/validate/approve/activate/archive workflow. Engineering
+formulas remain deferred. Start with the [Stage 3 architecture overview](docs/architecture/architecture-overview.md),
+[Stage 4 ER model](docs/database/stage4-er-model.md), and [catalog import operations](docs/catalogs/catalog-import.md).
 
 ## Architecture and access
 

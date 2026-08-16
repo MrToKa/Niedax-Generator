@@ -10,6 +10,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
+    "catalog:seed": "node dist/catalog-seed.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run tests"
   },

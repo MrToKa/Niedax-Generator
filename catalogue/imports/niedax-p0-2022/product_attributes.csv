@@ -1,0 +1,88 @@
+product_code,attribute_key,value_text,value_number,value_boolean,unit,source_document,source_printed_page,source_pdf_page,source_table_or_row
+DAM 6X5,connection_thread,M6,,,,1.-Electrical-installation-materials.pdf,156,19,DAM 6X5
+DAM 6X5,length,,50,,mm,1.-Electrical-installation-materials.pdf,156,19,DAM 6X5
+DAM 6X5,drill_hole_diameter,,6,,mm,1.-Electrical-installation-materials.pdf,156,19,DAM 6X5
+DAM 6X5,clamping_range_max,,5,,mm,1.-Electrical-installation-materials.pdf,156,19,DAM 6X5
+DAM 6X5,effective_anchoring_depth,,30,,mm,1.-Electrical-installation-materials.pdf,156,19,DAM 6X5
+DAM 6X5,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,156,19,DAM 6X5
+DAM 6X10,connection_thread,M6,,,,1.-Electrical-installation-materials.pdf,156,19,DAM 6X10
+DAM 6X10,length,,55,,mm,1.-Electrical-installation-materials.pdf,156,19,DAM 6X10
+DAM 6X10,drill_hole_diameter,,6,,mm,1.-Electrical-installation-materials.pdf,156,19,DAM 6X10
+DAM 6X10,clamping_range_max,,10,,mm,1.-Electrical-installation-materials.pdf,156,19,DAM 6X10
+DAM 6X10,effective_anchoring_depth,,30,,mm,1.-Electrical-installation-materials.pdf,156,19,DAM 6X10
+DAM 6X10,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,156,19,DAM 6X10
+DAZ 8X10,connection_thread,M8,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 8X10
+DAZ 8X10,length,,75,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 8X10
+DAZ 8X10,drill_hole_diameter,,8,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 8X10
+DAZ 8X10,clamping_range_max,,10,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 8X10
+DAZ 8X10,effective_anchoring_depth,,45,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 8X10
+DAZ 8X10,washer_diameter,,24,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 8X10
+DAZ 8X10,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 8X10
+DAZ 10X10,connection_thread,M10,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X10
+DAZ 10X10,length,,95,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X10
+DAZ 10X10,drill_hole_diameter,,10,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X10
+DAZ 10X10,clamping_range_max,,10,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X10
+DAZ 10X10,effective_anchoring_depth,,60,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X10
+DAZ 10X10,washer_diameter,,25,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X10
+DAZ 10X10,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X10
+DAZ 12X10,connection_thread,M12,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 12X10
+DAZ 12X10,length,,110,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 12X10
+DAZ 12X10,drill_hole_diameter,,12,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 12X10
+DAZ 12X10,clamping_range_max,,10,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 12X10
+DAZ 12X10,effective_anchoring_depth,,70,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 12X10
+DAZ 12X10,washer_diameter,,30,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 12X10
+DAZ 12X10,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 12X10
+DAZ 10X30,connection_thread,M10,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X30
+DAZ 10X30,length,,115,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X30
+DAZ 10X30,drill_hole_diameter,,10,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X30
+DAZ 10X30,clamping_range_max,,30,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X30
+DAZ 10X30,effective_anchoring_depth,,60,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X30
+DAZ 10X30,washer_diameter,,20,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X30
+DAZ 10X30,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 10X30
+DAZ 16X25,connection_thread,M16,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 16X25
+DAZ 16X25,length,,148,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 16X25
+DAZ 16X25,drill_hole_diameter,,16,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 16X25
+DAZ 16X25,clamping_range_max,,25,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 16X25
+DAZ 16X25,effective_anchoring_depth,,85,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 16X25
+DAZ 16X25,washer_diameter,,30,,mm,1.-Electrical-installation-materials.pdf,156,19,DAZ 16X25
+DAZ 16X25,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,156,19,DAZ 16X25
+NSA 6X35/FKK-T30 V,diameter,,6,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X35/FKK-T30 V
+NSA 6X35/FKK-T30 V,length,,35,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X35/FKK-T30 V
+NSA 6X35/FKK-T30 V,head_drive,T30 pan-head,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X35/FKK-T30 V
+NSA 6X35/FKK-T30 V,drill_hole_diameter,,5,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X35/FKK-T30 V
+NSA 6X35/FKK-T30 V,maximum_mounting_thickness,,1,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X35/FKK-T30 V
+NSA 6X35/FKK-T30 V,recommended_tightening_torque,,10,,Nm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X35/FKK-T30 V
+NSA 6X35/FKK-T30 V,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X35/FKK-T30 V
+NSA 6X35/FKK-T30 V,catalog_application_example,pipe clamps,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X35/FKK-T30 V
+NSA 6X50/FKK-T30 V,diameter,,6,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X50/FKK-T30 V
+NSA 6X50/FKK-T30 V,length,,50,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X50/FKK-T30 V
+NSA 6X50/FKK-T30 V,head_drive,T30 pan-head,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X50/FKK-T30 V
+NSA 6X50/FKK-T30 V,drill_hole_diameter,,5,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X50/FKK-T30 V
+NSA 6X50/FKK-T30 V,maximum_mounting_thickness_options,5/15,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X50/FKK-T30 V
+NSA 6X50/FKK-T30 V,recommended_tightening_torque,,10,,Nm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X50/FKK-T30 V
+NSA 6X50/FKK-T30 V,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X50/FKK-T30 V
+NSA 6X50/FKK-T30 V,catalog_application_example,pipe clamps,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X50/FKK-T30 V
+NSA 6X55/SW10-M6 V,diameter,,6,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X55/SW10-M6 V
+NSA 6X55/SW10-M6 V,length,,55,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X55/SW10-M6 V
+NSA 6X55/SW10-M6 V,head_drive,10 mm hex head,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X55/SW10-M6 V
+NSA 6X55/SW10-M6 V,drill_hole_diameter,,5,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X55/SW10-M6 V
+NSA 6X55/SW10-M6 V,connection_thread,M6x10,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X55/SW10-M6 V
+NSA 6X55/SW10-M6 V,recommended_tightening_torque,,10,,Nm,1.-Electrical-installation-materials.pdf,157,20,NSA 6X55/SW10-M6 V
+NSA 6X55/SW10-M6 V,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X55/SW10-M6 V
+NSA 6X55/SW10-M6 V,catalog_application_example,pipe clamps,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 6X55/SW10-M6 V
+NSA 7.5X40/FKG-T30 V,diameter,,7.5,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X40/FKG-T30 V
+NSA 7.5X40/FKG-T30 V,length,,40,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X40/FKG-T30 V
+NSA 7.5X40/FKG-T30 V,head_drive,T30 large-diameter pan-head,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X40/FKG-T30 V
+NSA 7.5X40/FKG-T30 V,drill_hole_diameter,,6,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X40/FKG-T30 V
+NSA 7.5X40/FKG-T30 V,maximum_mounting_thickness,,5,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X40/FKG-T30 V
+NSA 7.5X40/FKG-T30 V,recommended_tightening_torque,,20,,Nm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X40/FKG-T30 V
+NSA 7.5X40/FKG-T30 V,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X40/FKG-T30 V
+NSA 7.5X40/FKG-T30 V,catalog_application_example,framing channel,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X40/FKG-T30 V
+NSA 7.5X50/FKG-T30 V,diameter,,7.5,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X50/FKG-T30 V
+NSA 7.5X50/FKG-T30 V,length,,50,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X50/FKG-T30 V
+NSA 7.5X50/FKG-T30 V,head_drive,T30 large-diameter pan-head,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X50/FKG-T30 V
+NSA 7.5X50/FKG-T30 V,drill_hole_diameter,,6,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X50/FKG-T30 V
+NSA 7.5X50/FKG-T30 V,maximum_mounting_thickness,,15,,mm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X50/FKG-T30 V
+NSA 7.5X50/FKG-T30 V,recommended_tightening_torque,,20,,Nm,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X50/FKG-T30 V
+NSA 7.5X50/FKG-T30 V,substrate,concrete,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X50/FKG-T30 V
+NSA 7.5X50/FKG-T30 V,catalog_application_example,framing channel,,,,1.-Electrical-installation-materials.pdf,157,20,NSA 7.5X50/FKG-T30 V

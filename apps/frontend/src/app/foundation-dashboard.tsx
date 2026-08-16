@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { CatalogAdminPanel } from "./catalog-admin";
 
 type Language = "bg" | "en";
 type Role = "administrator" | "reviewer";
@@ -165,6 +166,7 @@ export function FoundationDashboard({ versions }: Readonly<{ versions: Versions 
           )}
         </div>
       </section>
+      {user?.role === "administrator" ? <CatalogAdminPanel /> : null}
     </main>
   );
 }

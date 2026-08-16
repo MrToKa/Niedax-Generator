@@ -6,6 +6,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/frontend/package.json apps/frontend/package.json
 COPY apps/backend/package.json apps/backend/package.json
 COPY packages/calculation-engine/package.json packages/calculation-engine/package.json
+COPY packages/catalog-import/package.json packages/catalog-import/package.json
 COPY database/package.json database/package.json
 COPY rules/package.json rules/package.json
 RUN pnpm install --frozen-lockfile

@@ -1,0 +1,5 @@
+template_code,product_code,component_role,quantity,unit,quantity_mode,suppress_when_included
+KL-WALL-KLTB-DAM,KLTB 6 F,support,1,pcs,per_support,false
+KL-WALL-KLTB-DAM,DAM 6X10,anchor,2,pcs,per_support,false
+WSL-WALL-WSTB-DAM,WSTB 2,support,1,pcs,per_support,false
+WSL-WALL-WSTB-DAM,DAM 6X10,anchor,2,pcs,per_support,false

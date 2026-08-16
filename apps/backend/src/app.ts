@@ -3,10 +3,16 @@ import rateLimit from "@fastify/rate-limit";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { getCalculationEngineReadiness } from "@niedax/calculation-engine";
+import {
+  CatalogImportError,
+  createXlsxTemplate,
+  exportValidationIssuesCsv
+} from "@niedax/catalog-import";
 import applicationPackage from "../../../package.json" with { type: "json" };
 import catalogueManifest from "../../../catalogue/manifest.json" with { type: "json" };
 import rulesManifest from "../../../rules/manifest.json" with { type: "json" };
 import { AppError, AuthService, PASSWORD_MIN_LENGTH } from "./auth-service.js";
+import type { CatalogAdminService, CatalogUploadFile } from "./catalog-service.js";
 import type { AppRole, SessionIdentity, UserStore } from "./domain.js";
 import { toPublicUser } from "./domain.js";
 
@@ -17,17 +23,23 @@ interface BuildAppOptions {
   readonly sessionPepper: string;
   readonly cookieSecure?: boolean;
   readonly logger?: boolean;
+  readonly catalogService?: CatalogAdminService;
 }
 
 export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
   const app = Fastify({
     logger: options.logger ?? false,
-    trustProxy: true
+    trustProxy: true,
+    bodyLimit: 35 * 1024 * 1024
   });
   const auth = new AuthService(options.store, options.sessionPepper);
 
   await app.register(cookie);
   await app.register(rateLimit, { global: false });
+
+  app.addHook("onSend", async (request, reply) => {
+    reply.header("x-correlation-id", correlationId(request));
+  });
 
   app.addHook("onRequest", async (request) => {
     if (!["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) return;
@@ -47,13 +59,22 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
 
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof AppError) {
-      return reply
-        .status(error.statusCode)
-        .send({ error: { code: error.code, message: error.message } });
+      return reply.status(error.statusCode).send({
+        error: { code: error.code, message: error.message, correlationId: correlationId(request) }
+      });
+    }
+    if (error instanceof CatalogImportError) {
+      return reply.status(422).send({
+        error: { code: error.code, message: error.message, correlationId: correlationId(request) }
+      });
     }
     request.log.error({ err: error }, "request failed");
     return reply.status(500).send({
-      error: { code: "INTERNAL_ERROR", message: "The request could not be completed" }
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "The request could not be completed",
+        correlationId: correlationId(request)
+      }
     });
   });
 
@@ -201,7 +222,234 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     }
   );
 
+  app.post<{ Body: { files: CatalogUploadFile[] } }>(
+    "/api/v1/admin/catalog-imports/preview",
+    { schema: { body: catalogUploadBodySchema } },
+    async (request) => {
+      const actor = await requireAdministrator(request, auth);
+      void actor;
+      return requireCatalog(options).preview(request.body.files);
+    }
+  );
+
+  app.post<{ Body: { files: CatalogUploadFile[] } }>(
+    "/api/v1/admin/catalog-imports",
+    { schema: { body: catalogUploadBodySchema } },
+    async (request, reply) => {
+      const actor = await requireAdministrator(request, auth);
+      const draft = await requireCatalog(options).importDraft({
+        files: request.body.files,
+        actorId: actor.user.id,
+        correlationId: correlationId(request)
+      });
+      return reply.status(201).send({ catalog: draft });
+    }
+  );
+
+  app.post<{ Params: { id: string } }>(
+    "/api/v1/admin/catalog-versions/:id/validate",
+    { schema: { params: uuidParamsSchema } },
+    async (request) => {
+      const actor = await requireAdministrator(request, auth);
+      return {
+        catalog: await requireCatalog(options).validate({
+          catalogVersionId: request.params.id,
+          actorId: actor.user.id,
+          correlationId: correlationId(request)
+        })
+      };
+    }
+  );
+
+  app.post<{
+    Params: { id: string };
+    Body: { contentHash: string; reason: string };
+  }>(
+    "/api/v1/admin/catalog-versions/:id/approve",
+    { schema: { params: uuidParamsSchema, body: transitionBodySchema } },
+    async (request) => {
+      const actor = await requireAdministrator(request, auth);
+      return {
+        catalog: await requireCatalog(options).approve({
+          catalogVersionId: request.params.id,
+          actorId: actor.user.id,
+          correlationId: correlationId(request),
+          reason: request.body.reason,
+          contentHash: request.body.contentHash
+        })
+      };
+    }
+  );
+
+  app.post<{
+    Params: { id: string };
+    Body: { contentHash: string; reason: string };
+  }>(
+    "/api/v1/admin/catalog-versions/:id/activate",
+    { schema: { params: uuidParamsSchema, body: transitionBodySchema } },
+    async (request) => {
+      const actor = await requireAdministrator(request, auth);
+      return {
+        catalog: await requireCatalog(options).activate({
+          catalogVersionId: request.params.id,
+          actorId: actor.user.id,
+          correlationId: correlationId(request),
+          reason: request.body.reason,
+          contentHash: request.body.contentHash
+        })
+      };
+    }
+  );
+
+  app.post<{ Params: { id: string }; Body: { reason: string } }>(
+    "/api/v1/admin/catalog-versions/:id/archive",
+    {
+      schema: {
+        params: uuidParamsSchema,
+        body: {
+          type: "object",
+          additionalProperties: false,
+          required: ["reason"],
+          properties: { reason: { type: "string", minLength: 1, maxLength: 2000 } }
+        }
+      }
+    },
+    async (request) => {
+      const actor = await requireAdministrator(request, auth);
+      return {
+        catalog: await requireCatalog(options).archive({
+          catalogVersionId: request.params.id,
+          actorId: actor.user.id,
+          correlationId: correlationId(request),
+          reason: request.body.reason
+        })
+      };
+    }
+  );
+
+  app.get("/api/v1/admin/catalog-versions", async (request) => {
+    await requireAdministrator(request, auth);
+    return { versions: await requireCatalog(options).listVersions() };
+  });
+
+  app.get("/api/v1/admin/catalog-import-template.xlsx", async (request, reply) => {
+    await requireAdministrator(request, auth);
+    reply.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    reply.header("content-disposition", 'attachment; filename="niedax-catalog-import-v1.xlsx"');
+    return createXlsxTemplate();
+  });
+
+  app.get<{ Params: { id: string } }>(
+    "/api/v1/admin/catalog-versions/:id/report.csv",
+    { schema: { params: uuidParamsSchema } },
+    async (request, reply) => {
+      await requireAdministrator(request, auth);
+      const report = await requireCatalog(options).exportLatestReport(request.params.id);
+      if (!report)
+        throw new AppError(404, "CATALOG_REPORT_NOT_FOUND", "Validation report not found");
+      reply.type("text/csv; charset=utf-8");
+      reply.header(
+        "content-disposition",
+        `attachment; filename="catalog-validation-${request.params.id}.csv"`
+      );
+      return exportValidationIssuesCsv(report.issues);
+    }
+  );
+
+  app.get<{
+    Querystring: {
+      system: string;
+      height_mm: string;
+      width_mm: string;
+      material_code: string;
+      finish_code: string;
+    };
+  }>(
+    "/api/v1/catalog/products",
+    {
+      schema: {
+        querystring: {
+          type: "object",
+          additionalProperties: false,
+          required: ["system", "height_mm", "width_mm", "material_code", "finish_code"],
+          properties: {
+            system: { type: "string", minLength: 1, maxLength: 64 },
+            height_mm: { type: "string", pattern: "^[0-9]+(?:\\.[0-9]+)?$" },
+            width_mm: { type: "string", pattern: "^[0-9]+(?:\\.[0-9]+)?$" },
+            material_code: { type: "string", minLength: 1, maxLength: 128 },
+            finish_code: { type: "string", minLength: 1, maxLength: 32 }
+          }
+        }
+      }
+    },
+    async (request) => {
+      await requireIdentity(request, auth);
+      return {
+        products: await requireCatalog(options).findSelectableProducts({
+          system: request.query.system,
+          heightMm: Number(request.query.height_mm),
+          widthMm: Number(request.query.width_mm),
+          materialCode: request.query.material_code,
+          finishCode: request.query.finish_code
+        })
+      };
+    }
+  );
+
   return app;
+}
+
+const uuidParamsSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["id"],
+  properties: { id: { type: "string", format: "uuid" } }
+} as const;
+
+const catalogUploadBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["files"],
+  properties: {
+    files: {
+      type: "array",
+      minItems: 1,
+      maxItems: 8,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["name", "contentBase64"],
+        properties: {
+          name: { type: "string", minLength: 1, maxLength: 255 },
+          contentBase64: { type: "string", minLength: 1, maxLength: 35 * 1024 * 1024 }
+        }
+      }
+    }
+  }
+} as const;
+
+const transitionBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["contentHash", "reason"],
+  properties: {
+    contentHash: { type: "string", pattern: "^sha256:[0-9a-f]{64}$" },
+    reason: { type: "string", minLength: 1, maxLength: 2000 }
+  }
+} as const;
+
+function correlationId(request: FastifyRequest): string {
+  const provided = request.headers["x-correlation-id"];
+  return typeof provided === "string" && /^[A-Za-z0-9._:-]{1,128}$/u.test(provided)
+    ? provided
+    : request.id;
+}
+
+function requireCatalog(options: BuildAppOptions): CatalogAdminService {
+  if (!options.catalogService) {
+    throw new AppError(503, "CATALOG_SERVICE_UNAVAILABLE", "Catalog administration is unavailable");
+  }
+  return options.catalogService;
 }
 
 async function requireIdentity(
@@ -210,5 +458,16 @@ async function requireIdentity(
 ): Promise<SessionIdentity> {
   const identity = await auth.resolveSession(request.cookies[SESSION_COOKIE]);
   if (!identity) throw new AppError(401, "AUTHENTICATION_REQUIRED", "Authentication required");
+  return identity;
+}
+
+async function requireAdministrator(
+  request: FastifyRequest,
+  auth: AuthService
+): Promise<SessionIdentity> {
+  const identity = await requireIdentity(request, auth);
+  if (identity.user.role !== "administrator") {
+    throw new AppError(403, "ADMINISTRATOR_REQUIRED", "Administrator role required");
+  }
   return identity;
 }

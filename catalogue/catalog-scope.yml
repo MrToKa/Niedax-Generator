@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "catalog-scope/v1",
+  "managedVersion": "2022-p0",
+  "scope": "p0-kl60-wsl105-anchors",
+  "fullSnapshot": true,
+  "sources":
+    [
+      {
+        "file": "KAT_NX_KR 2022.pdf",
+        "edition": "2022",
+        "sha256": "b1b90b6af08793e9f7322781918365071476fa7cbbd96e2c3a4a38cf20ab1b6c",
+        "pages": "KL overview KR 338; KL 60 and direct tables KR 340-347; supports KR 355-356; WSL overview KR 423; WSL 105 and direct tables KR 426-429; accessories KR 448-449; included fasteners KR 453; overlapping DAM observation KR 139"
+      },
+      {
+        "file": "1.-Electrical-installation-materials.pdf",
+        "edition": "unconfirmed",
+        "sha256": "2fb555d445bebc68f2a86f02ceb77a8dcf69123bdf87bb3eedd8e629b197f82c",
+        "pages": "printed 156-157 / PDF 19-20",
+        "authorization": "User-authorized local filename replacing the absent prompt filename with (1) suffix"
+      }
+    ],
+  "requiredModels":
+    [
+      "DAM 6X5",
+      "DAM 6X10",
+      "DAZ 8X10",
+      "DAZ 10X10",
+      "DAZ 12X10",
+      "DAZ 10X30",
+      "DAZ 16X25",
+      "NSA 6X35/FKK-T30 V",
+      "NSA 6X50/FKK-T30 V",
+      "NSA 6X55/SW10-M6 V",
+      "NSA 7.5X40/FKG-T30 V",
+      "NSA 7.5X50/FKG-T30 V"
+    ],
+  "expected":
+    {
+      "products": 308,
+      "productAttributes": 87,
+      "includedItems": 128,
+      "compatibilityRules": 57,
+      "assemblyTemplates": 2,
+      "templateComponents": 4,
+      "sourceObservations": 4,
+      "familyCounts":
+        {
+          "DAM": 2,
+          "DAZ": 5,
+          "FK": 2,
+          "FL": 2,
+          "FLDM": 1,
+          "FLM": 11,
+          "GSF": 1,
+          "GSM": 4,
+          "KGS": 10,
+          "KGV": 4,
+          "KL": 20,
+          "KLAB": 15,
+          "KLAL": 10,
+          "KLAR": 10,
+          "KLAS": 1,
+          "KLBG": 10,
+          "KLBK": 15,
+          "KLE": 13,
+          "KLK": 15,
+          "KLT": 15,
+          "KLTA": 10,
+          "KLTB": 4,
+          "KSV": 8,
+          "KWV": 4,
+          "NSA": 5,
+          "RMP": 3,
+          "SKK": 1,
+          "SKM": 1,
+          "SKWHM": 1,
+          "SMS": 2,
+          "US": 1,
+          "WAER": 3,
+          "WBL": 5,
+          "WLAB": 15,
+          "WSBR": 15,
+          "WSGV": 3,
+          "WSL": 15,
+          "WSTAR": 15,
+          "WSTB": 2,
+          "WSTR": 15,
+          "WSV": 3,
+          "WSWV": 3,
+          "WTK": 2,
+          "WWA": 2,
+          "WWU": 3,
+          "Z": 1
+        }
+    },
+  "exclusions":
+    [
+      "KL heights other than 60 unless represented by a shared direct accessory",
+      "WSL heights 150 and 200, WSLM, WSLSN and WSLS because Stage 4 templates do not reference them",
+      "Decorative lids, dividers and non-direct systems outside the KL 60 / WSL 105 P0 assembly path",
+      "The optional 3000 mm supply length is retained as a note/attribute and not fabricated as a separate order code"
+    ]
+}

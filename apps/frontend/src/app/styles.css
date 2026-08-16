@@ -17,6 +17,178 @@
     "Segoe UI",
     sans-serif;
 }
+
+.catalog-admin {
+  width: min(1180px, calc(100% - 32px));
+  margin: 28px auto 64px;
+  padding: 28px;
+  border: 1px solid #d8dee5;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgb(24 39 56 / 8%);
+}
+
+.catalog-heading,
+.catalog-upload,
+.catalog-actions,
+.catalog-evidence {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.catalog-heading {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.catalog-heading h2 {
+  margin: 4px 0;
+}
+.catalog-heading p {
+  margin: 0;
+  color: #586675;
+}
+
+.catalog-upload {
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.catalog-upload label,
+.catalog-lifecycle label,
+.catalog-filter label {
+  display: grid;
+  gap: 6px;
+  font-weight: 650;
+}
+
+.catalog-upload input,
+.catalog-lifecycle input,
+.catalog-filter select {
+  min-height: 42px;
+  border: 1px solid #b9c3cd;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+}
+
+.catalog-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin: 24px 0 12px;
+}
+
+.catalog-cards button {
+  display: grid;
+  gap: 5px;
+  text-align: left;
+  padding: 12px;
+  border: 1px solid #d8dee5;
+  border-radius: 10px;
+  background: #f7f9fb;
+}
+
+.catalog-cards span {
+  color: #586675;
+  text-transform: capitalize;
+}
+.catalog-cards strong {
+  font-size: 1.45rem;
+}
+.catalog-evidence {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.catalog-selection {
+  overflow-wrap: anywhere;
+}
+
+.catalog-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 14px;
+}
+
+.catalog-admin table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.catalog-admin th,
+.catalog-admin td {
+  padding: 10px;
+  border-bottom: 1px solid #e3e8ed;
+  text-align: left;
+  vertical-align: top;
+}
+.catalog-admin th {
+  background: #f4f6f8;
+  color: #394756;
+}
+.catalog-admin code {
+  font-size: 0.8rem;
+}
+.catalog-filter {
+  margin-top: 18px;
+  max-width: 220px;
+}
+.catalog-lifecycle {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #d8dee5;
+}
+.catalog-lifecycle > label {
+  max-width: 520px;
+}
+.catalog-actions {
+  min-width: 320px;
+  flex-wrap: wrap;
+}
+
+.catalog-status {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #eef2f5;
+}
+
+.catalog-status.active {
+  color: #08683f;
+  background: #dff6e9;
+}
+.catalog-status.approved,
+.catalog-status.validated {
+  color: #174d83;
+  background: #e4f0fb;
+}
+.catalog-status.archived {
+  color: #6f7780;
+}
+
+button.secondary,
+a.secondary {
+  border: 1px solid #9ba8b5;
+  border-radius: 8px;
+  padding: 9px 14px;
+  color: inherit;
+  background: #fff;
+  text-decoration: none;
+}
+
+@media (max-width: 720px) {
+  .catalog-admin {
+    width: min(100% - 20px, 1180px);
+    padding: 18px;
+  }
+  .catalog-heading {
+    display: grid;
+  }
+  .catalog-actions {
+    min-width: 220px;
+  }
+}
 * {
   box-sizing: border-box;
 }

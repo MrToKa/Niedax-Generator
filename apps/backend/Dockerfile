@@ -6,6 +6,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/frontend/package.json apps/frontend/package.json
 COPY apps/backend/package.json apps/backend/package.json
 COPY packages/calculation-engine/package.json packages/calculation-engine/package.json
+COPY packages/catalog-import/package.json packages/catalog-import/package.json
 COPY database/package.json database/package.json
 COPY rules/package.json rules/package.json
 RUN pnpm install --frozen-lockfile
@@ -16,7 +17,7 @@ CMD ["pnpm", "--filter", "@niedax/backend", "dev"]
 
 FROM deps AS build
 COPY . .
-RUN pnpm --filter @niedax/calculation-engine build && pnpm --filter @niedax/backend build
+RUN pnpm --filter @niedax/calculation-engine build && pnpm --filter @niedax/catalog-import build && pnpm --filter @niedax/backend build
 RUN pnpm --filter @niedax/backend deploy --prod /runtime
 
 FROM node:24.19.0-alpine3.23@sha256:244cc2b53f46f9e876304391d17682b0ddae9ac33491f4857e25e35a36ba7995 AS runtime

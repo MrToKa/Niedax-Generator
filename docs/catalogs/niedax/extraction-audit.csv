@@ -1,0 +1,47 @@
+family,source_document,printed_page_range,pdf_page_range,extracted_row_count,verified_row_count,reviewer,status,unresolved_issues
+DAM,1.-Electrical-installation-materials.pdf,156,19,2,2,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,Pack 50 selected from designated page 156; KR 139 observation of 100 retained and resolved by explicit policy
+DAZ,1.-Electrical-installation-materials.pdf,156,19,5,5,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,Engineering suitability remains a downstream verification warning
+FK,KAT_NX_KR 2022.pdf,KR 133; KR 355,137; 359,2,2,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+FL,KAT_NX_KR 2022.pdf,KR 450,454,2,2,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+FLDM,KAT_NX_KR 2022.pdf,KR 449,453,1,1,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+FLM,KAT_NX_KR 2022.pdf,KR 130,134,11,11,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+GSF,KAT_NX_KR 2022.pdf,KR 448,452,1,1,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+GSM,KAT_NX_KR 2022.pdf,KR 116; KR 355,120; 359,4,4,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KGS,KAT_NX_KR 2022.pdf,KR 346,350,10,10,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KGV,KAT_NX_KR 2022.pdf,KR 346,350,4,4,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KL,KAT_NX_KR 2022.pdf,KR 340,344,20,20,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLAB,KAT_NX_KR 2022.pdf,KR 355,359,15,15,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLAL,KAT_NX_KR 2022.pdf,KR 343,347,10,10,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLAR,KAT_NX_KR 2022.pdf,KR 343,347,10,10,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLAS,KAT_NX_KR 2022.pdf,KR 346,350,1,1,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLBG,KAT_NX_KR 2022.pdf,KR 345,349,10,10,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLBK,KAT_NX_KR 2022.pdf,KR 345,349,15,15,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLE,KAT_NX_KR 2022.pdf,KR 343,347,13,13,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLK,KAT_NX_KR 2022.pdf,KR 344,348,15,15,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLT,KAT_NX_KR 2022.pdf,KR 344,348,15,15,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLTA,KAT_NX_KR 2022.pdf,KR 342,346,10,10,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KLTB,KAT_NX_KR 2022.pdf,KR 355,359,4,4,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KSV,KAT_NX_KR 2022.pdf,KR 340; KR 341,344; 345,8,8,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+KWV,KAT_NX_KR 2022.pdf,KR 346,350,4,4,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+NSA,1.-Electrical-installation-materials.pdf,157,20,5,5,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,Engineering suitability remains a downstream verification warning
+RMP,KAT_NX_KR 2022.pdf,KR 449,453,3,3,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+SKK,KAT_NX_KR 2022.pdf,KR 347,351,1,1,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+SKM,KAT_NX_KR 2022.pdf,KR 130,134,1,1,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+SKWHM,KAT_NX_KR 2022.pdf,KR 429,433,1,1,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+SMS,KAT_NX_KR 2022.pdf,KR 450,454,2,2,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+US,KAT_NX_KR 2022.pdf,KR 450,454,1,1,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WAER,KAT_NX_KR 2022.pdf,KR 428,432,3,3,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WBL,KAT_NX_KR 2022.pdf,KR 448,452,5,5,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WLAB,KAT_NX_KR 2022.pdf,KR 448,452,15,15,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WSBR,KAT_NX_KR 2022.pdf,KR 429,433,15,15,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WSGV,KAT_NX_KR 2022.pdf,KR 426,430,3,3,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WSL,KAT_NX_KR 2022.pdf,KR 426,430,15,15,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WSTAR,KAT_NX_KR 2022.pdf,KR 428,432,15,15,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WSTB,KAT_NX_KR 2022.pdf,KR 449,453,2,2,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WSTR,KAT_NX_KR 2022.pdf,KR 429,433,15,15,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WSV,KAT_NX_KR 2022.pdf,KR 426,430,3,3,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WSWV,KAT_NX_KR 2022.pdf,KR 427,431,3,3,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WTK,KAT_NX_KR 2022.pdf,KR 356,360,2,2,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WWA,KAT_NX_KR 2022.pdf,KR 356,360,2,2,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+WWU,KAT_NX_KR 2022.pdf,KR 355,359,3,3,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None
+Z,KAT_NX_KR 2022.pdf,KR 448,452,1,1,Stage 5 extraction: rendered-table review plus exact PDF-text code match,verified,None

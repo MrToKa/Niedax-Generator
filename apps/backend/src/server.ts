@@ -1,6 +1,8 @@
 import { Pool } from "pg";
 
 import { buildApp } from "./app.js";
+import { PgCatalogAdminRepository } from "./catalog-repository.js";
+import { CatalogAdminService } from "./catalog-service.js";
 import { loadRuntimeConfig } from "./config.js";
 import { PgUserStore } from "./pg-store.js";
 
@@ -20,7 +22,8 @@ const app = await buildApp({
   store: new PgUserStore(pool),
   sessionPepper: config.sessionPepper,
   cookieSecure: config.cookieSecure,
-  logger: true
+  logger: true,
+  catalogService: new CatalogAdminService(new PgCatalogAdminRepository(pool))
 });
 
 let stopping = false;

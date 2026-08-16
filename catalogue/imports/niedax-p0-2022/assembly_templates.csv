@@ -1,0 +1,3 @@
+template_code,name_en,template_type,system,source_document,source_printed_page,source_pdf_page,engineering_verification_required
+KL-WALL-KLTB-DAM,KL wall fixing with KLTB and DAM,wall,KL,KAT_NX_KR 2022.pdf,KR 355,359,true
+WSL-WALL-WSTB-DAM,WSL wall fixing with WSTB and DAM,wall,WSL,KAT_NX_KR 2022.pdf,KR 449,453,true

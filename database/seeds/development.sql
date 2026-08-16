@@ -2,14 +2,19 @@ BEGIN;
 
 INSERT INTO catalog_versions (
   id, scope, version, label, source_edition, source_metadata, content_hash, status,
-  import_provenance, validation_schema_version, validated_at, activated_at, created_at, updated_at
+  import_provenance, validation_schema_version, validated_at, validated_content_hash,
+  approved_at, approved_content_hash, activated_at, created_at, updated_at
 ) VALUES (
   '00000000-0000-4000-8000-000000000001', 'niedax', '0.1.0',
   'Synthetic development catalog 0.1.0', NULL,
   '{"fixture":true,"authoritative":false,"notice":"Synthetic records; replace through a validated catalog import."}',
   'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'active',
   '{"kind":"syntheticDevelopmentSeed","source":"packages/domain test fixture vocabulary"}',
-  'catalog-import-validation-result/v1', '2026-08-16T00:00:00Z', '2026-08-16T00:05:00Z',
+  'catalog-import-validation-result/v1', '2026-08-16T00:00:00Z',
+  'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  '2026-08-16T00:03:00Z',
+  'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  '2026-08-16T00:05:00Z',
   '2026-08-16T00:00:00Z', '2026-08-16T00:05:00Z'
 ) ON CONFLICT (id) DO NOTHING;
 
