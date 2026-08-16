@@ -13,4 +13,10 @@ networks. No other service joins it, and only Gateway has a published port.
 Backend owns validation, authentication, authorization, sessions, and bounded database pooling.
 The calculation engine is pure TypeScript with no framework, database, filesystem, or network
 dependency. Version manifests are independent sources for application, catalogue, and calculation
-rules. Catalogue/BOM/routing/formula/export behavior is an explicit later extension point.
+rules.
+
+Stage 3 defines the extension contracts without implementing engineering formulas or persistence.
+See the [Stage 3 architecture overview](architecture/architecture-overview.md),
+[module boundaries](architecture/module-boundaries.md), and
+[HTTP API v1 contract](architecture/api-contracts-v1.md). The executable contracts live in
+`@niedax/domain`; the calculation, catalog-import, and export boundaries are separate packages.

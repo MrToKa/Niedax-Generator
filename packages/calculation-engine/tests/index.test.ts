@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import rulesManifest from "../../../rules/manifest.json" with { type: "json" };
-import { getCalculationEngineReadiness } from "../src/index.js";
+import { CALCULATION_ENGINE_VERSION, getCalculationEngineReadiness } from "../src/index.js";
 
 describe("calculation engine public API", () => {
   it("is deterministic and reads the rules manifest", () => {
@@ -11,6 +11,7 @@ describe("calculation engine public API", () => {
     expect(first).toEqual(second);
     expect(first).toEqual({
       ready: true,
+      engineVersion: CALCULATION_ENGINE_VERSION,
       rulesVersion: rulesManifest.version,
       rulesStatus: "draft"
     });

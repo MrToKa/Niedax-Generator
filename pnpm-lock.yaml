@@ -48,6 +48,15 @@ importers:
       '@niedax/calculation-engine':
         specifier: workspace:*
         version: link:../../packages/calculation-engine
+      '@niedax/catalog-import':
+        specifier: workspace:*
+        version: link:../../packages/catalog-import
+      '@niedax/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@niedax/export':
+        specifier: workspace:*
+        version: link:../../packages/export
       '@node-rs/argon2':
         specifier: 2.0.2
         version: 2.0.2
@@ -132,6 +141,9 @@ importers:
 
   packages/calculation-engine:
     dependencies:
+      '@niedax/domain':
+        specifier: workspace:*
+        version: link:../domain
       '@niedax/rules-manifest':
         specifier: workspace:*
         version: link:../../rules
@@ -142,6 +154,39 @@ importers:
       vitest:
         specifier: 4.1.10
         version: 4.1.10(@types/node@26.2.0)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(tsx@4.23.12))
+
+  packages/catalog-import:
+    dependencies:
+      '@niedax/domain':
+        specifier: workspace:*
+        version: link:../domain
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/domain:
+    dependencies:
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@26.2.0)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(tsx@4.23.12))
+
+  packages/export:
+    dependencies:
+      '@niedax/domain':
+        specifier: workspace:*
+        version: link:../domain
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
 
   rules: {}
 

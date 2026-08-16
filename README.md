@@ -5,6 +5,10 @@ Next.js shell, a Fastify API, a pure calculation-engine package, PostgreSQL 18 a
 forward-only migrations, a Caddy same-origin gateway, and manual backup tools. It intentionally does
 not contain the real catalogue, engineering calculations, BOM logic, pricing, or export features.
 
+Stage 3 adds versioned domain/runtime contracts and clean application, calculation, catalog-import,
+and export boundaries without adding the deferred engineering formulas or production persistence.
+Start with the [Stage 3 architecture overview](docs/architecture/architecture-overview.md).
+
 ## Architecture and access
 
 Open `http://localhost:8080`. A colleague on the same private LAN can use an address printed by

@@ -1,5 +1,5 @@
 {
-  "name": "@niedax/calculation-engine",
+  "name": "@niedax/catalog-import",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -16,15 +16,12 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run tests"
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@niedax/domain": "workspace:*",
-    "@niedax/rules-manifest": "workspace:*"
+    "@niedax/domain": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "6.0.3",
-    "vitest": "4.1.10"
+    "typescript": "6.0.3"
   }
 }
