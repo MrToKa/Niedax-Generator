@@ -11,8 +11,7 @@ import {
   hasIncompleteGeometry,
   isRouteCodeUnique,
   moveGeometryItem,
-  projectValidation,
-  selectSeries
+  projectValidation
 } from "./prototype-logic";
 import {
   type BomRow,
@@ -25,16 +24,31 @@ import {
   type Route,
   type ScenarioId,
   type SourceKind,
-  fixtureLabel,
   initialState,
   scenarios,
-  steps,
-  systemFixtures
+  steps
 } from "./prototype-data";
 import { copy, formatMessage, type TranslationKey } from "./prototype-i18n";
 
 type Tone = "info" | "warning" | "error" | "review";
 type Translator = (key: TranslationKey, values?: Record<string, string | number>) => string;
+
+interface CatalogSelectionOption {
+  readonly id: string;
+  readonly code: string;
+  readonly descriptionEn: string;
+  readonly category: string;
+  readonly family: string | null;
+  readonly engineeringVerificationRequired: boolean;
+  readonly engineeringNote: string | null;
+  readonly system: string;
+  readonly heightMm: number;
+  readonly widthMm: number;
+  readonly materialCode: string;
+  readonly finishCode: string;
+}
+
+type CatalogConnectionStatus = "loading" | "active" | "empty" | "unauthenticated" | "error";
 
 const scenarioMeta: Record<
   ScenarioId,
@@ -223,6 +237,8 @@ export function UxPrototype() {
   const [pendingRemoveRouteId, setPendingRemoveRouteId] = useState<string | null>(null);
   const [automationNotice, setAutomationNotice] = useState<string | null>(null);
   const [expandedBomRow, setExpandedBomRow] = useState<string | null>("bom-linear-6");
+  const [catalogOptions, setCatalogOptions] = useState<readonly CatalogSelectionOption[]>([]);
+  const [catalogStatus, setCatalogStatus] = useState<CatalogConnectionStatus>("loading");
 
   const labels = copy[language];
   const t: Translator = (key, values) =>
@@ -237,6 +253,33 @@ export function UxPrototype() {
   useEffect(() => {
     document.documentElement.lang = language;
   }, [language]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadCatalog() {
+      try {
+        const response = await fetch("/api/v1/catalog/options", { cache: "no-store" });
+        if (cancelled) return;
+        if (response.status === 401 || response.status === 403) {
+          setCatalogStatus("unauthenticated");
+          return;
+        }
+        if (!response.ok) {
+          setCatalogStatus("error");
+          return;
+        }
+        const body = (await response.json()) as { options: CatalogSelectionOption[] };
+        setCatalogOptions(body.options);
+        setCatalogStatus(body.options.length > 0 ? "active" : "empty");
+      } catch {
+        if (!cancelled) setCatalogStatus("error");
+      }
+    }
+    void loadCatalog();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function changeScenario(next: ScenarioId) {
     setScenario(next);
@@ -298,7 +341,20 @@ export function UxPrototype() {
           <span>{t("appSubtitle")}</span>
         </div>
         <div className="prototype-actions">
-          <span className="prototype-badge">{t("contractBadge")}</span>
+          <span className={`prototype-badge catalog-${catalogStatus}`}>
+            {catalogStatus === "active"
+              ? `ACTIVE CATALOG · ${catalogOptions.length}`
+              : catalogStatus === "loading"
+                ? "CATALOG · LOADING"
+                : catalogStatus === "unauthenticated"
+                  ? "CATALOG · SIGN IN"
+                  : catalogStatus === "empty"
+                    ? "CATALOG · NOT ACTIVE"
+                    : "CATALOG · ERROR"}
+          </span>
+          <a className="header-link" href="/admin">
+            Administration
+          </a>
           <span className="user-chip">{t("prototypeUser")}</span>
           <div className="language-switch" aria-label={t("uiLanguage")}>
             <button
@@ -405,6 +461,8 @@ export function UxPrototype() {
                   updateRoute={updateRoute}
                   setScenario={setScenario}
                   setAutomationNotice={setAutomationNotice}
+                  catalogOptions={catalogOptions}
+                  catalogStatus={catalogStatus}
                   language={language}
                   t={t}
                 />
@@ -654,6 +712,8 @@ function SystemStep({
   updateRoute,
   setScenario,
   setAutomationNotice,
+  catalogOptions,
+  catalogStatus,
   language,
   t
 }: Readonly<{
@@ -664,42 +724,108 @@ function SystemStep({
   updateRoute: (routeId: string, patch: Partial<Route>) => void;
   setScenario: React.Dispatch<React.SetStateAction<ScenarioId>>;
   setAutomationNotice: React.Dispatch<React.SetStateAction<string | null>>;
+  catalogOptions: readonly CatalogSelectionOption[];
+  catalogStatus: CatalogConnectionStatus;
   language: Language;
   t: Translator;
 }>) {
-  const shownSystem =
-    scenario === "incompatible"
-      ? { seriesId: "series-e5", dimensionId: "e5-110-300", finishId: "finish-e5", variantId: null }
-      : state.system;
-  const fixture = systemFixtures.find((series) => series.id === shownSystem.seriesId);
+  const shownSystem = state.system;
+  const systems = [...new Set(catalogOptions.map((option) => option.system))].sort();
+  const dimensions = [
+    ...new Map(
+      catalogOptions
+        .filter((option) => option.system === shownSystem.seriesId)
+        .map((option) => [
+          `${option.heightMm}x${option.widthMm}`,
+          {
+            id: `${option.heightMm}x${option.widthMm}`,
+            label: `${option.heightMm} × ${option.widthMm} mm`
+          }
+        ])
+    ).values()
+  ].sort((left, right) => left.id.localeCompare(right.id, undefined, { numeric: true }));
+  const selectedDimension = dimensions.find((option) => option.id === shownSystem.dimensionId);
+  const dimensionParts = selectedDimension?.id.split("x").map(Number) ?? [];
+  const heightMm = dimensionParts[0];
+  const widthMm = dimensionParts[1];
+  const finishes = [
+    ...new Map(
+      catalogOptions
+        .filter(
+          (option) =>
+            option.system === shownSystem.seriesId &&
+            option.heightMm === heightMm &&
+            option.widthMm === widthMm
+        )
+        .map((option) => [
+          `${option.materialCode}|${option.finishCode}`,
+          {
+            id: `${option.materialCode}|${option.finishCode}`,
+            label: `${option.finishCode} · ${option.materialCode.replaceAll("_", " ")}`
+          }
+        ])
+    ).values()
+  ].sort((left, right) => left.label.localeCompare(right.label));
+  const selectedFinish = finishes.find((option) => option.id === shownSystem.finishId);
+  const [materialCode, finishCode] = selectedFinish?.id.split("|") ?? [];
+  const products = catalogOptions
+    .filter(
+      (option) =>
+        option.system === shownSystem.seriesId &&
+        option.heightMm === heightMm &&
+        option.widthMm === widthMm &&
+        option.materialCode === materialCode &&
+        option.finishCode === finishCode
+    )
+    .sort((left, right) => left.code.localeCompare(right.code, undefined, { numeric: true }));
+  const compatibleProducts = scenario === "incompatible" ? [] : products;
+
   function updateSelection(patch: Partial<PrototypeState["system"]>) {
     setScenario("valid");
     setState((current) => ({ ...current, system: { ...current.system, ...patch } }));
   }
   function changeSeries(seriesId: string) {
-    const result = selectSeries(state.system, seriesId);
     setScenario("valid");
-    setState((current) => ({ ...current, system: result.selection }));
-    if (result.cleared.length > 0) {
-      const fieldKeys: Record<string, TranslationKey> = {
-        dimension: "dimension",
-        finish: "materialFinish",
-        variant: "productVariant",
-        series: "systemFamily"
-      };
+    setState((current) => ({
+      ...current,
+      system: { seriesId: seriesId || null, dimensionId: null, finishId: null, variantId: null }
+    }));
+    if (state.system.dimensionId || state.system.finishId || state.system.variantId) {
       setAutomationNotice(
-        t("clearedSelection", {
-          fields: result.cleared.map((field) => t(fieldKeys[field] ?? "systemFamily")).join(", ")
-        })
+        language === "bg"
+          ? "Зависимите размер, покритие и продукт бяха изчистени."
+          : "Dependent dimension, finish, and product selections were cleared."
       );
     }
   }
+
+  const catalogMessage =
+    catalogStatus === "active"
+      ? language === "bg"
+        ? `${catalogOptions.length} проверени прави секции от активния каталог`
+        : `${catalogOptions.length} verified straight sections from the active catalog`
+      : catalogStatus === "loading"
+        ? language === "bg"
+          ? "Зареждане на активния каталог…"
+          : "Loading the active catalog…"
+        : catalogStatus === "unauthenticated"
+          ? language === "bg"
+            ? "Влезте в профила си през Администрация, за да използвате каталога."
+            : "Sign in through Administration to use the catalog."
+          : catalogStatus === "empty"
+            ? language === "bg"
+              ? "Няма активиран каталог. Импортирайте и активирайте версия през Администрация."
+              : "No catalog is active. Import and activate one through Administration."
+            : language === "bg"
+              ? "Каталогът не може да бъде зареден."
+              : "The catalog could not be loaded.";
+
   return (
     <div className="step-stack">
-      <div className="fixture-banner">
-        <span>FIXTURE</span>
-        <strong>{t("fixtureLabel")}</strong>
-        <small>fixture-catalogue-0.1</small>
+      <div className={`fixture-banner catalog-banner-${catalogStatus}`}>
+        <span>{catalogStatus === "active" ? "ACTIVE" : "CATALOG"}</span>
+        <strong>{catalogMessage}</strong>
+        {catalogStatus !== "active" ? <a href="/admin">Administration →</a> : null}
       </div>
       <Card number="01" title={t("systemFamily")} source="catalog" t={t}>
         <div className="field-grid two-by-two">
@@ -711,13 +837,14 @@ function SystemStep({
             t={t}
           >
             <select
+              disabled={catalogStatus !== "active"}
               value={shownSystem.seriesId ?? ""}
               onChange={(event) => changeSeries(event.target.value)}
             >
               <option value="">{t("chooseOption")}</option>
-              {systemFixtures.map((series) => (
-                <option key={series.id} value={series.id}>
-                  {fixtureLabel(series.label, language)}
+              {systems.map((system) => (
+                <option key={system} value={system}>
+                  {system}
                 </option>
               ))}
             </select>
@@ -732,12 +859,18 @@ function SystemStep({
             t={t}
           >
             <select
-              disabled={!fixture}
+              disabled={!shownSystem.seriesId || dimensions.length === 0}
               value={shownSystem.dimensionId ?? ""}
-              onChange={(event) => updateSelection({ dimensionId: event.target.value || null })}
+              onChange={(event) =>
+                updateSelection({
+                  dimensionId: event.target.value || null,
+                  finishId: null,
+                  variantId: null
+                })
+              }
             >
               <option value="">{t("chooseOption")}</option>
-              {fixture?.dimensions.map((option) => (
+              {dimensions.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.label}
                 </option>
@@ -752,14 +885,16 @@ function SystemStep({
             t={t}
           >
             <select
-              disabled={!fixture}
+              disabled={!shownSystem.dimensionId || finishes.length === 0}
               value={shownSystem.finishId ?? ""}
-              onChange={(event) => updateSelection({ finishId: event.target.value || null })}
+              onChange={(event) =>
+                updateSelection({ finishId: event.target.value || null, variantId: null })
+              }
             >
               <option value="">{t("chooseOption")}</option>
-              {fixture?.finishes.map((option) => (
+              {finishes.map((option) => (
                 <option key={option.id} value={option.id}>
-                  {fixtureLabel(option.label, language)}
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -769,7 +904,7 @@ function SystemStep({
             source="catalog"
             required
             error={
-              fixture?.variants.length === 0
+              shownSystem.finishId && compatibleProducts.length === 0
                 ? t("noCompatibleVariants")
                 : !shownSystem.variantId
                   ? t("requiredMessage")
@@ -778,14 +913,14 @@ function SystemStep({
             t={t}
           >
             <select
-              disabled={!fixture || fixture.variants.length === 0}
+              disabled={!shownSystem.finishId || compatibleProducts.length === 0}
               value={shownSystem.variantId ?? ""}
               onChange={(event) => updateSelection({ variantId: event.target.value || null })}
             >
               <option value="">{t("chooseOption")}</option>
-              {fixture?.variants.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {fixtureLabel(option.label, language)}
+              {compatibleProducts.map((option) => (
+                <option key={option.id} value={option.code}>
+                  {option.code} · {option.descriptionEn}
                 </option>
               ))}
             </select>
@@ -795,7 +930,14 @@ function SystemStep({
         <div className="card-actions">
           <button
             className="secondary"
-            disabled={!activeRoute || !state.system.seriesId || scenario === "incompatible"}
+            disabled={
+              !activeRoute ||
+              !state.system.seriesId ||
+              !state.system.dimensionId ||
+              !state.system.finishId ||
+              !state.system.variantId ||
+              scenario === "incompatible"
+            }
             onClick={() => activeRoute && updateRoute(activeRoute.id, state.system)}
             type="button"
           >

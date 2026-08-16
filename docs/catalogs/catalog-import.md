@@ -88,7 +88,8 @@ corepack pnpm catalog:seed:dev -- --actor-id <administrator-uuid> --approve --ac
 
 The normal UI/API workflow is `draft -> validated -> approved -> active -> archived`:
 
-1. Upload one populated `.xlsx` or the eight canonical CSV files. Preview is read-only.
+1. Open `/admin` on the same application host, sign in as an administrator, and upload one populated
+   `.xlsx` or the eight canonical CSV files. Preview is read-only.
 2. Import creates/idempotently reuses a draft; changed content clears validation and approval.
 3. Validate stores one immutable report for the exact content hash and materializes only valid staging content into the existing Stage 4 catalog entities.
 4. An administrator records the approval reason for the exact validated hash.
@@ -96,6 +97,12 @@ The normal UI/API workflow is `draft -> validated -> approved -> active -> archi
 6. Archive is non-destructive. Products, evidence, transition events, approvals, reports, and saved revision/BOM snapshots remain queryable.
 
 Administrative routes are under `/api/v1/admin/catalog-imports` and `/api/v1/admin/catalog-versions`; all mutation and download routes re-check the administrator role server-side. `/api/v1/catalog/products` requires authentication and returns only orderable products from the active version with an exact verified allow-list rule for the supplied system, height, width, material, and finish.
+
+The project configurator links to `/admin`. After activation, its System step reads the authenticated
+`/api/v1/catalog/options` endpoint and exposes only the straight-section variants backed by active,
+verified `project_selection` allow-list rules. Fittings, connectors, included hardware, supports, and
+anchors remain governed by their assembly/compatibility relations rather than appearing as arbitrary
+system variants.
 
 Rollback never resets the persistent database or deletes historical data. Before activation, abandon the inactive candidate and import corrected content under a new managed version. After activation, prepare/validate/approve the recovery content as a new version and activate it transactionally; this archives only the command-created candidate. If no replacement should become active, use the admin Archive action with a reason. An archived version is never mutated or reactivated.
 

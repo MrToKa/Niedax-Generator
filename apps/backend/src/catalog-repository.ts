@@ -12,6 +12,7 @@ import {
 import type {
   CatalogAdminRepository,
   CatalogDraftSummary,
+  CatalogSelectionOption,
   CatalogSelectableProduct,
   CatalogSelectionFilter,
   CatalogVersionSummary
@@ -1005,6 +1006,55 @@ export class PgCatalogAdminRepository implements CatalogAdminRepository {
       family: row.family,
       engineeringVerificationRequired: row.engineering_verification_required,
       engineeringNote: row.engineering_note
+    }));
+  }
+
+  public async listSelectionOptions(): Promise<readonly CatalogSelectionOption[]> {
+    const result = await this.pool.query<{
+      id: string;
+      product_code: string;
+      description_en: string;
+      category: string;
+      family: string | null;
+      engineering_verification_required: boolean;
+      engineering_note: string | null;
+      system: string;
+      height_mm: string;
+      width_mm: string;
+      material_code: string;
+      finish_code: string;
+    }>(
+      `SELECT DISTINCT product.id, product.product_code, product.description_en, product.category,
+              product.family, product.engineering_verification_required, product.engineering_note,
+              rule.condition_payload->>'system' AS system,
+              rule.condition_payload->>'heightMm' AS height_mm,
+              rule.condition_payload->>'widthMm' AS width_mm,
+              rule.condition_payload->>'materialCode' AS material_code,
+              rule.condition_payload->>'finishCode' AS finish_code
+         FROM products product
+         JOIN catalog_versions version ON version.id = product.catalog_version_id
+         JOIN rule_sets ruleset ON ruleset.catalog_version_id = version.id AND ruleset.status = 'active'
+         JOIN compatibility_rules rule ON rule.rule_set_id = ruleset.id AND rule.status = 'active'
+        WHERE version.status = 'active'
+          AND product.availability_status = 'active' AND product.is_orderable = true
+          AND rule.decision = 'allowed'
+          AND rule.condition_payload->>'relationType' = 'project_selection'
+          AND rule.condition_payload->>'sourceProductCode' = product.product_code
+        ORDER BY system, height_mm::numeric, width_mm::numeric, finish_code, product.product_code`
+    );
+    return result.rows.map((row) => ({
+      id: row.id,
+      code: row.product_code,
+      descriptionEn: row.description_en,
+      category: row.category,
+      family: row.family,
+      engineeringVerificationRequired: row.engineering_verification_required,
+      engineeringNote: row.engineering_note,
+      system: row.system,
+      heightMm: Number(row.height_mm),
+      widthMm: Number(row.width_mm),
+      materialCode: row.material_code,
+      finishCode: row.finish_code
     }));
   }
 

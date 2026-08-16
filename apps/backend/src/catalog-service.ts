@@ -59,6 +59,14 @@ export interface CatalogSelectableProduct {
   readonly engineeringNote: string | null;
 }
 
+export interface CatalogSelectionOption extends CatalogSelectableProduct {
+  readonly system: string;
+  readonly heightMm: number;
+  readonly widthMm: number;
+  readonly materialCode: string;
+  readonly finishCode: string;
+}
+
 export interface CatalogAdminRepository {
   getActiveComparison(): Promise<ActiveCatalogComparison | null>;
   saveDraft(input: {
@@ -101,6 +109,7 @@ export interface CatalogAdminRepository {
   findSelectableProducts(
     filter: CatalogSelectionFilter
   ): Promise<readonly CatalogSelectableProduct[]>;
+  listSelectionOptions(): Promise<readonly CatalogSelectionOption[]>;
   exportLatestReport(catalogVersionId: string): Promise<CatalogValidationReport | null>;
 }
 
@@ -250,6 +259,10 @@ export class CatalogAdminService {
     filter: CatalogSelectionFilter
   ): Promise<readonly CatalogSelectableProduct[]> {
     return this.repository.findSelectableProducts(filter);
+  }
+
+  public listSelectionOptions(): Promise<readonly CatalogSelectionOption[]> {
+    return this.repository.listSelectionOptions();
   }
 
   public exportLatestReport(catalogVersionId: string): Promise<CatalogValidationReport | null> {

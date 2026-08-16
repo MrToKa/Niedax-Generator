@@ -100,7 +100,10 @@ export function FoundationDashboard({ versions }: Readonly<{ versions: Versions 
   }
 
   return (
-    <main>
+    <main className="admin-page">
+      <nav className="admin-navigation" aria-label="Application navigation">
+        <a href="/">← Project configurator</a>
+      </nav>
       <section className="shell" aria-labelledby="title">
         <header>
           <div>

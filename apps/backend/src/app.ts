@@ -396,6 +396,11 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     }
   );
 
+  app.get("/api/v1/catalog/options", async (request) => {
+    await requireIdentity(request, auth);
+    return { options: await requireCatalog(options).listSelectionOptions() };
+  });
+
   return app;
 }
 

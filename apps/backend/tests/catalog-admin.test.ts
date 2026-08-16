@@ -108,6 +108,22 @@ function repository(): CatalogAdminRepository {
             }
           ]
         : [],
+    listSelectionOptions: async () => [
+      {
+        id: versionId,
+        code: "KL 60.203",
+        descriptionEn: "Cable ladder",
+        category: "straightSection",
+        family: "KL",
+        engineeringVerificationRequired: false,
+        engineeringNote: null,
+        system: "KL",
+        heightMm: 60,
+        widthMm: 200,
+        materialCode: "steel",
+        finishCode: "S"
+      }
+    ],
     exportLatestReport: async () => null
   };
 }
@@ -200,6 +216,29 @@ describe("catalog product allow-list API", () => {
     const response = await app.inject({ method: "GET", url: query, headers: { cookie } });
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({ products: [] });
+    await app.close();
+  });
+
+  it("lists only authenticated active-catalog selection options", async () => {
+    const repo = repository();
+    const app = await buildApp({
+      store: createStore(),
+      sessionPepper: pepper,
+      catalogService: new CatalogAdminService(repo)
+    });
+    expect((await app.inject({ method: "GET", url: "/api/v1/catalog/options" })).statusCode).toBe(
+      401
+    );
+    const cookie = await login(app, "catalog.reviewer");
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/catalog/options",
+      headers: { cookie }
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      options: [{ code: "KL 60.203", system: "KL", heightMm: 60, widthMm: 200 }]
+    });
     await app.close();
   });
 });
