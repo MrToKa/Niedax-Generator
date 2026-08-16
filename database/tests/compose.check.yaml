@@ -44,7 +44,7 @@ services:
       [
         "sh",
         "-c",
-        "node dist/migrate.js up && node dist/migrate.js verify && node dist/database-test.js"
+        "node dist/migrate.js up && node dist/migrate.js verify && node dist/seed.js && node dist/seed.js && node dist/database-test.js && node dist/stage4-test.js"
       ]
     depends_on:
       migrations:

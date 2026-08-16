@@ -8,6 +8,8 @@ input at HTTP boundaries, return non-sensitive errors, and add tests for authori
 changes. Never commit secrets, local data, generated dumps, logs, coverage, or build output.
 
 Database changes use `pnpm db:new -- <description>`. Review SQL for least privilege, never edit an
-applied migration, and run `pnpm db:check`. Before local review run `pnpm validate`; infrastructure
-changes also require `pnpm validate:full`. Reviews should check scope, security, migration safety,
-offline runtime behavior, and README accuracy.
+applied migration, keep fixtures synthetic/non-authoritative, and run `pnpm db:check`. Use only
+`pnpm db:reset:test` for destructive reset verification; never reset the normal persistent
+database. Before local review run `pnpm validate`; infrastructure changes also require
+`pnpm validate:full`. Reviews should check scope, security, migration safety, offline runtime
+behavior, and README accuracy.

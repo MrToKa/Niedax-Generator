@@ -15,13 +15,14 @@ RUN pnpm --filter @niedax/database-tools build
 RUN pnpm --filter @niedax/database-tools deploy --prod /runtime
 
 FROM node:24.19.0-alpine3.23@sha256:244cc2b53f46f9e876304391d17682b0ddae9ac33491f4857e25e35a36ba7995 AS runtime
-ENV NODE_ENV=production MIGRATIONS_DIR=/app/migrations
+ENV NODE_ENV=production MIGRATIONS_DIR=/app/migrations DATABASE_SEED_FILE=/app/seeds/development.sql
 WORKDIR /app
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
     && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
       /usr/local/bin/pnpm /usr/local/bin/pnpx
 COPY --from=build --chown=node:node /runtime ./
 COPY --from=build --chown=node:node /workspace/database/migrations ./migrations
+COPY --from=build --chown=node:node /workspace/database/seeds ./seeds
 COPY --from=build --chown=node:node /workspace/database/tests ./tests
 USER node
 CMD ["node", "dist/migrate.js", "up"]

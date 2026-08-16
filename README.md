@@ -6,8 +6,11 @@ forward-only migrations, a Caddy same-origin gateway, and manual backup tools. I
 not contain the real catalogue, engineering calculations, BOM logic, pricing, or export features.
 
 Stage 3 adds versioned domain/runtime contracts and clean application, calculation, catalog-import,
-and export boundaries without adding the deferred engineering formulas or production persistence.
-Start with the [Stage 3 architecture overview](docs/architecture/architecture-overview.md).
+and export boundaries. Stage 4 adds the versioned catalog/rule/project data model, mutable
+calculation drafts, immutable saved-revision snapshots, deterministic synthetic seed, and real
+PostgreSQL constraint tests. Engineering formulas and authoritative Niedax catalog data remain
+deferred. Start with the [Stage 3 architecture overview](docs/architecture/architecture-overview.md)
+and [Stage 4 ER model](docs/database/stage4-er-model.md).
 
 ## Architecture and access
 
@@ -100,13 +103,17 @@ runner uses only `niedax_generator_migrator`; dumps use read-only
 ```text
 pnpm db:status
 pnpm db:migrate
+pnpm db:seed
 pnpm db:new -- describe_change
 pnpm db:check
+pnpm db:reset:test
 ```
 
 `db:check` creates an isolated PostgreSQL 18 Compose project with ephemeral random credentials,
-applies migrations from scratch, reruns with no pending work, validates history/checksums, executes
-database assertions, and cleans up its own temporary volume. It never touches `data/postgres`.
+applies migrations from scratch, seeds twice, validates history/checksums, executes constraint,
+concurrency, and immutable-revision assertions, destroys only that disposable database, and proves
+a second migrate/seed/test cycle. `db:reset:test` is an explicit alias for this verified reset
+workflow. Neither command touches `data/postgres`. See [migrations](docs/migrations.md).
 
 ## Manual backups
 

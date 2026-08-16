@@ -28,6 +28,26 @@ try {
     ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "verify"],
     { env: environment }
   );
+  run(
+    "docker",
+    ["compose", "-p", project, "-f", composeFile, "down", "--volumes", "--remove-orphans"],
+    { env: environment }
+  );
+  run(
+    "docker",
+    ["compose", "-p", project, "-f", composeFile, "up", "--detach", "--wait", "postgres"],
+    { env: environment }
+  );
+  run(
+    "docker",
+    ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "migrations"],
+    { env: environment }
+  );
+  run(
+    "docker",
+    ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "verify"],
+    { env: environment }
+  );
 } finally {
   run(
     "docker",
