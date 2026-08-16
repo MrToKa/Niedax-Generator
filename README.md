@@ -82,7 +82,7 @@ pnpm user:create-admin
 
 The command prompts for username, display name, and a hidden password; it never accepts a password
 argument and refuses to create a first administrator if one already exists. Passwords need at least
-14 characters with lower/upper case, a digit, and a symbol, and cannot contain the username.
+6 characters with lower/upper case, a digit, and a symbol, and cannot contain the username.
 Administrators create or disable colleagues and assign the explicit `administrator` or `reviewer`
 role through the protected API. See [authentication](docs/authentication.md).
 

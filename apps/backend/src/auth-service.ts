@@ -6,6 +6,7 @@ import type { AppRole, PublicUser, SessionIdentity, UserStore } from "./domain.j
 import { toPublicUser } from "./domain.js";
 
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
+export const PASSWORD_MIN_LENGTH = 6;
 
 export class AppError extends Error {
   public constructor(
@@ -23,7 +24,9 @@ export function normalizeUsername(value: string): string {
 
 export function validatePassword(password: string, username: string): string[] {
   const failures: string[] = [];
-  if (password.length < 14) failures.push("at least 14 characters");
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    failures.push(`at least ${PASSWORD_MIN_LENGTH} characters`);
+  }
   if (!/[a-z]/u.test(password)) failures.push("a lowercase letter");
   if (!/[A-Z]/u.test(password)) failures.push("an uppercase letter");
   if (!/[0-9]/u.test(password)) failures.push("a number");

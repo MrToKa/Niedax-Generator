@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
-import { AuthService } from "../src/auth-service.js";
+import { AuthService, validatePassword } from "../src/auth-service.js";
 import type { AppError } from "../src/auth-service.js";
 import type { AppRole, SessionIdentity, UserRecord, UserStore } from "../src/domain.js";
 
@@ -77,6 +77,16 @@ class MemoryStore implements UserStore {
 }
 
 const strongPassword = "Local-Foundation-42!";
+
+describe("password policy", () => {
+  it("accepts a six-character password that meets the complexity requirements", () => {
+    expect(validatePassword("Aa1!xy", "local.admin")).toEqual([]);
+  });
+
+  it("rejects a five-character password", () => {
+    expect(validatePassword("Aa1!x", "local.admin")).toContain("at least 6 characters");
+  });
+});
 
 describe("authentication and authorization foundation", () => {
   it("supports login, expiry, and explicit logout revocation", async () => {

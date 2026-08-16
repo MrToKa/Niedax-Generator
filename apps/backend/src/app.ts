@@ -6,7 +6,7 @@ import { getCalculationEngineReadiness } from "@niedax/calculation-engine";
 import applicationPackage from "../../../package.json" with { type: "json" };
 import catalogueManifest from "../../../catalogue/manifest.json" with { type: "json" };
 import rulesManifest from "../../../rules/manifest.json" with { type: "json" };
-import { AppError, AuthService } from "./auth-service.js";
+import { AppError, AuthService, PASSWORD_MIN_LENGTH } from "./auth-service.js";
 import type { AppRole, SessionIdentity, UserStore } from "./domain.js";
 import { toPublicUser } from "./domain.js";
 
@@ -142,7 +142,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
           properties: {
             username: { type: "string", minLength: 3, maxLength: 64 },
             displayName: { type: "string", minLength: 2, maxLength: 100 },
-            password: { type: "string", minLength: 14, maxLength: 1024 },
+            password: { type: "string", minLength: PASSWORD_MIN_LENGTH, maxLength: 1024 },
             role: { enum: ["administrator", "reviewer"] }
           }
         }
