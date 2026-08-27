@@ -20,9 +20,9 @@ import {
   SemverSchema,
   Sha256Schema
 } from "../primitives.js";
+import { CALCULATION_INPUT_V1, CALCULATION_RESULT_V1 } from "../versions.js";
 
-export const CALCULATION_INPUT_V1 = "calculation-input/v1" as const;
-export const CALCULATION_RESULT_V1 = "calculation-result/v1" as const;
+export { CALCULATION_INPUT_V1, CALCULATION_RESULT_V1 } from "../versions.js";
 
 export const CalculationInputV1Schema = z
   .object({

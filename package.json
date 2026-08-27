@@ -43,6 +43,7 @@
     "backup:restore": "tsx scripts/backup.ts restore",
     "backup:prune": "tsx scripts/backup.ts prune",
     "catalog:generate": "tsx scripts/generate-stage5-catalog.ts",
+    "calculation:golden:update": "corepack pnpm --filter @niedax/domain build && tsx scripts/update-stage6-golden.ts",
     "catalog:import": "tsx scripts/catalog-import.ts",
     "catalog:seed:dev": "docker compose exec backend node dist/catalog-seed.js",
     "validate": "corepack pnpm format:check && corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test:unit && corepack pnpm build",

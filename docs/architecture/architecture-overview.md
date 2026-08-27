@@ -1,16 +1,17 @@
-# Stage 3 architecture overview
+# Calculation architecture overview
 
-Status: **Accepted contract; formula and persistence implementation deferred**  
+Status: **Accepted contract; Stage 6 formula implementation available through v2**
 Date: 2026-08-16  
-Contract generation: `v1`
+Contract generations: retained `v1`; Stage 6 calculation `v2`
 
 ## Outcome
 
-Stage 3 turns the Stage 2 proposed input shape into strict, versioned application and calculation
+Stage 3 turned the Stage 2 proposed input shape into strict, versioned application and calculation
 contracts. The contracts deliberately preserve unresolved engineering choices as explicit rule
-records, unresolved material states, warnings, and engineering-review requirements. They do not
-freeze the Stage 2 product decisions or implement product compatibility, support spacing, anchor
-capacity, or BOM quantity formulas.
+records, unresolved material states, warnings, and engineering-review requirements. Stage 6 keeps
+v1 unchanged and adds the fully resolved `CalculationInputV2`, `CalculationResultV2`, and
+`CalculationTraceV1` formula path. It calculates quantities from versioned input facts but does not
+claim anchor capacity or structural suitability.
 
 Detailed contracts: [module boundaries](module-boundaries.md),
 [HTTP API v1](api-contracts-v1.md),
@@ -20,8 +21,8 @@ Detailed contracts: [module boundaries](module-boundaries.md),
 The decisive boundary is executable today: `@niedax/calculation-engine` accepts a parsed
 `CalculationInputV1` composed only of JSON-compatible values and returns a
 `CalculationResultV1`. It does not start or import Next.js, React, Fastify, PostgreSQL, a browser,
-an ORM, a repository, the filesystem, the network, the clock, or an ID generator. Its Stage 3
-implementation returns an honest `contractOnly` result with an engineering-review warning.
+an ORM, a repository, the filesystem, the network, the clock, or a random ID generator. Retained v1
+input returns the honest Stage 3 `contractOnly` result; v2 runs the deterministic Stage 6 pipeline.
 
 ## Physical placement
 
@@ -30,7 +31,7 @@ implementation returns an honest `contractOnly` result with an engineering-revie
 | `apps/frontend`                              | Presentation, BG/EN resources, React/Next.js UI state, and relative `/api/v1` adapters                              |
 | `apps/backend/src/application`               | Use-case interfaces, authorization policy, idempotency, transaction coordination, and infrastructure ports          |
 | `packages/domain`                            | Framework-independent domain vocabulary, strict Zod runtime schemas, v1 commands, results, and safe error envelopes |
-| `packages/calculation-engine`                | Pure deterministic calculation boundary and future reviewed formulas                                                |
+| `packages/calculation-engine`                | Pure deterministic Stage 6 formulas, topology, demand aggregation, warnings, and machine-readable trace             |
 | `packages/catalog-import`                    | Source-row mapping, staging, import validation, and activation-facing contracts                                     |
 | `packages/export`                            | Immutable-result-to-English-export-model mapping and renderer ports; never quantity recalculation                   |
 | `apps/backend` infrastructure and `database` | HTTP, sessions, PostgreSQL adapters, forward-only migrations, audit and idempotency persistence                     |
@@ -106,7 +107,8 @@ compatibility mapping is an explicit Stage 4 decision, not a domain type leaked 
 
 ## Deferred work
 
-- Engineering formulas and compatibility decisions remain Stage 4+ work.
+- New or changed formula versions require reviewed input data, formula-catalog updates, focused and
+  property tests, reviewed golden output, and a new stable formula ID.
 - HTTP handlers, repositories, idempotency tables, audit tables, snapshot storage, and migrations
   are specified but not implemented in Stage 3.
 - CSV/Excel parsing and renderer implementations are deferred; their ports and validated data

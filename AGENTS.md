@@ -7,7 +7,8 @@
 - `packages/calculation-engine` is deterministic, framework-independent TypeScript without I/O.
 - `database` owns forward-only SQL migrations and manual backup/restore tooling.
 - Caddy is the only host-published service. Do not publish Frontend, Backend, or PostgreSQL ports.
-- Do not add cloud services, external runtime assets, telemetry, or product calculation logic at this stage.
+- Product calculation formulas are allowed exclusively in `packages/calculation-engine`. Do not add
+  cloud services, external runtime assets, telemetry, or formulas in frontend, backend, or database.
 
 ## Required validation
 

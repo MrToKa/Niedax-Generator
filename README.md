@@ -2,15 +2,17 @@
 
 Niedax Generator is currently a local-only modular application foundation. It provides a responsive
 Next.js shell, a Fastify API, a pure calculation-engine package, PostgreSQL 18 authentication data,
-forward-only migrations, a Caddy same-origin gateway, and manual backup tools. It intentionally does
-not contain the real catalogue, engineering calculations, BOM logic, pricing, or export features.
+forward-only migrations, a Caddy same-origin gateway, and manual backup tools. It contains the
+verified Stage 5 P0 catalog and pure Stage 6 calculation/BOM engine; pricing, ERP integration,
+structural approval, and final binary export renderers remain out of scope.
 
 Stage 3 adds versioned domain/runtime contracts and clean application, calculation, catalog-import,
 and export boundaries. Stage 4 adds the versioned catalog/rule/project data model, mutable
 calculation drafts, immutable saved-revision snapshots, deterministic synthetic seed, and real
 PostgreSQL constraint tests. Stage 5 adds the verified official P0 Niedax catalog bundle, canonical
-CSV/XLSX pipeline, and protected draft/validate/approve/activate/archive workflow. Engineering
-formulas remain deferred. Start with the [Stage 3 architecture overview](docs/architecture/architecture-overview.md),
+CSV/XLSX pipeline, and protected draft/validate/approve/activate/archive workflow. Stage 6 formulas
+exist only in `packages/calculation-engine` through the resolved v2 contract. Start with the
+[Stage 3 architecture overview](docs/architecture/architecture-overview.md),
 [Stage 4 ER model](docs/database/stage4-er-model.md), and [catalog import operations](docs/catalogs/catalog-import.md).
 
 ## Architecture and access
@@ -197,5 +199,5 @@ validation passes, only Caddy publishes 8080, local and host-side LAN URLs work,
 tests pass with no registration, data survives stop/start, disposable backup/restore passes,
 application and data services have no public egress or external assets, README operations are
 reproducible, and the only remaining physical check is confirmed access from a second LAN device.
-No cloud, GitHub remote,
-hosted service, public deployment, or Niedax product business logic belongs in this stage.
+No cloud, GitHub remote, hosted service, public deployment, or product formula outside
+`packages/calculation-engine` belongs in this repository stage.

@@ -1,0 +1,4409 @@
+{
+  "schemaVersion": "calculation-result/v2",
+  "engineVersion": "0.1.0",
+  "formulaCatalogVersion": "1.0.0",
+  "calculationRunId": "run-v2",
+  "inputFingerprint": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+  "calculationStatus": "completeWithWarnings",
+  "catalogSnapshot": {
+    "snapshotId": "catalog-snapshot-v2",
+    "version": "2.0.0",
+    "contentHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "ruleSnapshot": {
+    "snapshotId": "rule-snapshot-v2",
+    "version": "2.0.0",
+    "contentHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "bomLines": [
+    {
+      "id": "bom-7b9f2715e1dabd75",
+      "kind": "catalog",
+      "category": "linearSection",
+      "productId": "product-straight",
+      "manualInputId": null,
+      "productCode": "NX STRAIGHT",
+      "descriptionEn": "Straight cable ladder",
+      "unit": "m",
+      "technicalQuantity": {
+        "value": "6",
+        "unit": "m"
+      },
+      "reserveQuantity": {
+        "value": "3",
+        "unit": "m"
+      },
+      "reservedQuantity": {
+        "value": "9",
+        "unit": "m"
+      },
+      "packageIncrement": {
+        "value": "6",
+        "unit": "m"
+      },
+      "packageCount": {
+        "value": "2",
+        "unit": "packages"
+      },
+      "packagingOverage": {
+        "value": "3",
+        "unit": "m"
+      },
+      "orderedQuantity": {
+        "value": "12",
+        "unit": "m"
+      },
+      "totalSpareQuantity": {
+        "value": "6",
+        "unit": "m"
+      },
+      "sectionDetail": {
+        "supplyOptionId": "supply-3m",
+        "selectedSectionLength": {
+          "value": "3",
+          "unit": "m"
+        },
+        "technicalSectionCount": {
+          "value": "2",
+          "unit": "pcs"
+        },
+        "reservedSectionCount": {
+          "value": "3",
+          "unit": "pcs"
+        }
+      },
+      "includedItems": [],
+      "sourceRefs": [
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-straight",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-supply-3m",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "route",
+          "id": "route-b",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "rule",
+          "id": "rule-supply-3m",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "segment",
+          "id": "segment-b-1",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "segment",
+          "id": "segment-b-2",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "supplyOption",
+          "id": "supply-3m",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "status": "calculated",
+      "warningIds": [],
+      "traceStepIds": [
+        "trace-994c233fa5de3d0c",
+        "trace-09b658e80a5bc615",
+        "trace-0deb679bafff177c",
+        "trace-2290abcc7f2d5eb9",
+        "trace-96834f5fa7de89b8",
+        "trace-91bf057ae8093dff"
+      ],
+      "provenance": {
+        "catalogSnapshotId": "catalog-snapshot-v2",
+        "ruleSnapshotId": "rule-snapshot-v2",
+        "ruleIds": ["rule-supply-3m"],
+        "formulaIds": [
+          "BOM.FINALIZE.V1",
+          "DEMAND.AGGREGATE.V1",
+          "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "SECTION.REQUIRED_PER_SEGMENT.V1"
+        ]
+      }
+    },
+    {
+      "id": "bom-3c8bce83c45edc65",
+      "kind": "catalog",
+      "category": "fitting",
+      "productId": "product-fitting",
+      "manualInputId": null,
+      "productCode": "NX BEND",
+      "descriptionEn": "Horizontal bend",
+      "unit": "pcs",
+      "technicalQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "reserveQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "reservedQuantity": {
+        "value": "2",
+        "unit": "pcs"
+      },
+      "packageIncrement": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "packageCount": {
+        "value": "2",
+        "unit": "packages"
+      },
+      "packagingOverage": {
+        "value": "0",
+        "unit": "pcs"
+      },
+      "orderedQuantity": {
+        "value": "2",
+        "unit": "pcs"
+      },
+      "totalSpareQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "sectionDetail": null,
+      "includedItems": [],
+      "sourceRefs": [
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-fitting",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "fitting",
+          "id": "fitting-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "route",
+          "id": "route-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "status": "catalogConfirmed",
+      "warningIds": [],
+      "traceStepIds": [
+        "trace-1c38267ae318b86a",
+        "trace-1841feba4b2f081c",
+        "trace-1189965e555f7c59",
+        "trace-b957de0da0b0f158",
+        "trace-bf9d9126cc8c4f9f"
+      ],
+      "provenance": {
+        "catalogSnapshotId": "catalog-snapshot-v2",
+        "ruleSnapshotId": "rule-snapshot-v2",
+        "ruleIds": [],
+        "formulaIds": [
+          "BOM.FINALIZE.V1",
+          "CONNECTION.FITTING_SPECIFIC.V1",
+          "DEMAND.AGGREGATE.V1",
+          "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "RESERVE.APPLY_AFTER_TECHNICAL.V1"
+        ]
+      }
+    },
+    {
+      "id": "bom-63f341a6b43201cc",
+      "kind": "catalog",
+      "category": "connector",
+      "productId": "product-joint",
+      "manualInputId": null,
+      "productCode": "NX JOINT",
+      "descriptionEn": "Straight-run joint",
+      "unit": "pcs",
+      "technicalQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "reserveQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "reservedQuantity": {
+        "value": "2",
+        "unit": "pcs"
+      },
+      "packageIncrement": {
+        "value": "2",
+        "unit": "pcs"
+      },
+      "packageCount": {
+        "value": "1",
+        "unit": "packages"
+      },
+      "packagingOverage": {
+        "value": "0",
+        "unit": "pcs"
+      },
+      "orderedQuantity": {
+        "value": "2",
+        "unit": "pcs"
+      },
+      "totalSpareQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "sectionDetail": null,
+      "includedItems": [],
+      "sourceRefs": [
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-joint",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "rule",
+          "id": "rule-joint",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "segment",
+          "id": "segment-b-1",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "segment",
+          "id": "segment-b-2",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "straightRun",
+          "id": "straight-run-bf9b12a73ca130e2",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "status": "catalogConfirmed",
+      "warningIds": [],
+      "traceStepIds": [
+        "trace-4fa5f0943241868d",
+        "trace-0af9e0f9aa2ec236",
+        "trace-0c2af9ce8f40f9d7",
+        "trace-d8eb0cb093aa4dc6",
+        "trace-95d43b2dfb9f6811"
+      ],
+      "provenance": {
+        "catalogSnapshotId": "catalog-snapshot-v2",
+        "ruleSnapshotId": "rule-snapshot-v2",
+        "ruleIds": ["rule-joint"],
+        "formulaIds": [
+          "BOM.FINALIZE.V1",
+          "DEMAND.AGGREGATE.V1",
+          "JOINT.INTERNAL_STRAIGHT_RUN.V1",
+          "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "RESERVE.APPLY_AFTER_TECHNICAL.V1"
+        ]
+      }
+    },
+    {
+      "id": "bom-02e11ae7f0b0b5ff",
+      "kind": "catalog",
+      "category": "support",
+      "productId": "product-support",
+      "manualInputId": null,
+      "productCode": "NX SUPPORT",
+      "descriptionEn": "Wall support",
+      "unit": "pcs",
+      "technicalQuantity": {
+        "value": "11",
+        "unit": "pcs"
+      },
+      "reserveQuantity": {
+        "value": "2",
+        "unit": "pcs"
+      },
+      "reservedQuantity": {
+        "value": "13",
+        "unit": "pcs"
+      },
+      "packageIncrement": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "packageCount": {
+        "value": "13",
+        "unit": "packages"
+      },
+      "packagingOverage": {
+        "value": "0",
+        "unit": "pcs"
+      },
+      "orderedQuantity": {
+        "value": "13",
+        "unit": "pcs"
+      },
+      "totalSpareQuantity": {
+        "value": "2",
+        "unit": "pcs"
+      },
+      "sectionDetail": null,
+      "includedItems": [],
+      "sourceRefs": [
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-support",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "manualOverride",
+          "id": "manual-support-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "route",
+          "id": "route-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "route",
+          "id": "route-b",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "supportGroup",
+          "id": "support-group-96ba5a2b48254fb7",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "supportGroup",
+          "id": "support-group-96ba5b2b4825516a",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "status": "calculated",
+      "warningIds": ["warning-a3d2001c66dfd127", "warning-ab66c061c339d2d8"],
+      "traceStepIds": [
+        "trace-d5dcc281788cbd31",
+        "trace-fa8abf5477e60c0d",
+        "trace-2348a13c1466d915",
+        "trace-db8edba9f60bb82f",
+        "trace-2dcdd6ee17c3f686",
+        "trace-f452139f2acb29bf",
+        "trace-3ee2ab4c90963218"
+      ],
+      "provenance": {
+        "catalogSnapshotId": "catalog-snapshot-v2",
+        "ruleSnapshotId": "rule-snapshot-v2",
+        "ruleIds": [],
+        "formulaIds": [
+          "BOM.FINALIZE.V1",
+          "DEMAND.AGGREGATE.V1",
+          "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "SUPPORT.BASE_CONTINUOUS_GROUP.V1",
+          "SUPPORT.MANUAL_CORRECTION.V1"
+        ]
+      }
+    },
+    {
+      "id": "bom-550b255c1962c236",
+      "kind": "catalog",
+      "category": "structure",
+      "productId": "product-structure",
+      "manualInputId": null,
+      "productCode": "NX STRUCTURE",
+      "descriptionEn": "Support structure component",
+      "unit": "pcs",
+      "technicalQuantity": {
+        "value": "4",
+        "unit": "pcs"
+      },
+      "reserveQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "reservedQuantity": {
+        "value": "5",
+        "unit": "pcs"
+      },
+      "packageIncrement": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "packageCount": {
+        "value": "5",
+        "unit": "packages"
+      },
+      "packagingOverage": {
+        "value": "0",
+        "unit": "pcs"
+      },
+      "orderedQuantity": {
+        "value": "5",
+        "unit": "pcs"
+      },
+      "totalSpareQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "sectionDetail": null,
+      "includedItems": [],
+      "sourceRefs": [
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-structure",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "route",
+          "id": "route-b",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "supportGroup",
+          "id": "support-group-96ba5b2b4825516a",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "template",
+          "id": "template-wall",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "templateComponent",
+          "id": "component-structure-fixed",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "templateComponent",
+          "id": "component-structure-level",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "status": "engineeringReview",
+      "warningIds": [],
+      "traceStepIds": [
+        "trace-d5e98b70aa3ce952",
+        "trace-d5e98b70aa3ce952",
+        "trace-26a1ed811951658f",
+        "trace-e61819e33243c3e6",
+        "trace-82bf258bd2b1711f",
+        "trace-c2998b93e0a0d8f8"
+      ],
+      "provenance": {
+        "catalogSnapshotId": "catalog-snapshot-v2",
+        "ruleSnapshotId": "rule-snapshot-v2",
+        "ruleIds": [],
+        "formulaIds": [
+          "ASSEMBLY.COMPONENT_QUANTITY.V1",
+          "BOM.FINALIZE.V1",
+          "DEMAND.AGGREGATE.V1",
+          "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "RESERVE.APPLY_AFTER_TECHNICAL.V1"
+        ]
+      }
+    },
+    {
+      "id": "bom-220f1c50f1d40118",
+      "kind": "catalog",
+      "category": "wstb",
+      "productId": "product-wstb",
+      "manualInputId": null,
+      "productCode": "NX WSTB",
+      "descriptionEn": "WSTB ladder fixing",
+      "unit": "pcs",
+      "technicalQuantity": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "reserveQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "reservedQuantity": {
+        "value": "11",
+        "unit": "pcs"
+      },
+      "packageIncrement": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "packageCount": {
+        "value": "2",
+        "unit": "packages"
+      },
+      "packagingOverage": {
+        "value": "9",
+        "unit": "pcs"
+      },
+      "orderedQuantity": {
+        "value": "20",
+        "unit": "pcs"
+      },
+      "totalSpareQuantity": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "sectionDetail": null,
+      "includedItems": [],
+      "sourceRefs": [
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-wstb",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "route",
+          "id": "route-b",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "rule",
+          "id": "rule-wstb-two",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "supportGroup",
+          "id": "support-group-96ba5b2b4825516a",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "status": "projectRule",
+      "warningIds": ["warning-ea12a6f85188e56f", "warning-ea2100167e936ac5"],
+      "traceStepIds": [
+        "trace-25bdd344d4a24e83",
+        "trace-ea694df67466b3bc",
+        "trace-173f2897e6f02ff9",
+        "trace-897d02d165600df8",
+        "trace-20b9a38c927e843f"
+      ],
+      "provenance": {
+        "catalogSnapshotId": "catalog-snapshot-v2",
+        "ruleSnapshotId": "rule-snapshot-v2",
+        "ruleIds": ["rule-wstb-two"],
+        "formulaIds": [
+          "BOM.FINALIZE.V1",
+          "DEMAND.AGGREGATE.V1",
+          "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "WSTB.PER_SUPPORT.V1"
+        ]
+      }
+    },
+    {
+      "id": "bom-138be2ffe12f1fe5",
+      "kind": "catalog",
+      "category": "accessory",
+      "productId": "product-fastener",
+      "manualInputId": null,
+      "productCode": "NX FASTENER",
+      "descriptionEn": "Included fastener",
+      "unit": "pcs",
+      "technicalQuantity": {
+        "value": "4",
+        "unit": "pcs"
+      },
+      "reserveQuantity": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "reservedQuantity": {
+        "value": "5",
+        "unit": "pcs"
+      },
+      "packageIncrement": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "packageCount": {
+        "value": "1",
+        "unit": "packages"
+      },
+      "packagingOverage": {
+        "value": "5",
+        "unit": "pcs"
+      },
+      "orderedQuantity": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "totalSpareQuantity": {
+        "value": "6",
+        "unit": "pcs"
+      },
+      "sectionDetail": null,
+      "includedItems": [],
+      "sourceRefs": [
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-fastener",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "route",
+          "id": "route-b",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "supportGroup",
+          "id": "support-group-96ba5b2b4825516a",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "template",
+          "id": "template-wall",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "templateComponent",
+          "id": "component-fastener",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "status": "engineeringReview",
+      "warningIds": [],
+      "traceStepIds": [
+        "trace-2c88924e46db39a5",
+        "trace-e1e2691afbb73622",
+        "trace-24d7ce829ac3002b",
+        "trace-55a5bef56de60fba",
+        "trace-0df93eaf58f4349d"
+      ],
+      "provenance": {
+        "catalogSnapshotId": "catalog-snapshot-v2",
+        "ruleSnapshotId": "rule-snapshot-v2",
+        "ruleIds": [],
+        "formulaIds": [
+          "ASSEMBLY.COMPONENT_QUANTITY.V1",
+          "BOM.FINALIZE.V1",
+          "DEMAND.AGGREGATE.V1",
+          "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "RESERVE.APPLY_AFTER_TECHNICAL.V1"
+        ]
+      }
+    },
+    {
+      "id": "bom-485ab1a29afba135",
+      "kind": "catalog",
+      "category": "manual",
+      "productId": "product-manual-catalog",
+      "manualInputId": "manual-catalog",
+      "productCode": "NX MANUAL CATALOG",
+      "descriptionEn": "Manual catalog product",
+      "unit": "pcs",
+      "technicalQuantity": {
+        "value": "3",
+        "unit": "pcs"
+      },
+      "reserveQuantity": {
+        "value": "0",
+        "unit": "pcs"
+      },
+      "reservedQuantity": {
+        "value": "3",
+        "unit": "pcs"
+      },
+      "packageIncrement": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "packageCount": {
+        "value": "1",
+        "unit": "packages"
+      },
+      "packagingOverage": {
+        "value": "7",
+        "unit": "pcs"
+      },
+      "orderedQuantity": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "totalSpareQuantity": {
+        "value": "7",
+        "unit": "pcs"
+      },
+      "sectionDetail": null,
+      "includedItems": [],
+      "sourceRefs": [
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-manual-catalog",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "manualInput",
+          "id": "manual-catalog",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "status": "manual",
+      "warningIds": ["warning-29786a8dea61a4f1", "warning-69de9d57857eab94"],
+      "traceStepIds": [
+        "trace-27a8546ec418ea27",
+        "trace-0770b39e1f26bc0c",
+        "trace-7a3b448fb1c1bac9",
+        "trace-0923e36f0847f7e8",
+        "trace-62526298eb7b464f"
+      ],
+      "provenance": {
+        "catalogSnapshotId": "catalog-snapshot-v2",
+        "ruleSnapshotId": "rule-snapshot-v2",
+        "ruleIds": [],
+        "formulaIds": [
+          "BOM.FINALIZE.V1",
+          "DEMAND.AGGREGATE.V1",
+          "MANUAL.ITEM.V1",
+          "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "RESERVE.APPLY_AFTER_TECHNICAL.V1"
+        ]
+      }
+    },
+    {
+      "id": "bom-903a38456d881ab4",
+      "kind": "manual",
+      "category": "manual",
+      "productId": null,
+      "manualInputId": "manual-free-text",
+      "productCode": null,
+      "descriptionEn": "Site supplied strip",
+      "unit": "m",
+      "technicalQuantity": {
+        "value": "2",
+        "unit": "m"
+      },
+      "reserveQuantity": {
+        "value": "0.2",
+        "unit": "m"
+      },
+      "reservedQuantity": {
+        "value": "2.2",
+        "unit": "m"
+      },
+      "packageIncrement": {
+        "value": "3",
+        "unit": "m"
+      },
+      "packageCount": {
+        "value": "1",
+        "unit": "packages"
+      },
+      "packagingOverage": {
+        "value": "0.8",
+        "unit": "m"
+      },
+      "orderedQuantity": {
+        "value": "3",
+        "unit": "m"
+      },
+      "totalSpareQuantity": {
+        "value": "1",
+        "unit": "m"
+      },
+      "sectionDetail": null,
+      "includedItems": [],
+      "sourceRefs": [
+        {
+          "kind": "manualInput",
+          "id": "manual-free-text",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "status": "manual",
+      "warningIds": [
+        "warning-4e39f2bb10e11357",
+        "warning-4f38b75d9ea080b4",
+        "warning-be8224f772a8fe35",
+        "warning-dbd4be427c983092"
+      ],
+      "traceStepIds": [
+        "trace-fb39ecde4c8bd16b",
+        "trace-24111c8dc1b48d6b",
+        "trace-e1ba4e29c99818da",
+        "trace-c61d305110691ee3",
+        "trace-dc3fde7c27a6a604"
+      ],
+      "provenance": {
+        "catalogSnapshotId": "catalog-snapshot-v2",
+        "ruleSnapshotId": "rule-snapshot-v2",
+        "ruleIds": [],
+        "formulaIds": [
+          "BOM.FINALIZE.V1",
+          "DEMAND.AGGREGATE.V1",
+          "MANUAL.ITEM.V1",
+          "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "RESERVE.APPLY_AFTER_TECHNICAL.V1"
+        ]
+      }
+    }
+  ],
+  "trace": {
+    "schemaVersion": "calculation-trace/v1",
+    "steps": [
+      {
+        "id": "trace-994c233fa5de3d0c",
+        "bomLineId": "bom-7b9f2715e1dabd75",
+        "sequence": 1,
+        "formula": {
+          "id": "SECTION.REQUIRED_PER_SEGMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(segmentLength / selectedSupplyLength)"
+        },
+        "rule": {
+          "id": "rule-supply-3m",
+          "code": "SUPPLY-3M",
+          "version": "1.0.0",
+          "confidence": "catalogConfirmed",
+          "ruleSnapshotId": "rule-snapshot-v2"
+        },
+        "inputs": [
+          {
+            "name": "segmentLength",
+            "value": "3",
+            "unit": "m"
+          },
+          {
+            "name": "selectedSupplyLength",
+            "value": "3",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "3",
+          "unit": "m"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "3",
+            "unit": "m"
+          },
+          "increment": {
+            "value": "3",
+            "unit": "m"
+          },
+          "after": {
+            "value": "3",
+            "unit": "m"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-straight",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-supply-3m",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supplyOption",
+            "id": "supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-09b658e80a5bc615",
+        "bomLineId": "bom-7b9f2715e1dabd75",
+        "sequence": 2,
+        "formula": {
+          "id": "SECTION.REQUIRED_PER_SEGMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(segmentLength / selectedSupplyLength)"
+        },
+        "rule": {
+          "id": "rule-supply-3m",
+          "code": "SUPPLY-3M",
+          "version": "1.0.0",
+          "confidence": "catalogConfirmed",
+          "ruleSnapshotId": "rule-snapshot-v2"
+        },
+        "inputs": [
+          {
+            "name": "segmentLength",
+            "value": "3",
+            "unit": "m"
+          },
+          {
+            "name": "selectedSupplyLength",
+            "value": "3",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "3",
+          "unit": "m"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "3",
+            "unit": "m"
+          },
+          "increment": {
+            "value": "3",
+            "unit": "m"
+          },
+          "after": {
+            "value": "3",
+            "unit": "m"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-straight",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-supply-3m",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supplyOption",
+            "id": "supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-0deb679bafff177c",
+        "bomLineId": "bom-7b9f2715e1dabd75",
+        "sequence": 3,
+        "formula": {
+          "id": "DEMAND.AGGREGATE.V1",
+          "version": "1.0.0",
+          "expression": "sum(compatibleAtomicDemand)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "event_demand-1dbc180b08a4fedf",
+            "value": "3",
+            "unit": "m"
+          },
+          {
+            "name": "event_demand-45970345a7ee30ac",
+            "value": "3",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "6",
+          "unit": "m"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-straight",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-supply-3m",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supplyOption",
+            "id": "supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-994c233fa5de3d0c", "trace-09b658e80a5bc615"]
+      },
+      {
+        "id": "trace-2290abcc7f2d5eb9",
+        "bomLineId": "bom-7b9f2715e1dabd75",
+        "sequence": 4,
+        "formula": {
+          "id": "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "version": "1.0.0",
+          "expression": "technical × (1 + reservePercent / 100)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "technicalQuantity",
+            "value": "6",
+            "unit": "m"
+          },
+          {
+            "name": "reservePercent",
+            "value": "10",
+            "unit": "percent"
+          }
+        ],
+        "output": {
+          "value": "9",
+          "unit": "m"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "6.6",
+            "unit": "m"
+          },
+          "increment": {
+            "value": "3",
+            "unit": "m"
+          },
+          "after": {
+            "value": "9",
+            "unit": "m"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-straight",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-supply-3m",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supplyOption",
+            "id": "supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-0deb679bafff177c"]
+      },
+      {
+        "id": "trace-96834f5fa7de89b8",
+        "bomLineId": "bom-7b9f2715e1dabd75",
+        "sequence": 5,
+        "formula": {
+          "id": "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(reserved / increment) × increment"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "reservedQuantity",
+            "value": "9",
+            "unit": "m"
+          },
+          {
+            "name": "packageIncrement",
+            "value": "6",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "12",
+          "unit": "m"
+        },
+        "rounding": {
+          "mode": "incrementCeil",
+          "before": {
+            "value": "9",
+            "unit": "m"
+          },
+          "increment": {
+            "value": "6",
+            "unit": "m"
+          },
+          "after": {
+            "value": "12",
+            "unit": "m"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-straight",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-supply-3m",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supplyOption",
+            "id": "supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-2290abcc7f2d5eb9"]
+      },
+      {
+        "id": "trace-91bf057ae8093dff",
+        "bomLineId": "bom-7b9f2715e1dabd75",
+        "sequence": 6,
+        "formula": {
+          "id": "BOM.FINALIZE.V1",
+          "version": "1.0.0",
+          "expression": "orderedQuantity with reconciled provenance"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderedQuantity",
+            "value": "12",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "12",
+          "unit": "m"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-straight",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-supply-3m",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supplyOption",
+            "id": "supply-3m",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-96834f5fa7de89b8"]
+      },
+      {
+        "id": "trace-1c38267ae318b86a",
+        "bomLineId": "bom-3c8bce83c45edc65",
+        "sequence": 1,
+        "formula": {
+          "id": "CONNECTION.FITTING_SPECIFIC.V1",
+          "version": "1.0.0",
+          "expression": "eventCount × componentQuantity × portOrSideCount"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderableFittingEvent",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "1",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-fitting",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "fitting",
+            "id": "fitting-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-1841feba4b2f081c",
+        "bomLineId": "bom-3c8bce83c45edc65",
+        "sequence": 2,
+        "formula": {
+          "id": "DEMAND.AGGREGATE.V1",
+          "version": "1.0.0",
+          "expression": "sum(compatibleAtomicDemand)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "event_demand-121f44e515c48daf",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "1",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-fitting",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "fitting",
+            "id": "fitting-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-1c38267ae318b86a"]
+      },
+      {
+        "id": "trace-1189965e555f7c59",
+        "bomLineId": "bom-3c8bce83c45edc65",
+        "sequence": 3,
+        "formula": {
+          "id": "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "version": "1.0.0",
+          "expression": "technical × (1 + reservePercent / 100)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "technicalQuantity",
+            "value": "1",
+            "unit": "pcs"
+          },
+          {
+            "name": "reservePercent",
+            "value": "10",
+            "unit": "percent"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "1.1",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "2",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-fitting",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "fitting",
+            "id": "fitting-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-1841feba4b2f081c"]
+      },
+      {
+        "id": "trace-b957de0da0b0f158",
+        "bomLineId": "bom-3c8bce83c45edc65",
+        "sequence": 4,
+        "formula": {
+          "id": "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(reserved / increment) × increment"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "reservedQuantity",
+            "value": "2",
+            "unit": "pcs"
+          },
+          {
+            "name": "packageIncrement",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "incrementCeil",
+          "before": {
+            "value": "2",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "2",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-fitting",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "fitting",
+            "id": "fitting-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-1189965e555f7c59"]
+      },
+      {
+        "id": "trace-bf9d9126cc8c4f9f",
+        "bomLineId": "bom-3c8bce83c45edc65",
+        "sequence": 5,
+        "formula": {
+          "id": "BOM.FINALIZE.V1",
+          "version": "1.0.0",
+          "expression": "orderedQuantity with reconciled provenance"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderedQuantity",
+            "value": "2",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-fitting",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "fitting",
+            "id": "fitting-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-b957de0da0b0f158"]
+      },
+      {
+        "id": "trace-4fa5f0943241868d",
+        "bomLineId": "bom-63f341a6b43201cc",
+        "sequence": 1,
+        "formula": {
+          "id": "JOINT.INTERNAL_STRAIGHT_RUN.V1",
+          "version": "1.0.0",
+          "expression": "max(sum(sectionCount) - 1, 0)"
+        },
+        "rule": {
+          "id": "rule-joint",
+          "code": "INTERNAL-JOINT",
+          "version": "1.0.0",
+          "confidence": "catalogConfirmed",
+          "ruleSnapshotId": "rule-snapshot-v2"
+        },
+        "inputs": [
+          {
+            "name": "sectionCount",
+            "value": "2",
+            "unit": "pcs"
+          },
+          {
+            "name": "quantityPerJoint",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "1",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "rule",
+            "id": "rule-joint",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "straightRun",
+            "id": "straight-run-bf9b12a73ca130e2",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-0af9e0f9aa2ec236",
+        "bomLineId": "bom-63f341a6b43201cc",
+        "sequence": 2,
+        "formula": {
+          "id": "DEMAND.AGGREGATE.V1",
+          "version": "1.0.0",
+          "expression": "sum(compatibleAtomicDemand)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "event_demand-d06eae3873744925",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "1",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-joint",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "rule",
+            "id": "rule-joint",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "straightRun",
+            "id": "straight-run-bf9b12a73ca130e2",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-4fa5f0943241868d"]
+      },
+      {
+        "id": "trace-0c2af9ce8f40f9d7",
+        "bomLineId": "bom-63f341a6b43201cc",
+        "sequence": 3,
+        "formula": {
+          "id": "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "version": "1.0.0",
+          "expression": "technical × (1 + reservePercent / 100)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "technicalQuantity",
+            "value": "1",
+            "unit": "pcs"
+          },
+          {
+            "name": "reservePercent",
+            "value": "10",
+            "unit": "percent"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "1.1",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "2",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-joint",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "rule",
+            "id": "rule-joint",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "straightRun",
+            "id": "straight-run-bf9b12a73ca130e2",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-0af9e0f9aa2ec236"]
+      },
+      {
+        "id": "trace-d8eb0cb093aa4dc6",
+        "bomLineId": "bom-63f341a6b43201cc",
+        "sequence": 4,
+        "formula": {
+          "id": "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(reserved / increment) × increment"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "reservedQuantity",
+            "value": "2",
+            "unit": "pcs"
+          },
+          {
+            "name": "packageIncrement",
+            "value": "2",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "incrementCeil",
+          "before": {
+            "value": "2",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "2",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "2",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-joint",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "rule",
+            "id": "rule-joint",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "straightRun",
+            "id": "straight-run-bf9b12a73ca130e2",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-0c2af9ce8f40f9d7"]
+      },
+      {
+        "id": "trace-95d43b2dfb9f6811",
+        "bomLineId": "bom-63f341a6b43201cc",
+        "sequence": 5,
+        "formula": {
+          "id": "BOM.FINALIZE.V1",
+          "version": "1.0.0",
+          "expression": "orderedQuantity with reconciled provenance"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderedQuantity",
+            "value": "2",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-joint",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "rule",
+            "id": "rule-joint",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-1",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "segment",
+            "id": "segment-b-2",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "straightRun",
+            "id": "straight-run-bf9b12a73ca130e2",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-d8eb0cb093aa4dc6"]
+      },
+      {
+        "id": "trace-d5dcc281788cbd31",
+        "bomLineId": "bom-02e11ae7f0b0b5ff",
+        "sequence": 1,
+        "formula": {
+          "id": "SUPPORT.BASE_CONTINUOUS_GROUP.V1",
+          "version": "1.0.0",
+          "expression": "ceil(totalStraightLength / spacing) + 1"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "totalStraightLength",
+            "value": "6",
+            "unit": "m"
+          },
+          {
+            "name": "spacing",
+            "value": "1.5",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "5",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "6",
+            "unit": "m"
+          },
+          "increment": {
+            "value": "1.5",
+            "unit": "m"
+          },
+          "after": {
+            "value": "5",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5a2b48254fb7",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-fa8abf5477e60c0d",
+        "bomLineId": "bom-02e11ae7f0b0b5ff",
+        "sequence": 2,
+        "formula": {
+          "id": "SUPPORT.MANUAL_CORRECTION.V1",
+          "version": "1.0.0",
+          "expression": "sum(manualAdditionalQuantity)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "originalCalculatedQuantity",
+            "value": "9",
+            "unit": "pcs"
+          },
+          {
+            "name": "manualAdditionalQuantity",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "1",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "manualOverride",
+            "id": "manual-support-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-2348a13c1466d915",
+        "bomLineId": "bom-02e11ae7f0b0b5ff",
+        "sequence": 3,
+        "formula": {
+          "id": "SUPPORT.BASE_CONTINUOUS_GROUP.V1",
+          "version": "1.0.0",
+          "expression": "ceil(totalStraightLength / spacing) + 1"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "totalStraightLength",
+            "value": "6",
+            "unit": "m"
+          },
+          {
+            "name": "spacing",
+            "value": "1.5",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "5",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "6",
+            "unit": "m"
+          },
+          "increment": {
+            "value": "1.5",
+            "unit": "m"
+          },
+          "after": {
+            "value": "5",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-db8edba9f60bb82f",
+        "bomLineId": "bom-02e11ae7f0b0b5ff",
+        "sequence": 4,
+        "formula": {
+          "id": "DEMAND.AGGREGATE.V1",
+          "version": "1.0.0",
+          "expression": "sum(compatibleAtomicDemand)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "event_demand-65cef5ee6ece1219",
+            "value": "6",
+            "unit": "pcs"
+          },
+          {
+            "name": "event_demand-9f3842b288ac52c0",
+            "value": "5",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "11",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-support",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "manualOverride",
+            "id": "manual-support-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5a2b48254fb7",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": [
+          "trace-d5dcc281788cbd31",
+          "trace-fa8abf5477e60c0d",
+          "trace-2348a13c1466d915"
+        ]
+      },
+      {
+        "id": "trace-2dcdd6ee17c3f686",
+        "bomLineId": "bom-02e11ae7f0b0b5ff",
+        "sequence": 5,
+        "formula": {
+          "id": "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "version": "1.0.0",
+          "expression": "technical × (1 + reservePercent / 100)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "technicalQuantity",
+            "value": "11",
+            "unit": "pcs"
+          },
+          {
+            "name": "reservePercent",
+            "value": "10",
+            "unit": "percent"
+          }
+        ],
+        "output": {
+          "value": "13",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "12.1",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "13",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-support",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "manualOverride",
+            "id": "manual-support-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5a2b48254fb7",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-db8edba9f60bb82f"]
+      },
+      {
+        "id": "trace-f452139f2acb29bf",
+        "bomLineId": "bom-02e11ae7f0b0b5ff",
+        "sequence": 6,
+        "formula": {
+          "id": "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(reserved / increment) × increment"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "reservedQuantity",
+            "value": "13",
+            "unit": "pcs"
+          },
+          {
+            "name": "packageIncrement",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "13",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "incrementCeil",
+          "before": {
+            "value": "13",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "13",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-support",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "manualOverride",
+            "id": "manual-support-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5a2b48254fb7",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-2dcdd6ee17c3f686"]
+      },
+      {
+        "id": "trace-3ee2ab4c90963218",
+        "bomLineId": "bom-02e11ae7f0b0b5ff",
+        "sequence": 7,
+        "formula": {
+          "id": "BOM.FINALIZE.V1",
+          "version": "1.0.0",
+          "expression": "orderedQuantity with reconciled provenance"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderedQuantity",
+            "value": "13",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "13",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-support",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "manualOverride",
+            "id": "manual-support-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5a2b48254fb7",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-f452139f2acb29bf"]
+      },
+      {
+        "id": "trace-d5e98b70aa3ce952",
+        "bomLineId": "bom-550b255c1962c236",
+        "sequence": 1,
+        "formula": {
+          "id": "ASSEMBLY.COMPONENT_QUANTITY.V1",
+          "version": "1.0.0",
+          "expression": "componentQuantity × applicationScope"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "componentQuantity",
+            "value": "2",
+            "unit": "pcs"
+          },
+          {
+            "name": "applicationScope",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-fixed",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-d5e98b70aa3ce952",
+        "bomLineId": "bom-550b255c1962c236",
+        "sequence": 2,
+        "formula": {
+          "id": "ASSEMBLY.COMPONENT_QUANTITY.V1",
+          "version": "1.0.0",
+          "expression": "componentQuantity × applicationScope"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "componentQuantity",
+            "value": "1",
+            "unit": "pcs"
+          },
+          {
+            "name": "applicationScope",
+            "value": "2",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-level",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-26a1ed811951658f",
+        "bomLineId": "bom-550b255c1962c236",
+        "sequence": 3,
+        "formula": {
+          "id": "DEMAND.AGGREGATE.V1",
+          "version": "1.0.0",
+          "expression": "sum(compatibleAtomicDemand)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "event_demand-ef2bb148a253709c",
+            "value": "2",
+            "unit": "pcs"
+          },
+          {
+            "name": "event_demand-ef2bb148a253709c",
+            "value": "2",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "4",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-structure",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-fixed",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-level",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-d5e98b70aa3ce952", "trace-d5e98b70aa3ce952"]
+      },
+      {
+        "id": "trace-e61819e33243c3e6",
+        "bomLineId": "bom-550b255c1962c236",
+        "sequence": 4,
+        "formula": {
+          "id": "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "version": "1.0.0",
+          "expression": "technical × (1 + reservePercent / 100)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "technicalQuantity",
+            "value": "4",
+            "unit": "pcs"
+          },
+          {
+            "name": "reservePercent",
+            "value": "10",
+            "unit": "percent"
+          }
+        ],
+        "output": {
+          "value": "5",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "4.4",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "5",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-structure",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-fixed",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-level",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-26a1ed811951658f"]
+      },
+      {
+        "id": "trace-82bf258bd2b1711f",
+        "bomLineId": "bom-550b255c1962c236",
+        "sequence": 5,
+        "formula": {
+          "id": "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(reserved / increment) × increment"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "reservedQuantity",
+            "value": "5",
+            "unit": "pcs"
+          },
+          {
+            "name": "packageIncrement",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "5",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "incrementCeil",
+          "before": {
+            "value": "5",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "5",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-structure",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-fixed",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-level",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-e61819e33243c3e6"]
+      },
+      {
+        "id": "trace-c2998b93e0a0d8f8",
+        "bomLineId": "bom-550b255c1962c236",
+        "sequence": 6,
+        "formula": {
+          "id": "BOM.FINALIZE.V1",
+          "version": "1.0.0",
+          "expression": "orderedQuantity with reconciled provenance"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderedQuantity",
+            "value": "5",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "5",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-structure",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-fixed",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-structure-level",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-82bf258bd2b1711f"]
+      },
+      {
+        "id": "trace-25bdd344d4a24e83",
+        "bomLineId": "bom-220f1c50f1d40118",
+        "sequence": 1,
+        "formula": {
+          "id": "WSTB.PER_SUPPORT.V1",
+          "version": "1.0.0",
+          "expression": "totalSupportCount × quantityPerSupport"
+        },
+        "rule": {
+          "id": "rule-wstb-two",
+          "code": "WSTB-TWO",
+          "version": "1.0.0",
+          "confidence": "projectRule",
+          "ruleSnapshotId": "rule-snapshot-v2"
+        },
+        "inputs": [
+          {
+            "name": "totalSupportCount",
+            "value": "5",
+            "unit": "pcs"
+          },
+          {
+            "name": "quantityPerSupport",
+            "value": "2",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "10",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "rule",
+            "id": "rule-wstb-two",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-ea694df67466b3bc",
+        "bomLineId": "bom-220f1c50f1d40118",
+        "sequence": 2,
+        "formula": {
+          "id": "DEMAND.AGGREGATE.V1",
+          "version": "1.0.0",
+          "expression": "sum(compatibleAtomicDemand)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "event_demand-a5f437b5f9b9250e",
+            "value": "10",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "10",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-wstb",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-wstb-two",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-25bdd344d4a24e83"]
+      },
+      {
+        "id": "trace-173f2897e6f02ff9",
+        "bomLineId": "bom-220f1c50f1d40118",
+        "sequence": 3,
+        "formula": {
+          "id": "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "version": "1.0.0",
+          "expression": "technical × (1 + reservePercent / 100)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "technicalQuantity",
+            "value": "10",
+            "unit": "pcs"
+          },
+          {
+            "name": "reservePercent",
+            "value": "10",
+            "unit": "percent"
+          }
+        ],
+        "output": {
+          "value": "11",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "11",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "11",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-wstb",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-wstb-two",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-ea694df67466b3bc"]
+      },
+      {
+        "id": "trace-897d02d165600df8",
+        "bomLineId": "bom-220f1c50f1d40118",
+        "sequence": 4,
+        "formula": {
+          "id": "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(reserved / increment) × increment"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "reservedQuantity",
+            "value": "11",
+            "unit": "pcs"
+          },
+          {
+            "name": "packageIncrement",
+            "value": "10",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "20",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "incrementCeil",
+          "before": {
+            "value": "11",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "10",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "20",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-wstb",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-wstb-two",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-173f2897e6f02ff9"]
+      },
+      {
+        "id": "trace-20b9a38c927e843f",
+        "bomLineId": "bom-220f1c50f1d40118",
+        "sequence": 5,
+        "formula": {
+          "id": "BOM.FINALIZE.V1",
+          "version": "1.0.0",
+          "expression": "orderedQuantity with reconciled provenance"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderedQuantity",
+            "value": "20",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "20",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-wstb",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "rule",
+            "id": "rule-wstb-two",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-897d02d165600df8"]
+      },
+      {
+        "id": "trace-2c88924e46db39a5",
+        "bomLineId": "bom-138be2ffe12f1fe5",
+        "sequence": 1,
+        "formula": {
+          "id": "ASSEMBLY.COMPONENT_QUANTITY.V1",
+          "version": "1.0.0",
+          "expression": "componentQuantity × applicationScope"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "componentQuantity",
+            "value": "4",
+            "unit": "pcs"
+          },
+          {
+            "name": "applicationScope",
+            "value": "1",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "4",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-fastener",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-e1e2691afbb73622",
+        "bomLineId": "bom-138be2ffe12f1fe5",
+        "sequence": 2,
+        "formula": {
+          "id": "DEMAND.AGGREGATE.V1",
+          "version": "1.0.0",
+          "expression": "sum(compatibleAtomicDemand)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "event_demand-4f5df141584368d3",
+            "value": "4",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "4",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-fastener",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-fastener",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-2c88924e46db39a5"]
+      },
+      {
+        "id": "trace-24d7ce829ac3002b",
+        "bomLineId": "bom-138be2ffe12f1fe5",
+        "sequence": 3,
+        "formula": {
+          "id": "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "version": "1.0.0",
+          "expression": "technical × (1 + reservePercent / 100)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "technicalQuantity",
+            "value": "4",
+            "unit": "pcs"
+          },
+          {
+            "name": "reservePercent",
+            "value": "10",
+            "unit": "percent"
+          }
+        ],
+        "output": {
+          "value": "5",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "4.4",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "5",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-fastener",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-fastener",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-e1e2691afbb73622"]
+      },
+      {
+        "id": "trace-55a5bef56de60fba",
+        "bomLineId": "bom-138be2ffe12f1fe5",
+        "sequence": 4,
+        "formula": {
+          "id": "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(reserved / increment) × increment"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "reservedQuantity",
+            "value": "5",
+            "unit": "pcs"
+          },
+          {
+            "name": "packageIncrement",
+            "value": "10",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "10",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "incrementCeil",
+          "before": {
+            "value": "5",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "10",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "10",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-fastener",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-fastener",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-24d7ce829ac3002b"]
+      },
+      {
+        "id": "trace-0df93eaf58f4349d",
+        "bomLineId": "bom-138be2ffe12f1fe5",
+        "sequence": 5,
+        "formula": {
+          "id": "BOM.FINALIZE.V1",
+          "version": "1.0.0",
+          "expression": "orderedQuantity with reconciled provenance"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderedQuantity",
+            "value": "10",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "10",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-fastener",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "route",
+            "id": "route-b",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "supportGroup",
+            "id": "support-group-96ba5b2b4825516a",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "template",
+            "id": "template-wall",
+            "sourceDocument": null,
+            "sourcePage": null
+          },
+          {
+            "kind": "templateComponent",
+            "id": "component-fastener",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-55a5bef56de60fba"]
+      },
+      {
+        "id": "trace-27a8546ec418ea27",
+        "bomLineId": "bom-485ab1a29afba135",
+        "sequence": 1,
+        "formula": {
+          "id": "MANUAL.ITEM.V1",
+          "version": "1.0.0",
+          "expression": "explicitManualQuantity"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "explicitManualQuantity",
+            "value": "3",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "3",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-manual-catalog",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "manualInput",
+            "id": "manual-catalog",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-0770b39e1f26bc0c",
+        "bomLineId": "bom-485ab1a29afba135",
+        "sequence": 2,
+        "formula": {
+          "id": "DEMAND.AGGREGATE.V1",
+          "version": "1.0.0",
+          "expression": "sum(compatibleAtomicDemand)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "event_demand-4641cadbb35e6f86",
+            "value": "3",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "3",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-manual-catalog",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "manualInput",
+            "id": "manual-catalog",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-27a8546ec418ea27"]
+      },
+      {
+        "id": "trace-7a3b448fb1c1bac9",
+        "bomLineId": "bom-485ab1a29afba135",
+        "sequence": 3,
+        "formula": {
+          "id": "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "version": "1.0.0",
+          "expression": "technical × (1 + reservePercent / 100)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "technicalQuantity",
+            "value": "3",
+            "unit": "pcs"
+          },
+          {
+            "name": "reservePercent",
+            "value": "0",
+            "unit": "percent"
+          }
+        ],
+        "output": {
+          "value": "3",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "ceil",
+          "before": {
+            "value": "3",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "3",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-manual-catalog",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "manualInput",
+            "id": "manual-catalog",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-0770b39e1f26bc0c"]
+      },
+      {
+        "id": "trace-0923e36f0847f7e8",
+        "bomLineId": "bom-485ab1a29afba135",
+        "sequence": 4,
+        "formula": {
+          "id": "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(reserved / increment) × increment"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "reservedQuantity",
+            "value": "3",
+            "unit": "pcs"
+          },
+          {
+            "name": "packageIncrement",
+            "value": "10",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "10",
+          "unit": "pcs"
+        },
+        "rounding": {
+          "mode": "incrementCeil",
+          "before": {
+            "value": "3",
+            "unit": "pcs"
+          },
+          "increment": {
+            "value": "10",
+            "unit": "pcs"
+          },
+          "after": {
+            "value": "10",
+            "unit": "pcs"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-manual-catalog",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "manualInput",
+            "id": "manual-catalog",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-7a3b448fb1c1bac9"]
+      },
+      {
+        "id": "trace-62526298eb7b464f",
+        "bomLineId": "bom-485ab1a29afba135",
+        "sequence": 5,
+        "formula": {
+          "id": "BOM.FINALIZE.V1",
+          "version": "1.0.0",
+          "expression": "orderedQuantity with reconciled provenance"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderedQuantity",
+            "value": "10",
+            "unit": "pcs"
+          }
+        ],
+        "output": {
+          "value": "10",
+          "unit": "pcs"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "catalogDocument",
+            "id": "catalog-manual-catalog",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          },
+          {
+            "kind": "manualInput",
+            "id": "manual-catalog",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-0923e36f0847f7e8"]
+      },
+      {
+        "id": "trace-fb39ecde4c8bd16b",
+        "bomLineId": "bom-903a38456d881ab4",
+        "sequence": 1,
+        "formula": {
+          "id": "MANUAL.ITEM.V1",
+          "version": "1.0.0",
+          "expression": "explicitManualQuantity"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "explicitManualQuantity",
+            "value": "2",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "m"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "manualInput",
+            "id": "manual-free-text",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": []
+      },
+      {
+        "id": "trace-24111c8dc1b48d6b",
+        "bomLineId": "bom-903a38456d881ab4",
+        "sequence": 2,
+        "formula": {
+          "id": "DEMAND.AGGREGATE.V1",
+          "version": "1.0.0",
+          "expression": "sum(compatibleAtomicDemand)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "event_demand-8c116549e2d07e85",
+            "value": "2",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "2",
+          "unit": "m"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "manualInput",
+            "id": "manual-free-text",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-fb39ecde4c8bd16b"]
+      },
+      {
+        "id": "trace-e1ba4e29c99818da",
+        "bomLineId": "bom-903a38456d881ab4",
+        "sequence": 3,
+        "formula": {
+          "id": "RESERVE.APPLY_AFTER_TECHNICAL.V1",
+          "version": "1.0.0",
+          "expression": "technical × (1 + reservePercent / 100)"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "technicalQuantity",
+            "value": "2",
+            "unit": "m"
+          },
+          {
+            "name": "reservePercent",
+            "value": "10",
+            "unit": "percent"
+          }
+        ],
+        "output": {
+          "value": "2.2",
+          "unit": "m"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "manualInput",
+            "id": "manual-free-text",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-24111c8dc1b48d6b"]
+      },
+      {
+        "id": "trace-c61d305110691ee3",
+        "bomLineId": "bom-903a38456d881ab4",
+        "sequence": 4,
+        "formula": {
+          "id": "PACKAGING.ROUND_UP_TO_INCREMENT.V1",
+          "version": "1.0.0",
+          "expression": "ceil(reserved / increment) × increment"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "reservedQuantity",
+            "value": "2.2",
+            "unit": "m"
+          },
+          {
+            "name": "packageIncrement",
+            "value": "3",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "3",
+          "unit": "m"
+        },
+        "rounding": {
+          "mode": "incrementCeil",
+          "before": {
+            "value": "2.2",
+            "unit": "m"
+          },
+          "increment": {
+            "value": "3",
+            "unit": "m"
+          },
+          "after": {
+            "value": "3",
+            "unit": "m"
+          }
+        },
+        "sourceRefs": [
+          {
+            "kind": "manualInput",
+            "id": "manual-free-text",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-e1ba4e29c99818da"]
+      },
+      {
+        "id": "trace-dc3fde7c27a6a604",
+        "bomLineId": "bom-903a38456d881ab4",
+        "sequence": 5,
+        "formula": {
+          "id": "BOM.FINALIZE.V1",
+          "version": "1.0.0",
+          "expression": "orderedQuantity with reconciled provenance"
+        },
+        "rule": null,
+        "inputs": [
+          {
+            "name": "orderedQuantity",
+            "value": "3",
+            "unit": "m"
+          }
+        ],
+        "output": {
+          "value": "3",
+          "unit": "m"
+        },
+        "rounding": null,
+        "sourceRefs": [
+          {
+            "kind": "manualInput",
+            "id": "manual-free-text",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        ],
+        "parentStepIds": ["trace-c61d305110691ee3"]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "id": "warning-a3d2001c66dfd127",
+      "code": "MANUAL_EXTRA_SUPPORT",
+      "kind": "manualOverride",
+      "severity": "warning",
+      "subject": {
+        "kind": "manualSupport",
+        "id": "manual-support-a"
+      },
+      "path": null,
+      "messageKey": "calculation.manual_extra_support",
+      "effect": "The explicit manual support quantity was added to the calculated support total.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "manualOverride",
+          "id": "manual-support-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "route",
+          "id": "route-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": "manual-support-a"
+    },
+    {
+      "id": "warning-4e39f2bb10e11357",
+      "code": "MANUAL_PACKAGE_OVERRIDE",
+      "kind": "manualOverride",
+      "severity": "warning",
+      "subject": {
+        "kind": "demand",
+        "id": "demand-903a38456d881ab4"
+      },
+      "path": null,
+      "messageKey": "calculation.manual_package_override",
+      "effect": "The explicit packaging policy replaced the catalog/default policy.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "manualInput",
+          "id": "manual-free-text",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": "manual-free-package"
+    },
+    {
+      "id": "warning-4f38b75d9ea080b4",
+      "code": "MANUAL_PACKAGE_OVERRIDE",
+      "kind": "manualOverride",
+      "severity": "warning",
+      "subject": {
+        "kind": "manualInput",
+        "id": "manual-free-text"
+      },
+      "path": null,
+      "messageKey": "calculation.manual_package_override",
+      "effect": "The explicit package increment replaced catalog/default packaging.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "manualOverride",
+          "id": "manual-free-package",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "manualInput",
+          "id": "manual-free-text",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": "manual-free-package"
+    },
+    {
+      "id": "warning-29786a8dea61a4f1",
+      "code": "MANUAL_QUANTITY_OVERRIDE",
+      "kind": "manualOverride",
+      "severity": "warning",
+      "subject": {
+        "kind": "demand",
+        "id": "demand-485ab1a29afba135"
+      },
+      "path": null,
+      "messageKey": "calculation.manual_quantity_override",
+      "effect": "The explicit reserve policy replaced the project default.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": "product-manual-catalog",
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-manual-catalog",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "manualInput",
+          "id": "manual-catalog",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": "manual-catalog-reserve"
+    },
+    {
+      "id": "warning-be8224f772a8fe35",
+      "code": "MANUAL_QUANTITY_OVERRIDE",
+      "kind": "manualOverride",
+      "severity": "warning",
+      "subject": {
+        "kind": "demand",
+        "id": "demand-903a38456d881ab4"
+      },
+      "path": null,
+      "messageKey": "calculation.manual_quantity_override",
+      "effect": "The explicit reserve policy replaced the project default.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "manualInput",
+          "id": "manual-free-text",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": "manual-free-reserve"
+    },
+    {
+      "id": "warning-69de9d57857eab94",
+      "code": "MANUAL_QUANTITY_OVERRIDE",
+      "kind": "manualOverride",
+      "severity": "warning",
+      "subject": {
+        "kind": "manualInput",
+        "id": "manual-catalog"
+      },
+      "path": null,
+      "messageKey": "calculation.manual_quantity_override",
+      "effect": "The explicit reserve policy replaced the project default.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": "product-manual-catalog",
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "manualOverride",
+          "id": "manual-catalog-reserve",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-manual-catalog",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        },
+        {
+          "kind": "manualInput",
+          "id": "manual-catalog",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": "manual-catalog-reserve"
+    },
+    {
+      "id": "warning-dbd4be427c983092",
+      "code": "MANUAL_QUANTITY_OVERRIDE",
+      "kind": "manualOverride",
+      "severity": "warning",
+      "subject": {
+        "kind": "manualInput",
+        "id": "manual-free-text"
+      },
+      "path": null,
+      "messageKey": "calculation.manual_quantity_override",
+      "effect": "The explicit reserve policy replaced the project default.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "manualOverride",
+          "id": "manual-free-reserve",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "manualInput",
+          "id": "manual-free-text",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": "manual-free-reserve"
+    },
+    {
+      "id": "warning-ab66c061c339d2d8",
+      "code": "FITTING_ADDITIONAL_SUPPORT_UNRESOLVED",
+      "kind": "engineering",
+      "severity": "engineeringReview",
+      "subject": {
+        "kind": "fitting",
+        "id": "fitting-a"
+      },
+      "path": null,
+      "messageKey": "calculation.fitting_additional_support_unresolved",
+      "effect": "No additional fitting support was added without a resolved quantity.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "fitting",
+          "id": "fitting-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "route",
+          "id": "route-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-f3be92812c7377a6",
+      "code": "MISSING_CABLE_LOAD",
+      "kind": "engineering",
+      "severity": "engineeringReview",
+      "subject": {
+        "kind": "project",
+        "id": "project-v2"
+      },
+      "path": null,
+      "messageKey": "calculation.missing_cable_load",
+      "effect": "Current BOM formulas continue without inventing a cable load; approval requires review.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "project",
+          "id": "project-v2",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-c5656d04edf850bb",
+      "code": "SUPPORT_CONFIGURATION_MISMATCH",
+      "kind": "engineering",
+      "severity": "engineeringReview",
+      "subject": {
+        "kind": "connection",
+        "id": "connection-logical"
+      },
+      "path": null,
+      "messageKey": "calculation.support_configuration_mismatch",
+      "effect": "Routes were split into independent support groups; continuous support calculation was not claimed.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "connection",
+          "id": "connection-logical",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-ea12a6f85188e56f",
+      "code": "WSTB_PROJECT_RULE_UNCONFIRMED",
+      "kind": "projectRule",
+      "severity": "engineeringReview",
+      "subject": {
+        "kind": "supportGroup",
+        "id": "support-group-96ba5b2b4825516a"
+      },
+      "path": null,
+      "messageKey": "calculation.wstb_project_rule_unconfirmed",
+      "effect": "The WSTB quantity remains an unconfirmed project rule.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": "rule-wstb-two",
+      "productId": "product-wstb",
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "rule",
+          "id": "rule-wstb-two",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-wstb",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-ea2100167e936ac5",
+      "code": "WSTB_TEMPLATE_RULE_CONFLICT",
+      "kind": "engineering",
+      "severity": "engineeringReview",
+      "subject": {
+        "kind": "templateComponent",
+        "id": "component-wstb"
+      },
+      "path": null,
+      "messageKey": "calculation.wstb_template_rule_conflict",
+      "effect": "The dedicated WSTB rule retained quantity ownership; the template value was not added.",
+      "approvalImpact": "reviewRequired",
+      "ruleId": "rule-wstb-two",
+      "productId": "product-wstb",
+      "templateId": "template-wall",
+      "sourceRefs": [
+        {
+          "kind": "templateComponent",
+          "id": "component-wstb",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "rule",
+          "id": "rule-wstb-two",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-19663b39c77b5194",
+      "code": "ASSEMBLY_TEMPLATE_MISSING",
+      "kind": "engineering",
+      "severity": "blocking",
+      "subject": {
+        "kind": "supportGroup",
+        "id": "support-group-96ba5a2b48254fb7"
+      },
+      "path": null,
+      "messageKey": "calculation.assembly_template_missing",
+      "effect": "Template components, anchors, and template-bound materials were omitted.",
+      "approvalImpact": "blocksApproval",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "supportGroup",
+          "id": "support-group-96ba5a2b48254fb7",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-1e615a42ac1f58d1",
+      "code": "MISSING_ANCHOR_SELECTION",
+      "kind": "engineering",
+      "severity": "blocking",
+      "subject": {
+        "kind": "supportGroup",
+        "id": "support-group-96ba5b2b4825516a"
+      },
+      "path": null,
+      "messageKey": "calculation.missing_anchor_selection",
+      "effect": "No anchor demand was created without an explicit anchor selection.",
+      "approvalImpact": "blocksApproval",
+      "ruleId": null,
+      "productId": null,
+      "templateId": "template-wall",
+      "sourceRefs": [
+        {
+          "kind": "supportGroup",
+          "id": "support-group-96ba5b2b4825516a",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-a389cd10a2dd403c",
+      "code": "MISSING_COMPATIBILITY_RULE",
+      "kind": "catalog",
+      "severity": "blocking",
+      "subject": {
+        "kind": "project",
+        "id": "project-v2"
+      },
+      "path": null,
+      "messageKey": "calculation.missing_compatibility_rule",
+      "effect": "No orderable demand was created without explicit compatibility evidence.",
+      "approvalImpact": "blocksApproval",
+      "ruleId": null,
+      "productId": "product-accessory",
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "project",
+          "id": "project-v2",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-accessory",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-3edce97ddc70fef2",
+      "code": "UNRESOLVED_ENDPOINT_MATERIAL",
+      "kind": "catalog",
+      "severity": "blocking",
+      "subject": {
+        "kind": "endpoint",
+        "id": "endpoint-a-start"
+      },
+      "path": null,
+      "messageKey": "calculation.unresolved_endpoint_material",
+      "effect": "No endpoint product was fabricated or substituted.",
+      "approvalImpact": "blocksApproval",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "endpoint",
+          "id": "endpoint-a-start",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "route",
+          "id": "route-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-2e648fbd6e66a102",
+      "code": "UNRESOLVED_FITTING_CONNECTION",
+      "kind": "catalog",
+      "severity": "blocking",
+      "subject": {
+        "kind": "fitting",
+        "id": "fitting-a"
+      },
+      "path": null,
+      "messageKey": "calculation.unresolved_fitting_connection",
+      "effect": "No fitting-port connector demand was created without a resolved rule.",
+      "approvalImpact": "blocksApproval",
+      "ruleId": null,
+      "productId": null,
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "fitting",
+          "id": "fitting-a",
+          "sourceDocument": null,
+          "sourcePage": null
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-76df6c7c5190329e",
+      "code": "UNRESOLVED_SECTION_SUPPLY_OPTION",
+      "kind": "catalog",
+      "severity": "blocking",
+      "subject": {
+        "kind": "segment",
+        "id": "segment-a-1"
+      },
+      "path": null,
+      "messageKey": "calculation.unresolved_section_supply_option",
+      "effect": "The segment has no orderable line and no alternate length was substituted.",
+      "approvalImpact": "blocksApproval",
+      "ruleId": null,
+      "productId": "product-straight",
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "segment",
+          "id": "segment-a-1",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-straight",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        }
+      ],
+      "overrideId": null
+    },
+    {
+      "id": "warning-0d1dea24317d14b5",
+      "code": "UNRESOLVED_SECTION_SUPPLY_OPTION",
+      "kind": "catalog",
+      "severity": "blocking",
+      "subject": {
+        "kind": "segment",
+        "id": "segment-a-2"
+      },
+      "path": null,
+      "messageKey": "calculation.unresolved_section_supply_option",
+      "effect": "The segment has no orderable line and no alternate length was substituted.",
+      "approvalImpact": "blocksApproval",
+      "ruleId": null,
+      "productId": "product-straight",
+      "templateId": null,
+      "sourceRefs": [
+        {
+          "kind": "segment",
+          "id": "segment-a-2",
+          "sourceDocument": null,
+          "sourcePage": null
+        },
+        {
+          "kind": "catalogDocument",
+          "id": "catalog-straight",
+          "sourceDocument": "verified-catalog.pdf",
+          "sourcePage": "TEST 1"
+        }
+      ],
+      "overrideId": null
+    }
+  ],
+  "summary": {
+    "bomLineCount": 9,
+    "warningCount": 19,
+    "engineeringReviewRequired": true,
+    "approvalReady": false,
+    "totalsByUnit": [
+      {
+        "unit": "pcs",
+        "technicalQuantity": {
+          "value": "34",
+          "unit": "pcs"
+        },
+        "reserveQuantity": {
+          "value": "7",
+          "unit": "pcs"
+        },
+        "packagingOverage": {
+          "value": "21",
+          "unit": "pcs"
+        },
+        "orderedQuantity": {
+          "value": "62",
+          "unit": "pcs"
+        }
+      },
+      {
+        "unit": "m",
+        "technicalQuantity": {
+          "value": "8",
+          "unit": "m"
+        },
+        "reserveQuantity": {
+          "value": "3.2",
+          "unit": "m"
+        },
+        "packagingOverage": {
+          "value": "3.8",
+          "unit": "m"
+        },
+        "orderedQuantity": {
+          "value": "15",
+          "unit": "m"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,1042 @@
+{
+  "schemaVersion": "calculation-input/v2",
+  "invocation": {
+    "calculationRunId": "run-v2",
+    "inputFingerprint": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "project": {
+    "id": "project-v2",
+    "code": "PRJ-V2",
+    "defaultReservePercent": "10",
+    "cableLoad": null,
+    "routes": [
+      {
+        "id": "route-a",
+        "code": "R-A",
+        "straightProductId": "product-straight",
+        "defaultSupplyOptionId": "supply-6m",
+        "startEndpoint": {
+          "id": "endpoint-a-start",
+          "type": "endCap",
+          "materialRuleId": null,
+          "connectionId": null
+        },
+        "endEndpoint": {
+          "id": "endpoint-a-end",
+          "type": "routeContinuation",
+          "materialRuleId": null,
+          "connectionId": "connection-logical"
+        },
+        "geometry": [
+          {
+            "id": "segment-a-1",
+            "kind": "straight",
+            "length": {
+              "value": "3.1",
+              "unit": "m"
+            },
+            "supplyOptionId": null
+          },
+          {
+            "id": "fitting-a",
+            "kind": "fitting",
+            "fittingType": "horizontalBend",
+            "productId": "product-fitting",
+            "connectionRuleId": null,
+            "additionalSupportRuleId": null,
+            "supportedPhysicalLength": null
+          },
+          {
+            "id": "segment-a-2",
+            "kind": "straight",
+            "length": {
+              "value": "2.9",
+              "unit": "m"
+            },
+            "supplyOptionId": null
+          }
+        ],
+        "supports": {
+          "spacing": {
+            "value": "1.5",
+            "unit": "m"
+          },
+          "supportType": "wall",
+          "supportProductId": "product-support",
+          "templateId": null,
+          "levelCount": {
+            "value": "2",
+            "unit": "pcs"
+          },
+          "substrate": "concrete",
+          "anchorProductId": "product-anchor",
+          "anchorQuantityOverride": {
+            "originalPerSupportAxis": {
+              "value": "2",
+              "unit": "pcs"
+            },
+            "adjustedPerSupportAxis": {
+              "value": "3",
+              "unit": "pcs"
+            },
+            "metadata": {
+              "overrideId": "anchor-override",
+              "reason": "Reviewed reason for anchor-override",
+              "note": null,
+              "actorRef": "actor-checker",
+              "decisionRef": "decision-anchor-override"
+            }
+          },
+          "wstbProductId": "product-wstb",
+          "wstb": {
+            "mode": "two",
+            "ruleId": "rule-wstb-two"
+          },
+          "templateManualValues": [],
+          "manualAdditionalSupports": [
+            {
+              "id": "manual-support-a",
+              "originalCalculatedQuantity": {
+                "value": "9",
+                "unit": "pcs"
+              },
+              "additionalQuantity": {
+                "value": "1",
+                "unit": "pcs"
+              },
+              "sourceEntityRef": "route-a",
+              "metadata": {
+                "overrideId": "manual-support-a",
+                "reason": "Reviewed reason for manual-support-a",
+                "note": null,
+                "actorRef": "actor-checker",
+                "decisionRef": "decision-manual-support-a"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "route-b",
+        "code": "R-B",
+        "straightProductId": "product-straight",
+        "defaultSupplyOptionId": "supply-3m",
+        "startEndpoint": {
+          "id": "endpoint-b-start",
+          "type": "routeContinuation",
+          "materialRuleId": null,
+          "connectionId": "connection-logical"
+        },
+        "endEndpoint": {
+          "id": "endpoint-b-end",
+          "type": "freeEnd",
+          "materialRuleId": null,
+          "connectionId": null
+        },
+        "geometry": [
+          {
+            "id": "segment-b-1",
+            "kind": "straight",
+            "length": {
+              "value": "3",
+              "unit": "m"
+            },
+            "supplyOptionId": null
+          },
+          {
+            "id": "segment-b-2",
+            "kind": "straight",
+            "length": {
+              "value": "3",
+              "unit": "m"
+            },
+            "supplyOptionId": null
+          }
+        ],
+        "supports": {
+          "spacing": {
+            "value": "1.5",
+            "unit": "m"
+          },
+          "supportType": "wall",
+          "supportProductId": "product-support",
+          "templateId": "template-wall",
+          "levelCount": {
+            "value": "2",
+            "unit": "pcs"
+          },
+          "substrate": "concrete",
+          "anchorProductId": null,
+          "anchorQuantityOverride": null,
+          "wstbProductId": "product-wstb",
+          "wstb": {
+            "mode": "two",
+            "ruleId": "rule-wstb-two"
+          },
+          "templateManualValues": [],
+          "manualAdditionalSupports": []
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "connection-logical",
+        "type": "logicalContinuation",
+        "participants": [
+          {
+            "routeId": "route-a",
+            "endpointId": "endpoint-a-end"
+          },
+          {
+            "routeId": "route-b",
+            "endpointId": "endpoint-b-start"
+          }
+        ],
+        "physicalBreak": false,
+        "supportBehavior": "shared",
+        "materialRuleId": null,
+        "supportsBefore": {
+          "value": "0",
+          "unit": "pcs"
+        },
+        "supportsAfter": {
+          "value": "0",
+          "unit": "pcs"
+        },
+        "connectorCorrections": []
+      }
+    ],
+    "accessoryProductIds": ["product-accessory"]
+  },
+  "catalogSnapshot": {
+    "snapshotId": "catalog-snapshot-v2",
+    "version": "2.0.0",
+    "contentHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "products": [
+    {
+      "id": "product-straight",
+      "code": "NX STRAIGHT",
+      "descriptionEn": "Straight cable ladder",
+      "role": "straightSection",
+      "orderUnit": "m",
+      "packageIncrement": {
+        "value": "6",
+        "unit": "m"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [
+        {
+          "id": "supply-3m",
+          "length": {
+            "value": "3000",
+            "unit": "mm"
+          },
+          "orderable": true,
+          "active": true,
+          "ruleId": "rule-supply-3m",
+          "source": {
+            "kind": "catalogDocument",
+            "id": "catalog-supply-3m",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          }
+        },
+        {
+          "id": "supply-6m",
+          "length": {
+            "value": "6000",
+            "unit": "mm"
+          },
+          "orderable": true,
+          "active": false,
+          "ruleId": "rule-supply-6m",
+          "source": {
+            "kind": "catalogDocument",
+            "id": "catalog-supply-6m",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          }
+        }
+      ],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-straight",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-fitting",
+      "code": "NX BEND",
+      "descriptionEn": "Horizontal bend",
+      "role": "fitting",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-fitting",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-connector",
+      "code": "NX CONNECTOR",
+      "descriptionEn": "Fitting connector",
+      "role": "connector",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "2",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [
+        {
+          "id": "included-connector-fastener",
+          "childProductId": "product-fastener",
+          "quantityPerParent": {
+            "value": "2",
+            "unit": "pcs"
+          },
+          "source": {
+            "kind": "catalogDocument",
+            "id": "catalog-included-connector-fastener",
+            "sourceDocument": "verified-catalog.pdf",
+            "sourcePage": "TEST 1"
+          }
+        }
+      ],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-connector",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-joint",
+      "code": "NX JOINT",
+      "descriptionEn": "Straight-run joint",
+      "role": "connector",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "2",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-joint",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-fastener",
+      "code": "NX FASTENER",
+      "descriptionEn": "Included fastener",
+      "role": "fastener",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-fastener",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-support",
+      "code": "NX SUPPORT",
+      "descriptionEn": "Wall support",
+      "role": "support",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-support",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-structure",
+      "code": "NX STRUCTURE",
+      "descriptionEn": "Support structure component",
+      "role": "structure",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-structure",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-anchor",
+      "code": "NX ANCHOR",
+      "descriptionEn": "Selected Niedax anchor",
+      "role": "anchor",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": true,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-anchor",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-wstb",
+      "code": "NX WSTB",
+      "descriptionEn": "WSTB ladder fixing",
+      "role": "wstb",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-wstb",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-endcap",
+      "code": "NX END CAP",
+      "descriptionEn": "Compatible end cap",
+      "role": "endpointMaterial",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-endcap",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-accessory",
+      "code": "NX ACCESSORY",
+      "descriptionEn": "Selected accessory",
+      "role": "accessory",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "1",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-accessory",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    },
+    {
+      "id": "product-manual-catalog",
+      "code": "NX MANUAL CATALOG",
+      "descriptionEn": "Manual catalog product",
+      "role": "other",
+      "orderUnit": "pcs",
+      "packageIncrement": {
+        "value": "10",
+        "unit": "pcs"
+      },
+      "orderable": true,
+      "active": true,
+      "engineeringReviewRequired": false,
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "supplyOptions": [],
+      "includedItems": [],
+      "source": {
+        "kind": "catalogDocument",
+        "id": "catalog-manual-catalog",
+        "sourceDocument": "verified-catalog.pdf",
+        "sourcePage": "TEST 1"
+      }
+    }
+  ],
+  "compatibilityRelations": [
+    {
+      "id": "compat-straight",
+      "context": "straightSection",
+      "subjectRef": "project-v2",
+      "productId": "product-straight",
+      "allowed": true,
+      "ruleId": "rule-compatibility",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-compatibility",
+        "sourceDocument": null,
+        "sourcePage": null
+      }
+    },
+    {
+      "id": "compat-fitting",
+      "context": "fitting",
+      "subjectRef": "fitting-a",
+      "productId": "product-fitting",
+      "allowed": true,
+      "ruleId": "rule-compatibility",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-compatibility",
+        "sourceDocument": null,
+        "sourcePage": null
+      }
+    },
+    {
+      "id": "compat-support",
+      "context": "support",
+      "subjectRef": "project-v2",
+      "productId": "product-support",
+      "allowed": true,
+      "ruleId": "rule-compatibility",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-compatibility",
+        "sourceDocument": null,
+        "sourcePage": null
+      }
+    },
+    {
+      "id": "compat-structure",
+      "context": "structure",
+      "subjectRef": "project-v2",
+      "productId": "product-structure",
+      "allowed": true,
+      "ruleId": "rule-compatibility",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-compatibility",
+        "sourceDocument": null,
+        "sourcePage": null
+      }
+    },
+    {
+      "id": "compat-fastener",
+      "context": "accessory",
+      "subjectRef": "project-v2",
+      "productId": "product-fastener",
+      "allowed": true,
+      "ruleId": "rule-compatibility",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-compatibility",
+        "sourceDocument": null,
+        "sourcePage": null
+      }
+    },
+    {
+      "id": "compat-anchor",
+      "context": "anchor",
+      "subjectRef": "project-v2",
+      "productId": "product-anchor",
+      "allowed": true,
+      "ruleId": "rule-compatibility",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-compatibility",
+        "sourceDocument": null,
+        "sourcePage": null
+      }
+    },
+    {
+      "id": "compat-wstb",
+      "context": "wstb",
+      "subjectRef": "project-v2",
+      "productId": "product-wstb",
+      "allowed": true,
+      "ruleId": "rule-compatibility",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-compatibility",
+        "sourceDocument": null,
+        "sourcePage": null
+      }
+    },
+    {
+      "id": "compat-manual",
+      "context": "manualCatalog",
+      "subjectRef": "manual-catalog",
+      "productId": "product-manual-catalog",
+      "allowed": true,
+      "ruleId": "rule-compatibility",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-compatibility",
+        "sourceDocument": null,
+        "sourcePage": null
+      }
+    }
+  ],
+  "ruleSnapshot": {
+    "snapshotId": "rule-snapshot-v2",
+    "version": "2.0.0",
+    "contentHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "rules": [
+    {
+      "id": "rule-supply-3m",
+      "code": "SUPPLY-3M",
+      "version": "1.0.0",
+      "confidence": "catalogConfirmed",
+      "status": "active",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-supply-3m",
+        "sourceDocument": null,
+        "sourcePage": null
+      },
+      "type": "supplyOption",
+      "productId": "product-straight",
+      "supplyOptionId": "supply-3m"
+    },
+    {
+      "id": "rule-supply-6m",
+      "code": "SUPPLY-6M",
+      "version": "1.0.0",
+      "confidence": "catalogConfirmed",
+      "status": "active",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-supply-6m",
+        "sourceDocument": null,
+        "sourcePage": null
+      },
+      "type": "supplyOption",
+      "productId": "product-straight",
+      "supplyOptionId": "supply-6m"
+    },
+    {
+      "id": "rule-compatibility",
+      "code": "COMPATIBILITY-ALLOW-LIST",
+      "version": "1.0.0",
+      "confidence": "catalogConfirmed",
+      "status": "active",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-compatibility",
+        "sourceDocument": null,
+        "sourcePage": null
+      },
+      "type": "compatibility",
+      "relationIds": [
+        "compat-straight",
+        "compat-fitting",
+        "compat-support",
+        "compat-structure",
+        "compat-fastener",
+        "compat-anchor",
+        "compat-wstb",
+        "compat-manual"
+      ]
+    },
+    {
+      "id": "rule-joint",
+      "code": "INTERNAL-JOINT",
+      "version": "1.0.0",
+      "confidence": "catalogConfirmed",
+      "status": "active",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-joint",
+        "sourceDocument": null,
+        "sourcePage": null
+      },
+      "type": "internalJoint",
+      "straightProductId": "product-straight",
+      "supplyOptionId": null,
+      "jointProductId": "product-joint",
+      "quantityPerJoint": {
+        "value": "1",
+        "unit": "pcs"
+      }
+    },
+    {
+      "id": "rule-fitting-a",
+      "code": "FITTING-A-CONNECTIONS",
+      "version": "1.0.0",
+      "confidence": "catalogConfirmed",
+      "status": "active",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-fitting-a",
+        "sourceDocument": null,
+        "sourcePage": null
+      },
+      "type": "fittingConnection",
+      "fittingId": "fitting-a",
+      "components": [
+        {
+          "productId": "product-connector",
+          "quantityPerEvent": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "portOrSideCount": "2"
+        }
+      ]
+    },
+    {
+      "id": "rule-fitting-support-a",
+      "code": "FITTING-A-SUPPORT",
+      "version": "1.0.0",
+      "confidence": "calculated",
+      "status": "active",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-fitting-support-a",
+        "sourceDocument": null,
+        "sourcePage": null
+      },
+      "type": "fittingAdditionalSupport",
+      "fittingId": "fitting-a",
+      "quantity": {
+        "value": "1",
+        "unit": "pcs"
+      }
+    },
+    {
+      "id": "rule-endcap-a",
+      "code": "ENDCAP-A",
+      "version": "1.0.0",
+      "confidence": "catalogConfirmed",
+      "status": "active",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-endcap-a",
+        "sourceDocument": null,
+        "sourcePage": null
+      },
+      "type": "endpointMaterial",
+      "endpointId": "endpoint-a-start",
+      "productId": "product-endcap",
+      "quantity": {
+        "value": "1",
+        "unit": "pcs"
+      }
+    },
+    {
+      "id": "rule-wstb-two",
+      "code": "WSTB-TWO",
+      "version": "1.0.0",
+      "confidence": "projectRule",
+      "status": "draft",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "source": {
+        "kind": "rule",
+        "id": "rule-wstb-two",
+        "sourceDocument": null,
+        "sourcePage": null
+      },
+      "type": "wstbPerSupport",
+      "quantityPerSupport": {
+        "value": "2",
+        "unit": "pcs"
+      }
+    }
+  ],
+  "assemblyTemplates": [
+    {
+      "id": "template-wall",
+      "code": "WALL-TEMPLATE",
+      "nameEn": "Wall support assembly",
+      "status": "active",
+      "catalogSnapshotId": "catalog-snapshot-v2",
+      "ruleSnapshotId": "rule-snapshot-v2",
+      "engineeringReviewRequired": true,
+      "source": {
+        "kind": "template",
+        "id": "template-wall",
+        "sourceDocument": null,
+        "sourcePage": null
+      },
+      "components": [
+        {
+          "id": "component-support",
+          "productId": "product-support",
+          "role": "support",
+          "quantity": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "quantityMode": "perSupport",
+          "suppressWhenIncluded": false,
+          "manualParameterId": null,
+          "source": {
+            "kind": "templateComponent",
+            "id": "component-support",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        },
+        {
+          "id": "component-structure-fixed",
+          "productId": "product-structure",
+          "role": "structure",
+          "quantity": {
+            "value": "2",
+            "unit": "pcs"
+          },
+          "quantityMode": "fixed",
+          "suppressWhenIncluded": false,
+          "manualParameterId": null,
+          "source": {
+            "kind": "templateComponent",
+            "id": "component-structure-fixed",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        },
+        {
+          "id": "component-structure-level",
+          "productId": "product-structure",
+          "role": "structure",
+          "quantity": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "quantityMode": "perLevel",
+          "suppressWhenIncluded": false,
+          "manualParameterId": null,
+          "source": {
+            "kind": "templateComponent",
+            "id": "component-structure-level",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        },
+        {
+          "id": "component-anchor",
+          "productId": "product-anchor",
+          "role": "anchor",
+          "quantity": {
+            "value": "2",
+            "unit": "pcs"
+          },
+          "quantityMode": "perSupport",
+          "suppressWhenIncluded": false,
+          "manualParameterId": null,
+          "source": {
+            "kind": "templateComponent",
+            "id": "component-anchor",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        },
+        {
+          "id": "component-wstb",
+          "productId": "product-wstb",
+          "role": "wstb",
+          "quantity": {
+            "value": "1",
+            "unit": "pcs"
+          },
+          "quantityMode": "perSupport",
+          "suppressWhenIncluded": false,
+          "manualParameterId": null,
+          "source": {
+            "kind": "templateComponent",
+            "id": "component-wstb",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        },
+        {
+          "id": "component-fastener",
+          "productId": "product-fastener",
+          "role": "fastener",
+          "quantity": {
+            "value": "4",
+            "unit": "pcs"
+          },
+          "quantityMode": "fixed",
+          "suppressWhenIncluded": true,
+          "manualParameterId": null,
+          "source": {
+            "kind": "templateComponent",
+            "id": "component-fastener",
+            "sourceDocument": null,
+            "sourcePage": null
+          }
+        }
+      ]
+    }
+  ],
+  "manualItems": [
+    {
+      "id": "manual-catalog",
+      "kind": "catalog",
+      "productId": "product-manual-catalog",
+      "descriptionEn": "Manual catalog product",
+      "productCode": "NX MANUAL CATALOG",
+      "quantity": {
+        "value": "3",
+        "unit": "pcs"
+      },
+      "reason": "Required by site",
+      "note": null,
+      "reservePolicy": {
+        "mode": "disabled",
+        "originalPercent": "10",
+        "metadata": {
+          "overrideId": "manual-catalog-reserve",
+          "reason": "Reviewed reason for manual-catalog-reserve",
+          "note": null,
+          "actorRef": "actor-checker",
+          "decisionRef": "decision-manual-catalog-reserve"
+        }
+      },
+      "packagingPolicy": {
+        "mode": "catalogDefault"
+      },
+      "quantityOverride": null
+    },
+    {
+      "id": "manual-free-text",
+      "kind": "freeText",
+      "productId": null,
+      "descriptionEn": "Site supplied strip",
+      "productCode": null,
+      "quantity": {
+        "value": "2",
+        "unit": "m"
+      },
+      "reason": "Site-specific material",
+      "note": "Not a catalog product",
+      "reservePolicy": {
+        "mode": "percentageOverride",
+        "originalPercent": "10",
+        "percent": "10",
+        "metadata": {
+          "overrideId": "manual-free-reserve",
+          "reason": "Reviewed reason for manual-free-reserve",
+          "note": null,
+          "actorRef": "actor-checker",
+          "decisionRef": "decision-manual-free-reserve"
+        }
+      },
+      "packagingPolicy": {
+        "mode": "incrementOverride",
+        "increment": {
+          "value": "3",
+          "unit": "m"
+        },
+        "metadata": {
+          "overrideId": "manual-free-package",
+          "reason": "Reviewed reason for manual-free-package",
+          "note": null,
+          "actorRef": "actor-checker",
+          "decisionRef": "decision-manual-free-package"
+        }
+      },
+      "quantityOverride": null
+    }
+  ],
+  "productQuantityAdjustments": [],
+  "linePolicies": [],
+  "options": {
+    "unresolvedMaterialPolicy": "warnAndOmit",
+    "supportMismatchPolicy": "splitWithEngineeringReview",
+    "includePackaging": true
+  }
+}

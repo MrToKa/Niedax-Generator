@@ -13,7 +13,8 @@ describe("calculation engine public API", () => {
       ready: true,
       engineVersion: CALCULATION_ENGINE_VERSION,
       rulesVersion: rulesManifest.version,
-      rulesStatus: "draft"
+      rulesStatus: "draft",
+      calculationInputVersions: ["calculation-input/v1", "calculation-input/v2"]
     });
   });
 

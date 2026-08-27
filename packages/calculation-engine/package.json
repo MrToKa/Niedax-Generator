@@ -17,13 +17,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run tests"
+    "test": "vitest run --root ../.. packages/calculation-engine/tests"
   },
   "dependencies": {
     "@niedax/domain": "workspace:*",
     "@niedax/rules-manifest": "workspace:*"
   },
   "devDependencies": {
+    "fast-check": "4.3.0",
     "typescript": "6.0.3",
     "vitest": "4.1.10"
   }

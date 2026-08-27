@@ -21,7 +21,8 @@ describe("calculation engine dependency boundary", () => {
     const forbidden = [
       /from ["'](?:next|react|fastify|pg|prisma|typeorm|sequelize)(?:\/|["'])/u,
       /from ["']node:(?:fs|http|https|net|process|crypto|stream)/u,
-      /from ["'].*(?:apps\/frontend|apps\/backend|database|infrastructure)/u
+      /from ["'].*(?:apps\/frontend|apps\/backend|database|infrastructure)/u,
+      /\b(?:process\.env|Math\.random|Date\.now|fetch|XMLHttpRequest)\b/u
     ];
 
     for (const sourceFile of sourceFiles) {
@@ -38,5 +39,23 @@ describe("calculation engine dependency boundary", () => {
       "@niedax/domain",
       "@niedax/rules-manifest"
     ]);
+  });
+
+  it("keeps formula identifiers out of presentation, HTTP, persistence, import, and export code", () => {
+    const repositoryDirectory = resolve(packageDirectory, "../..");
+    const forbiddenOwners = [
+      "apps/frontend/src",
+      "apps/backend/src",
+      "database/src",
+      "packages/catalog-import/src",
+      "packages/export/src"
+    ];
+    const formulaIdentifier =
+      /(?:SECTION\.REQUIRED_PER_SEGMENT|SUPPORT\.BASE_CONTINUOUS_GROUP|PACKAGING\.ROUND_UP_TO_INCREMENT)/u;
+    for (const owner of forbiddenOwners) {
+      for (const sourceFile of listTypeScriptFiles(resolve(repositoryDirectory, owner))) {
+        expect(readFileSync(sourceFile, "utf8"), sourceFile).not.toMatch(formulaIdentifier);
+      }
+    }
   });
 });

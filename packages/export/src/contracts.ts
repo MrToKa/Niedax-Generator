@@ -1,4 +1,12 @@
-import type { BomLine, CalculationResultV1, Quantity, Warning } from "@niedax/domain";
+import type {
+  BomLine,
+  BomLineV2,
+  CalculationResultV1,
+  CalculationResultV2,
+  CalculationWarningV2,
+  Quantity,
+  Warning
+} from "@niedax/domain";
 
 export type ExportFormat = "xlsx" | "pdf" | "csv" | "print";
 
@@ -45,6 +53,41 @@ export interface EnglishExportModelV1 {
 
 export interface ExportModelBuilder {
   build(header: ExportProjectHeaderV1, result: CalculationResultV1): EnglishExportModelV1;
+}
+
+export interface ExportBomRowV2 {
+  readonly category: BomLineV2["category"];
+  readonly productCode: string | null;
+  readonly englishDescription: string;
+  readonly technicalQuantity: BomLineV2["technicalQuantity"];
+  readonly reserveQuantity: BomLineV2["reserveQuantity"];
+  readonly reservedQuantity: BomLineV2["reservedQuantity"];
+  readonly packageIncrement: BomLineV2["packageIncrement"];
+  readonly packageCount: BomLineV2["packageCount"];
+  readonly packagingOverage: BomLineV2["packagingOverage"];
+  readonly orderedQuantity: BomLineV2["orderedQuantity"];
+  readonly totalSpareQuantity: BomLineV2["totalSpareQuantity"];
+  readonly includedItems: BomLineV2["includedItems"];
+  readonly status: BomLineV2["status"];
+  readonly warningIds: BomLineV2["warningIds"];
+  readonly traceStepIds: BomLineV2["traceStepIds"];
+  readonly provenance: BomLineV2["provenance"];
+}
+
+export interface EnglishExportModelV2 {
+  readonly schemaVersion: "english-export-model/v2";
+  readonly language: "en";
+  readonly header: ExportProjectHeaderV1;
+  readonly calculationRunId: string;
+  readonly inputFingerprint: string;
+  readonly catalogSnapshotId: string;
+  readonly ruleSnapshotId: string;
+  readonly rows: readonly ExportBomRowV2[];
+  readonly warnings: readonly CalculationWarningV2[];
+}
+
+export interface ExportModelBuilderV2 {
+  build(header: ExportProjectHeaderV1, result: CalculationResultV2): EnglishExportModelV2;
 }
 
 export interface ExportRenderer {
