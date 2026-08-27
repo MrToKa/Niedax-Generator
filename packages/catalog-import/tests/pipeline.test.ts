@@ -107,6 +107,23 @@ describe("canonical Stage 5 import", () => {
     });
   });
 
+  it("rejects manifest rows that mix independent import scopes", () => {
+    const candidate = copy();
+    const secondManifestRow = candidate.sheets.manifest[1] as Record<string, string> | undefined;
+    if (!secondManifestRow) throw new Error("Second manifest fixture row missing");
+    secondManifestRow["import_scope"] = "unrelated-scope";
+
+    const report = runCatalogPipeline(candidate).report;
+    expect(report.valid).toBe(false);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        code: "CATALOG_SCOPE_MISMATCH",
+        field: "import_scope",
+        severity: "error"
+      })
+    );
+  });
+
   it("round-trips exact model codes with spaces, dots, slashes, and suffixes", () => {
     for (const code of ["DAM 6X5", "NSA 7.5X50/FKG-T30 V", "WSV 105.390 E3", "KSV 60/320 E5"]) {
       expect(product(code).code).toBe(code);

@@ -1,23 +1,51 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+import { initialState, type PrototypeState } from "./prototype-data";
 import {
-  calculateMockBom,
   canAdvanceStep,
   connectionParticipantError,
-  endpointEffect,
   hasIncompleteGeometry,
+  isExactCatalogSelection,
   isRouteCodeUnique,
   moveGeometryItem,
-  projectValidation,
-  selectSeries
+  projectValidation
 } from "./prototype-logic";
-import { initialState, type PrototypeState } from "./prototype-data";
+import { sampleBomFixture } from "./prototype-result-fixture";
+
+interface GoldenResultSubset {
+  schemaVersion: string;
+  engineVersion: string;
+  formulaCatalogVersion: string;
+  inputFingerprint: string;
+  catalogSnapshot: { snapshotId: string; version: string; contentHash: string };
+  ruleSnapshot: { snapshotId: string; version: string; contentHash: string };
+  bomLines: Array<{
+    id: string;
+    category: string;
+    productCode: string;
+    descriptionEn: string;
+    unit: string;
+    technicalQuantity: { value: string };
+    packageIncrement: { value: string; unit: string };
+    packageCount: { value: string };
+    orderedQuantity: { value: string };
+    totalSpareQuantity: { value: string };
+    status: string;
+    warningIds: string[];
+  }>;
+  summary: {
+    bomLineCount: number;
+    warningCount: number;
+    engineeringReviewRequired: boolean;
+  };
+}
 
 function fixtureState(): PrototypeState {
   return JSON.parse(JSON.stringify(initialState)) as PrototypeState;
 }
 
-describe("Stage 2 prototype interaction contract", () => {
+describe("prototype interaction contract", () => {
   it("blocks wizard advancement for required project fields and invalid reserve", () => {
     const state = fixtureState();
     state.project.code = "";
@@ -33,25 +61,29 @@ describe("Stage 2 prototype interaction contract", () => {
     expect(isRouteCodeUnique(state.routes, "R-03")).toBe(true);
   });
 
-  it("preserves valid dependent choices and clears incompatible ones without substitution", () => {
+  it("requires an exact option from the active catalogue", () => {
     const state = fixtureState();
-    const sameSeries = selectSeries(state.system, "series-f");
-    expect(sameSeries.selection).toEqual(state.system);
-    expect(sameSeries.cleared).toEqual([]);
+    const option = {
+      id: "product-1",
+      system: "KL",
+      heightMm: 60,
+      widthMm: 200,
+      materialCode: "steel",
+      finishCode: "S"
+    } as const;
 
-    const changedSeries = selectSeries(state.system, "series-e3");
-    expect(changedSeries.selection.seriesId).toBe("series-e3");
-    expect(changedSeries.selection.finishId).toBe("finish-e3");
-    expect(changedSeries.selection.dimensionId).toBeNull();
-    expect(changedSeries.selection.variantId).toBeNull();
-    expect(changedSeries.cleared).toEqual(["dimension", "variant"]);
-  });
-
-  it("makes endpoint material behavior explicit and keeps logical continuation material-free", () => {
-    expect(endpointEffect("free", false).material).toBe("none");
-    expect(endpointEffect("continuation", false).material).toBe("none");
-    expect(endpointEffect("splice", false).material).toBe("unresolved");
-    expect(endpointEffect("custom", false).material).toBe("manual");
+    expect(canAdvanceStep(1, state)).toBe(false);
+    state.system = {
+      seriesId: "KL",
+      dimensionId: "60x200",
+      finishId: "steel|S",
+      variantId: "product-1"
+    };
+    expect(isExactCatalogSelection(state.system, [option], false)).toBe(false);
+    expect(isExactCatalogSelection(state.system, [option], true)).toBe(true);
+    expect(
+      isExactCatalogSelection({ ...state.system, variantId: "different-product" }, [option], true)
+    ).toBe(false);
   });
 
   it("accepts two endpoints normally, three for a T, and prevents self-connections", () => {
@@ -85,73 +117,59 @@ describe("Stage 2 prototype interaction contract", () => {
     ).toBe(true);
   });
 
-  it("keeps the approved 6 m and WSTB defaults visible in fixture state", () => {
-    const state = fixtureState();
-    expect(state.routes.every((route) => route.sectionLengthM === 6)).toBe(true);
-    expect(state.supports.wstbMode).toBe("two");
-  });
+  it("keeps the displayed sample aligned with its calculation-engine golden fixture", () => {
+    const golden = JSON.parse(
+      readFileSync(
+        new URL(
+          "../../../../packages/calculation-engine/tests/golden/expected/connected-routes-6m-support-continuation.json",
+          import.meta.url
+        ),
+        "utf8"
+      )
+    ) as GoldenResultSubset;
 
-  it("applies linear reserve after required-section rounding", () => {
-    const state = fixtureState();
-    const linear = calculateMockBom(state).find((row) => row.id === "bom-linear-6")!;
-    expect(linear.technicalQuantity).toBe(5);
-    expect(linear.orderQuantity).toBe(6);
-    expect(linear.spareQuantity).toBe(1);
-    expect(linear.productCode).toBeNull();
-  });
-
-  it("keeps 3 m and 6 m route section calculations separate", () => {
-    const state = fixtureState();
-    state.routes[1]!.sectionLengthM = 3;
-    const rows = calculateMockBom(state);
-    const sixMetre = rows.find((row) => row.id === "bom-linear-6")!;
-    const threeMetre = rows.find((row) => row.id === "bom-linear-3")!;
-    expect(sixMetre.technicalQuantity).toBe(4);
-    expect(threeMetre.technicalQuantity).toBe(4);
-  });
-
-  it("carries an explicit manual connection product into the mock BOM", () => {
-    const state = fixtureState();
-    state.connections[0]!.manualProduct = "Connection review item";
-    state.connections[0]!.manualProductQuantity = 2;
-    const row = calculateMockBom(state).find((item) => item.id === "bom-connection-01-manual")!;
-    expect(row.description).toBe("Connection review item");
-    expect(row.status).toBe("manual");
-    expect(row.manualOverride).toBe(true);
-  });
-
-  it("keeps manual reserve and packaging rounding behavior row-specific", () => {
-    const state = fixtureState();
-    state.load.manualItems = [
-      {
-        id: "manual-packaging",
-        kind: "freeText",
-        productCode: "",
-        description: "Fixture item",
-        quantity: 11,
-        unit: "pcs",
-        reason: "Interaction test",
-        note: "",
-        reserveBehavior: "custom",
-        reservePercent: 10,
-        packagingRounding: "on",
-        packageSize: 5,
-        manuallyAdjusted: true
+    expect(sampleBomFixture.source).toContain("packages/calculation-engine/tests/golden/expected/");
+    expect(sampleBomFixture).toMatchObject({
+      schemaVersion: golden.schemaVersion,
+      engineVersion: golden.engineVersion,
+      formulaCatalogVersion: golden.formulaCatalogVersion,
+      inputFingerprint: golden.inputFingerprint,
+      catalogSnapshot: {
+        id: golden.catalogSnapshot.snapshotId,
+        version: golden.catalogSnapshot.version,
+        contentHash: golden.catalogSnapshot.contentHash
+      },
+      ruleSnapshot: {
+        id: golden.ruleSnapshot.snapshotId,
+        version: golden.ruleSnapshot.version,
+        contentHash: golden.ruleSnapshot.contentHash
+      },
+      summary: {
+        bomLineCount: String(golden.summary.bomLineCount),
+        warningCount: String(golden.summary.warningCount),
+        engineeringReviewRequired: golden.summary.engineeringReviewRequired
       }
-    ];
-    const row = calculateMockBom(state).find((item) => item.id === "bom-manual-packaging")!;
-    expect(row.packageCount).toBe(3);
-    expect(row.orderQuantity).toBe(15);
-    expect(row.spareQuantity).toBe(4);
-    expect(row.manualOverride).toBe(true);
-    expect(row.status).toBe("manual");
-  });
-
-  it("localizes explanations while keeping the English export description fixed", () => {
-    const state = fixtureState();
-    const en = calculateMockBom(state, "en").find((row) => row.id === "bom-linear-6")!;
-    const bg = calculateMockBom(state, "bg").find((row) => row.id === "bom-linear-6")!;
-    expect(bg.description).toBe(en.description);
-    expect(bg.why[0]).not.toBe(en.why[0]);
+    });
+    expect(sampleBomFixture.rows).toEqual(
+      golden.bomLines.map((row) => ({
+        id: row.id,
+        category:
+          row.category === "linearSection"
+            ? "Linear section"
+            : row.category === "endpointMaterial"
+              ? "Endpoint material"
+              : row.category[0]!.toUpperCase() + row.category.slice(1),
+        productCode: row.productCode,
+        description: row.descriptionEn,
+        unit: row.unit,
+        technicalQuantity: row.technicalQuantity.value,
+        packageIncrement: `${row.packageIncrement.value} ${row.packageIncrement.unit}`,
+        packageCount: row.packageCount.value,
+        orderedQuantity: row.orderedQuantity.value,
+        spareQuantity: row.totalSpareQuantity.value,
+        status: row.status,
+        warningCount: String(row.warningIds.length)
+      }))
+    );
   });
 });

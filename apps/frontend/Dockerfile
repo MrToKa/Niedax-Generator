@@ -8,6 +8,8 @@ COPY apps/frontend/package.json apps/frontend/package.json
 COPY apps/backend/package.json apps/backend/package.json
 COPY packages/calculation-engine/package.json packages/calculation-engine/package.json
 COPY packages/catalog-import/package.json packages/catalog-import/package.json
+COPY packages/domain/package.json packages/domain/package.json
+COPY packages/export/package.json packages/export/package.json
 COPY database/package.json database/package.json
 COPY rules/package.json rules/package.json
 RUN pnpm install --frozen-lockfile
@@ -23,9 +25,9 @@ RUN pnpm --filter @niedax/frontend build
 FROM node:24.19.0-alpine3.23@sha256:244cc2b53f46f9e876304391d17682b0ddae9ac33491f4857e25e35a36ba7995 AS runtime
 ENV HOSTNAME=0.0.0.0 NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000
 WORKDIR /app
-RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-v* \
     && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
-      /usr/local/bin/pnpm /usr/local/bin/pnpx
+      /usr/local/bin/pnpm /usr/local/bin/pnpx /usr/local/bin/yarn /usr/local/bin/yarnpkg
 COPY --from=build --chown=node:node /workspace/apps/frontend/.next/standalone ./
 COPY --from=build --chown=node:node /workspace/apps/frontend/.next/static ./apps/frontend/.next/static
 COPY --from=build --chown=node:node /workspace/apps/frontend/public ./apps/frontend/public

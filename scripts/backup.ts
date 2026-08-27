@@ -54,14 +54,25 @@ switch (action) {
     backupRun(["verify", filename]);
     const confirmation = `niedax_generator ${filename}`;
     await prompt(confirmation);
+    compose(["build", "migrations"]);
     compose(["stop", "backend", "gateway"]);
+    let migrationHistoryVerified = false;
     try {
       backupRun(["restore-confirmed", filename], {
         ...process.env,
         RESTORE_CONFIRMATION: confirmation
       });
+      compose(["run", "--rm", "migrations", "node", "dist/migrate.js", "up"]);
+      compose(["run", "--rm", "migrations", "node", "dist/migrate.js", "verify"]);
+      migrationHistoryVerified = true;
     } finally {
-      compose(["up", "--detach", "backend", "gateway"]);
+      if (migrationHistoryVerified) {
+        compose(["up", "--detach", "backend", "gateway"]);
+      } else {
+        process.stderr.write(
+          "Restore did not reach verified current migration history; Backend and Gateway remain stopped.\n"
+        );
+      }
     }
     break;
   }

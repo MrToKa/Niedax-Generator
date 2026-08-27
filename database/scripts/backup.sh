@@ -22,7 +22,18 @@ verify_file() {
   name=$1
   valid_name "$name" || { echo "Invalid backup filename." >&2; return 1; }
   [ -f "$BACKUP_DIR/$name" ] && [ -f "$BACKUP_DIR/$name.sha256" ] || { echo "Backup or checksum is missing." >&2; return 1; }
-  (cd "$BACKUP_DIR" && sha256sum -c "$name.sha256" >/dev/null)
+  line_count=$(awk 'END { print NR }' "$BACKUP_DIR/$name.sha256")
+  [ "$line_count" -eq 1 ] || { echo "Checksum sidecar must contain exactly one record." >&2; return 1; }
+  checksum_line=$(cat "$BACKUP_DIR/$name.sha256")
+  expected_checksum=${checksum_line%% *}
+  checksum_suffix=${checksum_line#"$expected_checksum"}
+  [ "${#expected_checksum}" -eq 64 ] || { echo "Checksum is not SHA-256." >&2; return 1; }
+  case "$expected_checksum" in
+    *[!0-9a-f]*) echo "Checksum is not lowercase hexadecimal." >&2; return 1 ;;
+  esac
+  [ "$checksum_suffix" = "  $name" ] || { echo "Checksum sidecar does not name the selected backup." >&2; return 1; }
+  actual_checksum=$(sha256sum "$BACKUP_DIR/$name" | awk '{ print $1 }')
+  [ "$actual_checksum" = "$expected_checksum" ] || { echo "Backup checksum does not match." >&2; return 1; }
   pg_restore --list "$BACKUP_DIR/$name" >/dev/null
 }
 
@@ -39,11 +50,18 @@ create_backup() {
   PGPASSWORD=$(password_from /run/secrets/postgres_backup_password)
   export PGPASSWORD
   pg_dump --host=postgres --username="$BACKUP_USER" --dbname="$DATABASE_NAME" \
-    --format=custom --compress=6 --no-owner --no-acl --file="$temporary"
-  pg_restore --list "$temporary" >/dev/null
-  mv "$temporary" "$BACKUP_DIR/$name"
-  (cd "$BACKUP_DIR" && sha256sum "$name" > "$name.sha256")
-  verify_file "$name"
+    --format=custom --compress=6 --no-owner --no-acl --file="$temporary" || return 1
+  pg_restore --list "$temporary" >/dev/null || return 1
+  mv "$temporary" "$BACKUP_DIR/$name" || return 1
+  if ! (cd "$BACKUP_DIR" && sha256sum "$name" > "$name.sha256"); then
+    rm -f "$BACKUP_DIR/$name" "$BACKUP_DIR/$name.sha256"
+    return 1
+  fi
+  if ! verify_file "$name"; then
+    rm -f "$BACKUP_DIR/$name" "$BACKUP_DIR/$name.sha256"
+    return 1
+  fi
+  trap - EXIT INT TERM
   echo "$name"
 }
 
@@ -88,18 +106,80 @@ case "$action" in
     prune_verified
     ;;
   restore-confirmed)
-    name=${2:-}
-    verify_file "$name"
-    [ "${RESTORE_CONFIRMATION:-}" = "$DATABASE_NAME $name" ] || { echo "Restore confirmation mismatch." >&2; exit 1; }
-    safety=$(create_backup | head -n 1)
+    restore_name=${2:-}
+    verify_file "$restore_name"
+    [ "${RESTORE_CONFIRMATION:-}" = "$DATABASE_NAME $restore_name" ] || { echo "Restore confirmation mismatch." >&2; exit 1; }
+    safety=$(create_backup)
+    valid_name "$safety" || { echo "Safety backup returned an invalid filename." >&2; exit 1; }
+    verify_file "$safety"
     echo "Safety backup created: $safety"
     PGPASSWORD=$(password_from /run/secrets/postgres_migrator_password)
     export PGPASSWORD
     pg_restore --host=postgres --username="$MIGRATOR_USER" --dbname="$DATABASE_NAME" \
-      --clean --if-exists --no-owner --no-acl --exit-on-error "$BACKUP_DIR/$name"
+      --clean --if-exists --no-owner --no-acl --exit-on-error --single-transaction \
+      "$BACKUP_DIR/$restore_name"
     psql --host=postgres --username="$MIGRATOR_USER" --dbname="$DATABASE_NAME" \
-      --set=ON_ERROR_STOP=1 --command="SELECT count(*) FROM schema_migrations" >/dev/null
-    echo "Restored and checked $name"
+      --set=ON_ERROR_STOP=1 --single-transaction \
+      --file=/usr/local/share/niedax-generator/reconcile-app-privileges.sql \
+      >/dev/null
+    psql --host=postgres --username="$MIGRATOR_USER" --dbname="$DATABASE_NAME" \
+      --set=ON_ERROR_STOP=1 --single-transaction >/dev/null <<'SQL'
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM public.schema_migrations) THEN
+    RAISE EXCEPTION 'restored migration metadata is empty';
+  END IF;
+  IF has_table_privilege('niedax_generator_app', 'public.schema_migrations', 'SELECT')
+     OR has_table_privilege('niedax_generator_app', 'public.schema_migrations', 'INSERT')
+     OR has_table_privilege('niedax_generator_app', 'public.schema_migrations', 'UPDATE')
+     OR has_table_privilege('niedax_generator_app', 'public.schema_migrations', 'DELETE')
+  THEN
+    RAISE EXCEPTION 'application role can access restored migration metadata';
+  END IF;
+  IF to_regclass('public.revisions') IS NOT NULL
+     AND (has_table_privilege('niedax_generator_app', 'public.revisions', 'UPDATE')
+       OR has_table_privilege('niedax_generator_app', 'public.revisions', 'DELETE')
+       OR has_table_privilege('niedax_generator_app', 'public.revisions', 'TRUNCATE')
+       OR NOT has_table_privilege('niedax_generator_app', 'public.revisions', 'SELECT')
+       OR NOT has_table_privilege('niedax_generator_app', 'public.revisions', 'INSERT')
+       OR NOT has_column_privilege('niedax_generator_app', 'public.revisions', 'status', 'UPDATE')
+       OR NOT has_column_privilege('niedax_generator_app', 'public.revisions', 'checked_at', 'UPDATE')
+       OR NOT has_column_privilege('niedax_generator_app', 'public.revisions', 'approved_at', 'UPDATE')
+       OR NOT has_column_privilege('niedax_generator_app', 'public.revisions', 'archived_at', 'UPDATE')
+       OR NOT has_column_privilege('niedax_generator_app', 'public.revisions', 'updated_at', 'UPDATE'))
+  THEN
+    RAISE EXCEPTION 'application role has an invalid restored revisions access policy';
+  END IF;
+  IF to_regclass('public.bom_lines') IS NOT NULL
+     AND (has_table_privilege('niedax_generator_app', 'public.bom_lines', 'UPDATE')
+       OR has_table_privilege('niedax_generator_app', 'public.bom_lines', 'DELETE')
+       OR has_table_privilege('niedax_generator_app', 'public.bom_lines', 'TRUNCATE')
+       OR NOT has_table_privilege('niedax_generator_app', 'public.bom_lines', 'SELECT')
+       OR NOT has_table_privilege('niedax_generator_app', 'public.bom_lines', 'INSERT'))
+  THEN
+    RAISE EXCEPTION 'application role has an invalid restored immutable BOM access policy';
+  END IF;
+  IF to_regclass('public.approvals') IS NOT NULL
+     AND (has_table_privilege('niedax_generator_app', 'public.approvals', 'UPDATE')
+       OR has_table_privilege('niedax_generator_app', 'public.approvals', 'DELETE')
+       OR has_table_privilege('niedax_generator_app', 'public.approvals', 'TRUNCATE')
+       OR NOT has_table_privilege('niedax_generator_app', 'public.approvals', 'SELECT')
+       OR NOT has_table_privilege('niedax_generator_app', 'public.approvals', 'INSERT'))
+  THEN
+    RAISE EXCEPTION 'application role has an invalid restored append-only approvals access policy';
+  END IF;
+  IF to_regclass('public.warnings') IS NOT NULL
+     AND (NOT has_table_privilege('niedax_generator_app', 'public.warnings', 'SELECT')
+       OR NOT has_table_privilege('niedax_generator_app', 'public.warnings', 'INSERT')
+       OR NOT has_table_privilege('niedax_generator_app', 'public.warnings', 'UPDATE')
+       OR NOT has_table_privilege('niedax_generator_app', 'public.warnings', 'DELETE'))
+  THEN
+    RAISE EXCEPTION 'application role has an invalid restored warnings access policy';
+  END IF;
+END
+$$;
+SQL
+    echo "Restored database and reconciled protected application-role privileges for $restore_name"
     ;;
   *)
     echo "Usage: backup.sh {create|list|verify <file>|prune-preview|prune-confirmed|restore-confirmed <file>}" >&2

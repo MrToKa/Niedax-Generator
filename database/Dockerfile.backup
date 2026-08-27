@@ -2,6 +2,7 @@
 FROM postgres:18.4-alpine3.23@sha256:996d0920e4ff9df1fc19dacb904492f3c1ec0ec1cc338f0ad7123be7731c5f5e
 RUN rm -f /usr/local/bin/gosu
 COPY --chown=postgres:postgres database/scripts/backup.sh /usr/local/bin/niedax-backup
+COPY --chown=postgres:postgres database/scripts/reconcile-app-privileges.sql /usr/local/share/niedax-generator/reconcile-app-privileges.sql
 USER postgres
 ENTRYPOINT ["/bin/sh", "/usr/local/bin/niedax-backup"]
 CMD ["list"]

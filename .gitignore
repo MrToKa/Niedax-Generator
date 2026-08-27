@@ -3,6 +3,7 @@
 *.dump
 *.dump.sha256
 *.sql.gz
+catalog-validation-*.csv
 .env
 .env.*
 !.env.example

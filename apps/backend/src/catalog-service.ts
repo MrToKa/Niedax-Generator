@@ -68,7 +68,7 @@ export interface CatalogSelectionOption extends CatalogSelectableProduct {
 }
 
 export interface CatalogAdminRepository {
-  getActiveComparison(): Promise<ActiveCatalogComparison | null>;
+  getActiveComparison(scope: string): Promise<ActiveCatalogComparison | null>;
   saveDraft(input: {
     actorId: string;
     correlationId: string;
@@ -175,12 +175,24 @@ async function parseUpload(files: readonly CatalogUploadFile[]): Promise<ParsedU
   };
 }
 
+export async function runCatalogPipelineForActiveScope(
+  parsed: ParsedCatalogBundle,
+  repository: CatalogAdminRepository
+): Promise<CatalogPipelineResult> {
+  const initial = runCatalogPipeline(parsed);
+  const scopes = [...new Set(initial.bundle.manifest.map((row) => row.importScope))];
+  const scope = scopes.length === 1 ? scopes[0] : undefined;
+  if (!scope) return initial;
+  const comparison = await repository.getActiveComparison(scope);
+  return comparison ? runCatalogPipeline(parsed, comparison) : initial;
+}
+
 export class CatalogAdminService {
   public constructor(private readonly repository: CatalogAdminRepository) {}
 
   public async preview(files: readonly CatalogUploadFile[]): Promise<CatalogPipelineResult> {
     const upload = await parseUpload(files);
-    return runCatalogPipeline(upload.parsed, await this.repository.getActiveComparison());
+    return runCatalogPipelineForActiveScope(upload.parsed, this.repository);
   }
 
   public async importDraft(input: {
@@ -189,7 +201,7 @@ export class CatalogAdminService {
     correlationId: string;
   }): Promise<CatalogDraftSummary> {
     const upload = await parseUpload(input.files);
-    const pipeline = runCatalogPipeline(upload.parsed, await this.repository.getActiveComparison());
+    const pipeline = await runCatalogPipelineForActiveScope(upload.parsed, this.repository);
     if (!pipeline.bundle.manifest.length) {
       throw new CatalogImportError("Import manifest is missing or invalid", "INVALID_MANIFEST");
     }
@@ -212,7 +224,7 @@ export class CatalogAdminService {
     const parsed = await this.repository.loadDraft(input.catalogVersionId);
     if (!parsed)
       throw new CatalogImportError("Draft catalog import was not found", "CATALOG_DRAFT_NOT_FOUND");
-    const pipeline = runCatalogPipeline(parsed, await this.repository.getActiveComparison());
+    const pipeline = await runCatalogPipelineForActiveScope(parsed, this.repository);
     return this.repository.saveValidation({ ...input, pipeline });
   }
 

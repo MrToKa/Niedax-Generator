@@ -145,7 +145,7 @@ try {
   const migrationCount = await pool.query<{ count: number }>(
     "SELECT count(*)::integer AS count FROM schema_migrations"
   );
-  assert.equal(migrationCount.rows[0]?.count, 5, "all migrations must apply to the empty database");
+  assert.equal(migrationCount.rows[0]?.count, 6, "all migrations must apply to the empty database");
 
   const seedCounts = await pool.query<{ products: number; revisions: number; drafts: number }>(
     `SELECT

@@ -1,9 +1,13 @@
+import type { ParsedCatalogBundle } from "@niedax/catalog-import";
+import type { Pool } from "pg";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "../src/app.js";
 import { hashPassword } from "../src/auth-service.js";
+import { PgCatalogAdminRepository } from "../src/catalog-repository.js";
 import {
   CatalogAdminService,
+  runCatalogPipelineForActiveScope,
   type CatalogAdminRepository,
   type CatalogVersionSummary
 } from "../src/catalog-service.js";
@@ -128,6 +132,35 @@ function repository(): CatalogAdminRepository {
   };
 }
 
+function parsedCatalogForScope(scope: string): ParsedCatalogBundle {
+  return {
+    sheets: {
+      manifest: [
+        {
+          schema_version: "catalog-import/v1",
+          candidate_catalog_version: `candidate-${scope}`,
+          manufacturer: "Niedax",
+          import_scope: scope,
+          is_full_snapshot: "true",
+          source_document: `${scope}.pdf`,
+          source_document_edition: "test",
+          source_sha256: `sha256:${"a".repeat(64)}`,
+          prepared_at: "2026-08-27T00:00:00Z",
+          prepared_by: "backend-test",
+          notes: ""
+        }
+      ],
+      products: [],
+      product_attributes: [],
+      included_items: [],
+      compatibility_rules: [],
+      assembly_templates: [],
+      template_components: [],
+      source_observations: []
+    }
+  };
+}
+
 async function login(app: Awaited<ReturnType<typeof buildApp>>, username: string): Promise<string> {
   const response = await app.inject({
     method: "POST",
@@ -198,6 +231,47 @@ describe("catalog administration authorization", () => {
       })
     );
     await app.close();
+  });
+});
+
+describe("catalog active comparison scope", () => {
+  it("requests the active comparison for each candidate scope independently", async () => {
+    const getActiveComparison = vi.fn(async () => null);
+    const repo = { ...repository(), getActiveComparison };
+
+    await runCatalogPipelineForActiveScope(parsedCatalogForScope("scope-a"), repo);
+    await runCatalogPipelineForActiveScope(parsedCatalogForScope("scope-b"), repo);
+
+    expect(getActiveComparison.mock.calls).toEqual([["scope-a"], ["scope-b"]]);
+  });
+
+  it("does not select an arbitrary active comparison for a mixed-scope bundle", async () => {
+    const getActiveComparison = vi.fn(async () => null);
+    const repo = { ...repository(), getActiveComparison };
+    const parsed = parsedCatalogForScope("scope-a");
+    parsed.sheets.manifest.push({
+      ...parsed.sheets.manifest[0]!,
+      import_scope: "scope-b",
+      source_document: "scope-b.pdf"
+    });
+
+    const pipeline = await runCatalogPipelineForActiveScope(parsed, repo);
+
+    expect(getActiveComparison).not.toHaveBeenCalled();
+    expect(pipeline.report.issues).toContainEqual(
+      expect.objectContaining({ code: "CATALOG_SCOPE_MISMATCH", severity: "error" })
+    );
+  });
+
+  it("binds the requested scope in the active-catalog query", async () => {
+    const query = vi.fn(async () => ({ rows: [] }));
+    const repo = new PgCatalogAdminRepository({ query } as unknown as Pool);
+
+    await repo.getActiveComparison("scope-a");
+    await repo.getActiveComparison("scope-b");
+
+    expect(query.mock.calls.map((call) => call[1])).toEqual([["scope-a"], ["scope-b"]]);
+    expect(query.mock.calls[0]?.[0]).toContain("version.scope = $1");
   });
 });
 

@@ -3,14 +3,9 @@ import { resolve } from "node:path";
 
 import { Pool } from "pg";
 
-import {
-  catalogSheetNames,
-  parseCsvBundle,
-  runCatalogPipeline,
-  type CatalogSheetName
-} from "@niedax/catalog-import";
+import { catalogSheetNames, parseCsvBundle, type CatalogSheetName } from "@niedax/catalog-import";
 import { PgCatalogAdminRepository } from "./catalog-repository.js";
-import { CatalogAdminService } from "./catalog-service.js";
+import { CatalogAdminService, runCatalogPipelineForActiveScope } from "./catalog-service.js";
 import { loadRuntimeConfig } from "./config.js";
 
 function option(name: string): string | null {
@@ -64,7 +59,7 @@ try {
   }
   const repository = new PgCatalogAdminRepository(pool);
   const service = new CatalogAdminService(repository);
-  const pipeline = runCatalogPipeline(parsed, await repository.getActiveComparison());
+  const pipeline = await runCatalogPipelineForActiveScope(parsed, repository);
   if (!pipeline.report.valid) {
     throw new Error(
       `Canonical dataset is invalid: ${pipeline.report.counts.errors} errors, ${pipeline.report.counts.conflicts} conflicts`

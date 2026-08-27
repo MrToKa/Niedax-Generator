@@ -8,6 +8,9 @@ export default defineConfig({
       "@niedax/calculation-engine": fileURLToPath(
         new URL("./packages/calculation-engine/src/index.ts", import.meta.url)
       ),
+      "@niedax/catalog-import": fileURLToPath(
+        new URL("./packages/catalog-import/src/index.ts", import.meta.url)
+      ),
       "@niedax/domain": fileURLToPath(new URL("./packages/domain/src/index.ts", import.meta.url))
     }
   },

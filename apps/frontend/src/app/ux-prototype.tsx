@@ -1,20 +1,17 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import {
-  calculateMockBom,
   canAdvanceStep,
   connectionParticipantError,
-  endpointEffect,
-  geometryLength,
   hasIncompleteGeometry,
+  isExactCatalogSelection,
   isRouteCodeUnique,
   moveGeometryItem,
   projectValidation
 } from "./prototype-logic";
 import {
-  type BomRow,
   type Connection,
   type ConnectionType,
   type EndpointType,
@@ -29,6 +26,7 @@ import {
   steps
 } from "./prototype-data";
 import { copy, formatMessage, type TranslationKey } from "./prototype-i18n";
+import { sampleBomFixture } from "./prototype-result-fixture";
 
 type Tone = "info" | "warning" | "error" | "review";
 type Translator = (key: TranslationKey, values?: Record<string, string | number>) => string;
@@ -184,7 +182,8 @@ const sourceLabel: Record<SourceKind, TranslationKey> = {
   mountingTemplate: "sourceMountingTemplate",
   designRule: "sourceDesignRule",
   manualOverride: "sourceManualOverride",
-  calculated: "sourceCalculated"
+  calculated: "sourceCalculated",
+  fixture: "sourceFixture"
 };
 
 const emptyConnection: Connection = {
@@ -236,7 +235,6 @@ export function UxPrototype() {
   const [manualDraft, setManualDraft] = useState<Omit<ManualItem, "id">>({ ...emptyManualItem });
   const [pendingRemoveRouteId, setPendingRemoveRouteId] = useState<string | null>(null);
   const [automationNotice, setAutomationNotice] = useState<string | null>(null);
-  const [expandedBomRow, setExpandedBomRow] = useState<string | null>("bom-linear-6");
   const [catalogOptions, setCatalogOptions] = useState<readonly CatalogSelectionOption[]>([]);
   const [catalogStatus, setCatalogStatus] = useState<CatalogConnectionStatus>("loading");
 
@@ -246,7 +244,11 @@ export function UxPrototype() {
   const activeRoute = state.routes.find((route) => route.id === selectedRouteId) ?? state.routes[0];
   const readOnly = scenario === "approved";
   const meta = scenarioMeta[scenario];
-  const bomRows = useMemo(() => calculateMockBom(state, language), [state, language]);
+  const catalogSelectionValid = isExactCatalogSelection(
+    state.system,
+    catalogOptions,
+    catalogStatus === "active"
+  );
   const currentStep = steps[activeStep] ?? steps[0]!;
   const nextStep = steps[activeStep + 1];
 
@@ -328,6 +330,7 @@ export function UxPrototype() {
 
   const isBlocked =
     ["empty", "required", "duplicate", "incompatible", "disconnected"].includes(scenario) ||
+    (activeStep === 1 && !catalogSelectionValid) ||
     !canAdvanceStep(activeStep, state);
 
   return (
@@ -358,6 +361,7 @@ export function UxPrototype() {
           <span className="user-chip">{t("prototypeUser")}</span>
           <div className="language-switch" aria-label={t("uiLanguage")}>
             <button
+              aria-pressed={language === "bg"}
               className={language === "bg" ? "active" : ""}
               onClick={() => setLanguage("bg")}
               type="button"
@@ -365,6 +369,7 @@ export function UxPrototype() {
               BG
             </button>
             <button
+              aria-pressed={language === "en"}
               className={language === "en" ? "active" : ""}
               onClick={() => setLanguage("en")}
               type="button"
@@ -463,6 +468,7 @@ export function UxPrototype() {
                   setAutomationNotice={setAutomationNotice}
                   catalogOptions={catalogOptions}
                   catalogStatus={catalogStatus}
+                  selectionValid={catalogSelectionValid}
                   language={language}
                   t={t}
                 />
@@ -511,16 +517,7 @@ export function UxPrototype() {
                   t={t}
                 />
               ) : null}
-              {activeStep === 5 ? (
-                <ResultsStep
-                  state={state}
-                  bomRows={bomRows}
-                  scenario={scenario}
-                  expandedBomRow={expandedBomRow}
-                  setExpandedBomRow={setExpandedBomRow}
-                  t={t}
-                />
-              ) : null}
+              {activeStep === 5 ? <ResultsStep scenario={scenario} t={t} /> : null}
             </fieldset>
           )}
 
@@ -714,6 +711,7 @@ function SystemStep({
   setAutomationNotice,
   catalogOptions,
   catalogStatus,
+  selectionValid,
   language,
   t
 }: Readonly<{
@@ -726,6 +724,7 @@ function SystemStep({
   setAutomationNotice: React.Dispatch<React.SetStateAction<string | null>>;
   catalogOptions: readonly CatalogSelectionOption[];
   catalogStatus: CatalogConnectionStatus;
+  selectionValid: boolean;
   language: Language;
   t: Translator;
 }>) {
@@ -919,7 +918,7 @@ function SystemStep({
             >
               <option value="">{t("chooseOption")}</option>
               {compatibleProducts.map((option) => (
-                <option key={option.id} value={option.code}>
+                <option key={option.id} value={option.id}>
                   {option.code} · {option.descriptionEn}
                 </option>
               ))}
@@ -936,6 +935,7 @@ function SystemStep({
               !state.system.dimensionId ||
               !state.system.finishId ||
               !state.system.variantId ||
+              !selectionValid ||
               scenario === "incompatible"
             }
             onClick={() => activeRoute && updateRoute(activeRoute.id, state.system)}
@@ -1107,9 +1107,6 @@ function GeometryStep({
                     const incomplete =
                       hasIncompleteGeometry(route) ||
                       (scenario === "disconnected" && route.id === selectedRouteId);
-                    const warningCount = [route.startEndpointType, route.endEndpointType].filter(
-                      (type) => endpointEffect(type, false).material === "unresolved"
-                    ).length;
                     return (
                       <tr
                         className={route.id === selectedRouteId ? "selected-row" : ""}
@@ -1129,8 +1126,7 @@ function GeometryStep({
                             : "—"}
                         </td>
                         <td>
-                          {geometryLength(route).toFixed(1)} m · {route.geometry.length}{" "}
-                          {t("orderedGeometry").toLocaleLowerCase()}
+                          {route.geometry.length} {t("orderedGeometry").toLocaleLowerCase()}
                         </td>
                         <td>
                           <StatusBadge
@@ -1139,9 +1135,7 @@ function GeometryStep({
                           />
                         </td>
                         <td>
-                          <span className={warningCount ? "warning-count active" : "warning-count"}>
-                            {warningCount}
-                          </span>
+                          <span className="warning-count">—</span>
                         </td>
                         <td>
                           <div className="row-actions">
@@ -1486,16 +1480,12 @@ function EndpointEditor({
   addManualSeed: (kind: ManualItem["kind"]) => void;
   t: Translator;
 }>) {
-  const effect = endpointEffect(type, false);
-  const unresolved = effect.material === "unresolved" || scenario === "endpoint";
+  const scenarioReview = scenario === "endpoint";
   return (
     <div className="endpoint-card">
       <div className="endpoint-card-title">
         <strong>{label}</strong>
-        <StatusBadge
-          tone={unresolved ? "review" : "neutral"}
-          label={unresolved ? t("engineeringReview") : t("information")}
-        />
+        <StatusBadge tone="review" label={t("engineeringReview")} />
       </div>
       <Field label={pointLabel} source="user" required t={t}>
         <input value={point} onChange={(event) => onPointChange(event.target.value)} />
@@ -1510,18 +1500,14 @@ function EndpointEditor({
           <option value="custom">{t("endpointCustom")}</option>
         </select>
       </Field>
-      <div className={`effect-preview ${unresolved ? "review" : "info"}`}>
-        <span>{unresolved ? "◇" : "ℹ"}</span>
+      <div className="effect-preview review">
+        <span>◇</span>
         <div>
           <strong>{t("endpointMaterialPreview")}</strong>
-          <p>
-            {t(
-              scenario === "endpoint" ? "endpointEffectUnresolved" : (effect.key as TranslationKey)
-            )}
-          </p>
+          <p>{t("liveMaterialEvaluationUnavailable")}</p>
         </div>
       </div>
-      {type === "custom" || unresolved ? (
+      {type === "custom" || scenarioReview ? (
         <div className="inline-actions">
           <button className="secondary" onClick={() => addManualSeed("catalog")} type="button">
             {t("addCatalogProduct")}
@@ -1565,13 +1551,7 @@ function ConnectionEditor({
     setDraft((current) => ({
       ...current,
       type,
-      participants: Array.from({ length: count }, (_, index) => current.participants[index] ?? ""),
-      materialBehavior:
-        type === "continuation"
-          ? "none"
-          : current.materialBehavior === "none"
-            ? "automatic"
-            : current.materialBehavior
+      participants: Array.from({ length: count }, (_, index) => current.participants[index] ?? "")
     }));
   }
   function save() {
@@ -1734,14 +1714,14 @@ function ConnectionEditor({
             />
           </Field>
         </div>
-        <div className={`rule-callout ${draft.type === "continuation" ? "info" : "review"}`}>
+        <div className={`rule-callout ${draft.materialBehavior === "none" ? "info" : "review"}`}>
           <strong>
-            {draft.type === "continuation" ? t("noPhysicalMaterial") : t("physicalEffects")}
+            {draft.materialBehavior === "none" ? t("noPhysicalMaterial") : t("physicalEffects")}
           </strong>
           <span>
-            {draft.type === "continuation"
-              ? t("logicalConnectionRule")
-              : t("endpointEffectUnresolved")}
+            {draft.materialBehavior === "none"
+              ? t("materialBehaviorUserSelected")
+              : t("liveMaterialEvaluationUnavailable")}
           </span>
         </div>
         <div className="card-actions">
@@ -1860,18 +1840,11 @@ function SupportsStep({
             <Field label={t("constructionTemplate")} source="mountingTemplate" required t={t}>
               <select
                 value={state.supports.templateId}
-                onChange={(event) => {
-                  const templateId = event.target.value as PrototypeState["supports"]["templateId"];
+                onChange={(event) =>
                   updateSupport({
-                    templateId,
-                    anchorsPerMountingPoint:
-                      templateId === "twoPoint"
-                        ? 2
-                        : templateId === "fourPoint"
-                          ? 4
-                          : state.supports.anchorsPerMountingPoint
-                  });
-                }}
+                    templateId: event.target.value as PrototypeState["supports"]["templateId"]
+                  })
+                }
               >
                 <option value="twoPoint">{t("templateTwoPoint")}</option>
                 <option value="fourPoint">{t("templateFourPoint")}</option>
@@ -2131,7 +2104,7 @@ function LoadStep({
             />
             <span>
               <strong>{t("protectiveCover")}</strong>
-              <small>{t("endpointEffectUnresolved")}</small>
+              <small>{t("liveMaterialEvaluationUnavailable")}</small>
             </span>
           </label>
           <label className="check-row">
@@ -2142,7 +2115,7 @@ function LoadStep({
             />
             <span>
               <strong>{t("divider")}</strong>
-              <small>{t("endpointEffectUnresolved")}</small>
+              <small>{t("liveMaterialEvaluationUnavailable")}</small>
             </span>
           </label>
         </Card>
@@ -2205,7 +2178,7 @@ function LoadStep({
               label={t("productCode")}
               source="user"
               required
-              error={!manualDraft.productCode ? t("endpointEffectUnresolved") : undefined}
+              error={!manualDraft.productCode ? t("requiredMessage") : undefined}
               t={t}
             >
               <input
@@ -2372,25 +2345,7 @@ function LoadStep({
   );
 }
 
-function ResultsStep({
-  state,
-  bomRows,
-  scenario,
-  expandedBomRow,
-  setExpandedBomRow,
-  t
-}: Readonly<{
-  state: PrototypeState;
-  bomRows: BomRow[];
-  scenario: ScenarioId;
-  expandedBomRow: string | null;
-  setExpandedBomRow: React.Dispatch<React.SetStateAction<string | null>>;
-  t: Translator;
-}>) {
-  const totalLength = state.routes.reduce((total, route) => total + geometryLength(route), 0);
-  const reviewCount = bomRows.filter(
-    (row) => row.status === "review" || row.status === "assumption" || row.warnings.length > 0
-  ).length;
+function ResultsStep({ scenario, t }: Readonly<{ scenario: ScenarioId; t: Translator }>) {
   if (scenario === "noResults")
     return (
       <div className="empty-results">
@@ -2403,34 +2358,63 @@ function ResultsStep({
     <div className="step-stack">
       <div className="result-summary">
         <div>
-          <span>{t("summaryRoutes")}</span>
-          <strong>{state.routes.length}</strong>
-          <small>
-            {state.connections.length} {t("connectionsTab").toLocaleLowerCase()}
-          </small>
+          <span>{t("fixtureBomLines")}</span>
+          <strong>{sampleBomFixture.summary.bomLineCount}</strong>
+          <small>{sampleBomFixture.schemaVersion}</small>
         </div>
         <div>
-          <span>{t("summaryStraightLength")}</span>
-          <strong>{totalLength.toFixed(1)} m</strong>
-          <small>
-            {state.routes.reduce((total, route) => total + route.geometry.length, 0)}{" "}
-            {t("orderedGeometry").toLocaleLowerCase()}
-          </small>
+          <span>{t("fixtureEngine")}</span>
+          <strong>v{sampleBomFixture.engineVersion}</strong>
+          <small>{sampleBomFixture.formulaCatalogVersion}</small>
         </div>
         <div className="review">
-          <span>{t("summaryReviewItems")}</span>
-          <strong>{reviewCount}</strong>
+          <span>{t("fixtureWarnings")}</span>
+          <strong>{sampleBomFixture.summary.warningCount}</strong>
           <small>{t("engineeringReview")}</small>
         </div>
       </div>
       <Notice
-        tone="review"
-        title={t("prototypeData")}
-        message={t("prototypeResultWarning")}
-        resolution={t("stateAnchorReviewResolution")}
+        tone="warning"
+        title={t("sampleResultTitle")}
+        message={t("liveCalculationUnavailable")}
+        resolution={t("sampleResultWarning")}
         t={t}
       />
-      <Card number="01" title={t("detailedBom")} source="calculated" t={t}>
+      <div className="fixture-provenance">
+        <h3>{t("fixtureProvenance")}</h3>
+        <dl>
+          <div>
+            <dt>{t("fixtureId")}</dt>
+            <dd>
+              <code>{sampleBomFixture.id}</code>
+            </dd>
+          </div>
+          <div>
+            <dt>{t("source")}</dt>
+            <dd>
+              <code>{sampleBomFixture.source}</code>
+            </dd>
+          </div>
+          <div>
+            <dt>{t("catalogSnapshot")}</dt>
+            <dd>
+              <code>
+                {sampleBomFixture.catalogSnapshot.id} ·{" "}
+                {sampleBomFixture.catalogSnapshot.contentHash}
+              </code>
+            </dd>
+          </div>
+          <div>
+            <dt>{t("ruleSnapshot")}</dt>
+            <dd>
+              <code>
+                {sampleBomFixture.ruleSnapshot.id} · {sampleBomFixture.ruleSnapshot.contentHash}
+              </code>
+            </dd>
+          </div>
+        </dl>
+      </div>
+      <Card number="01" title={t("detailedBom")} source="fixture" t={t}>
         <div className="bom-table-wrap">
           <table className="bom-table">
             <thead>
@@ -2447,117 +2431,48 @@ function ResultsStep({
                 <th>{t("source")}</th>
                 <th>{t("ruleStatus")}</th>
                 <th>{t("warnings")}</th>
-                <th></th>
               </tr>
             </thead>
             <tbody>
-              {bomRows.flatMap((row) => {
-                const statusKey: Record<BomRow["status"], TranslationKey> = {
-                  catalog: "statusCatalog",
-                  calculated: "statusCalculated",
-                  assumption: "statusAssumption",
-                  review: "statusReview",
-                  manual: "statusManual"
-                };
-                const tone =
-                  row.status === "review"
-                    ? "review"
-                    : row.status === "assumption"
-                      ? "warning"
-                      : row.status === "manual"
-                        ? "manual"
-                        : "success";
-                const main = (
-                  <tr key={row.id}>
-                    <td>
-                      <strong>{row.category}</strong>
-                      <small>{row.productCode ?? t("codeUnresolved")}</small>
-                    </td>
-                    <td>
-                      {row.description}
-                      <small>
-                        {t("includedItems")}:{" "}
-                        {row.includedItems.length ? row.includedItems.join("; ") : t("none")}
-                      </small>
-                    </td>
-                    <td className="numeric">
-                      <strong>{row.technicalQuantity}</strong> {row.unit}
-                    </td>
-                    <td className="numeric">
-                      {row.packageSize} {row.unit}
-                    </td>
-                    <td className="numeric">{formatQuantity(row.packageCount)}</td>
-                    <td className="numeric">
-                      <strong>{formatQuantity(row.orderQuantity)}</strong> {row.unit}
-                    </td>
-                    <td className="numeric">
-                      {formatQuantity(row.spareQuantity)} {row.unit}
-                    </td>
-                    <td>
-                      <span>{row.source}</span>
-                      <small>{row.sourceVersion}</small>
-                      {row.manualOverride ? <em>{t("manualIndicator")}</em> : null}
-                    </td>
-                    <td>
-                      <StatusBadge tone={tone} label={t(statusKey[row.status])} />
-                    </td>
-                    <td>
-                      {row.warnings.length ? (
-                        <span className="warning-count active">{row.warnings.length}</span>
-                      ) : (
-                        <span className="warning-count">0</span>
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        className="why-button"
-                        onClick={() =>
-                          setExpandedBomRow((current) => (current === row.id ? null : row.id))
-                        }
-                        type="button"
-                      >
-                        {expandedBomRow === row.id ? t("hideWhy") : t("why")}
-                      </button>
-                    </td>
-                  </tr>
-                );
-                const detail =
-                  expandedBomRow === row.id ? (
-                    <tr className="why-row" key={`${row.id}-why`}>
-                      <td colSpan={11}>
-                        <div className="why-panel">
-                          <div>
-                            <strong>{t("why")}</strong>
-                            <span>{row.id}</span>
-                          </div>
-                          <ol>
-                            {row.why.map((line) => (
-                              <li key={line}>{line}</li>
-                            ))}
-                          </ol>
-                          {row.warnings.length ? (
-                            <ul className="warning-list">
-                              {row.warnings.map((warning) => (
-                                <li key={warning}>◇ {warning}</li>
-                              ))}
-                            </ul>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  ) : null;
-                return detail ? [main, detail] : [main];
-              })}
+              {sampleBomFixture.rows.map((row) => (
+                <tr key={row.id}>
+                  <td>
+                    <strong>{row.category}</strong>
+                    <small>{row.productCode}</small>
+                  </td>
+                  <td>{row.description}</td>
+                  <td className="numeric">
+                    <strong>{row.technicalQuantity}</strong> {row.unit}
+                  </td>
+                  <td className="numeric">{row.packageIncrement}</td>
+                  <td className="numeric">{row.packageCount}</td>
+                  <td className="numeric">
+                    <strong>{row.orderedQuantity}</strong> {row.unit}
+                  </td>
+                  <td className="numeric">
+                    {row.spareQuantity} {row.unit}
+                  </td>
+                  <td>
+                    <span>{sampleBomFixture.id}</span>
+                    <small>engine v{sampleBomFixture.engineVersion}</small>
+                  </td>
+                  <td>
+                    <StatusBadge
+                      tone="success"
+                      label={t(row.status === "calculated" ? "statusCalculated" : "statusCatalog")}
+                    />
+                  </td>
+                  <td>
+                    <span className="warning-count">{row.warningCount}</span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       </Card>
     </div>
   );
-}
-
-function formatQuantity(value: number) {
-  return Number.isInteger(value) ? value.toString() : value.toFixed(2);
 }
 
 function LoadingState({ t }: Readonly<{ t: Translator }>) {

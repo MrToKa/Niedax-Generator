@@ -163,10 +163,10 @@ export function CatalogAdminPanel() {
       });
       setSelectedVersionId(body.catalog.id);
       setSelectedHash(body.catalog.contentHash);
-      if (body.catalog.report)
-        setPipeline((current) =>
-          current ? { ...current, report: body.catalog.report! } : current
-        );
+      const report = body.catalog.report;
+      setPipeline((current) =>
+        report && current?.report.contentHash === report.contentHash ? { ...current, report } : null
+      );
       await refreshVersions();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Import failed");
@@ -199,7 +199,11 @@ export function CatalogAdminPanel() {
             );
       const validationReport = "report" in body.catalog ? body.catalog.report : null;
       if (validationReport) {
-        setPipeline((current) => (current ? { ...current, report: validationReport } : current));
+        setPipeline((current) =>
+          current?.report.contentHash === validationReport.contentHash
+            ? { ...current, report: validationReport }
+            : null
+        );
       }
       setSelectedVersionId(version.id);
       setSelectedHash(version.contentHash);
@@ -239,7 +243,14 @@ export function CatalogAdminPanel() {
             type="file"
             accept=".csv,.xlsx"
             multiple
-            onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))}
+            onChange={(event) => {
+              setFiles(Array.from(event.currentTarget.files ?? []));
+              setPipeline(null);
+              setSelectedVersionId(null);
+              setSelectedHash(null);
+              setFilter("all");
+              setError(null);
+            }}
           />
         </label>
         <button
@@ -311,33 +322,41 @@ export function CatalogAdminPanel() {
             </p>
           </div>
           {pipeline.report.issues.length ? (
-            <div className="catalog-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Severity</th>
-                    <th>Code</th>
-                    <th>Source row</th>
-                    <th>Message</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pipeline.report.issues.slice(0, 100).map((item, index) => (
-                    <tr key={`${item.code}-${item.rowNumber}-${index}`}>
-                      <td>{item.severity}</td>
-                      <td>
-                        <code>{item.code}</code>
-                      </td>
-                      <td>
-                        {item.sheet}:{item.rowNumber}
-                        {item.productCode ? ` · ${item.productCode}` : ""}
-                      </td>
-                      <td>{item.message}</td>
+            <>
+              {pipeline.report.issues.length > 100 ? (
+                <p className="catalog-truncation" role="status">
+                  Showing the first 100 of {pipeline.report.issues.length} issues. Use the Error CSV
+                  for the complete report.
+                </p>
+              ) : null}
+              <div className="catalog-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Severity</th>
+                      <th>Code</th>
+                      <th>Source row</th>
+                      <th>Message</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {pipeline.report.issues.slice(0, 100).map((item, index) => (
+                      <tr key={`${item.code}-${item.rowNumber}-${index}`}>
+                        <td>{item.severity}</td>
+                        <td>
+                          <code>{item.code}</code>
+                        </td>
+                        <td>
+                          {item.sheet}:{item.rowNumber}
+                          {item.productCode ? ` · ${item.productCode}` : ""}
+                        </td>
+                        <td>{item.message}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : null}
           <div className="catalog-filter">
             <label>
@@ -355,6 +374,12 @@ export function CatalogAdminPanel() {
               </select>
             </label>
           </div>
+          {filteredDiff.length > 250 ? (
+            <p className="catalog-truncation" role="status">
+              Showing the first 250 of {filteredDiff.length} matching diff rows. Narrow the filter
+              to inspect a smaller set.
+            </p>
+          ) : null}
           <div className="catalog-table-wrap">
             <table>
               <thead>

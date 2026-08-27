@@ -12,7 +12,7 @@
     "start": "node dist/server.js",
     "catalog:seed": "node dist/catalog-seed.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run tests"
+    "test": "vitest run --root ../.. apps/backend/tests"
   },
   "dependencies": {
     "@fastify/cookie": "11.1.2",
@@ -20,7 +20,6 @@
     "@niedax/calculation-engine": "workspace:*",
     "@niedax/catalog-import": "workspace:*",
     "@niedax/domain": "workspace:*",
-    "@niedax/export": "workspace:*",
     "@node-rs/argon2": "2.0.2",
     "fastify": "5.11.3",
     "pg": "8.23.0"

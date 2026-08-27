@@ -1229,6 +1229,19 @@ export function runCatalogPipeline(
       "All rows in one bundle must target the same candidate catalog version"
     );
   }
+  const scopes = new Set(manifest.map((row) => row.importScope));
+  if (scopes.size > 1) {
+    issue(
+      issues,
+      "error",
+      "CATALOG_SCOPE_MISMATCH",
+      "manifest",
+      1,
+      null,
+      "import_scope",
+      "All manifest rows in one bundle must target the same import scope"
+    );
+  }
   const diff = diffProducts(bundle, issues, active);
   const count = (classification: CatalogDiffEntry["classification"]): number =>
     diff.filter((entry) => entry.classification === classification).length;

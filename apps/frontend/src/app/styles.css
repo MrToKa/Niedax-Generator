@@ -104,6 +104,12 @@
 .catalog-selection {
   overflow-wrap: anywhere;
 }
+.catalog-truncation {
+  margin: 16px 0 0;
+  color: #586675;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
 
 .catalog-table-wrap {
   width: 100%;
@@ -761,7 +767,8 @@ textarea:disabled {
   color: #665323;
   background: #f7f1dd;
 }
-.source-catalog {
+.source-catalog,
+.source-fixture {
   color: #2e6252;
   background: #e6f3ed;
 }
@@ -1060,7 +1067,7 @@ input[aria-invalid="true"] {
   vertical-align: top;
 }
 .route-table tbody tr:hover,
-.bom-table tbody tr:not(.why-row):hover {
+.bom-table tbody tr:hover {
   background: #fafcfb;
 }
 .route-table tr.selected-row {
@@ -1086,8 +1093,7 @@ input[aria-invalid="true"] {
   gap: 6px;
   justify-content: end;
 }
-.row-actions button,
-.why-button {
+.row-actions button {
   padding: 4px 6px;
   border: 0;
   color: var(--green-dark);
@@ -1423,6 +1429,40 @@ input[aria-invalid="true"] {
 .result-summary .review strong {
   color: #8c542e;
 }
+.fixture-provenance {
+  width: 100%;
+  max-width: 1280px;
+  margin-top: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+.fixture-provenance h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+.fixture-provenance dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.fixture-provenance dl > div {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.2fr) 1fr;
+  gap: 12px;
+}
+.fixture-provenance dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.fixture-provenance dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
 .bom-table td {
   max-width: 240px;
   line-height: 1.45;
@@ -1441,47 +1481,6 @@ input[aria-invalid="true"] {
   font-size: 9px;
   font-style: normal;
   font-weight: 800;
-}
-.why-row td {
-  padding: 0;
-  background: #f8faf9;
-}
-.why-panel {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 18px;
-  padding: 15px 18px 17px 38px;
-  border-left: 3px solid var(--green);
-}
-.why-panel > div strong,
-.why-panel > div span {
-  display: block;
-}
-.why-panel > div span {
-  margin-top: 4px;
-  color: var(--muted);
-  font:
-    10px ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
-}
-.why-panel ol,
-.why-panel ul {
-  margin: 0;
-  padding-left: 20px;
-  color: #4e5d56;
-}
-.why-panel li + li {
-  margin-top: 4px;
-}
-.why-panel .warning-list {
-  grid-column: 2;
-  padding: 9px 11px;
-  border-radius: 6px;
-  color: #74501c;
-  background: #fff2cf;
-  list-style: none;
 }
 .status-badge {
   display: inline-flex;

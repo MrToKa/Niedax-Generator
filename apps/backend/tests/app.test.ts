@@ -17,6 +17,12 @@ const emptyStore: UserStore = {
   setUserRole: async () => null
 };
 
+const mutationHeaders = {
+  host: "localhost:8080",
+  origin: "http://localhost:8080",
+  "x-niedax-csrf": "1"
+};
+
 describe("foundation HTTP API", () => {
   it("serves liveness without a database query", async () => {
     const app = await buildApp({
@@ -52,10 +58,76 @@ describe("foundation HTTP API", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/auth/register",
-      headers: { host: "localhost:8080", origin: "http://localhost:8080", "x-niedax-csrf": "1" },
+      headers: mutationHeaders,
       payload: {}
     });
     expect(response.statusCode).toBe(404);
+    await app.close();
+  });
+
+  it("returns a stable 400 response for invalid request schemas", async () => {
+    const app = await buildApp({ store: emptyStore, sessionPepper: "test" });
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/login",
+      headers: mutationHeaders,
+      payload: { username: "missing-password" }
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({
+      error: {
+        code: "REQUEST_VALIDATION_FAILED",
+        message: "Request validation failed",
+        correlationId: expect.any(String)
+      }
+    });
+    await app.close();
+  });
+
+  it("preserves malformed JSON and unsupported media type client errors", async () => {
+    const app = await buildApp({ store: emptyStore, sessionPepper: "test" });
+    const malformed = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/login",
+      headers: { ...mutationHeaders, "content-type": "application/json" },
+      payload: '{"username":'
+    });
+    expect(malformed.statusCode).toBe(400);
+    expect(malformed.json()).toMatchObject({ error: { code: "INVALID_JSON_BODY" } });
+
+    const unsupported = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/login",
+      headers: { ...mutationHeaders, "content-type": "application/xml" },
+      payload: "<login />"
+    });
+    expect(unsupported.statusCode).toBe(415);
+    expect(unsupported.json()).toMatchObject({ error: { code: "UNSUPPORTED_MEDIA_TYPE" } });
+    await app.close();
+  });
+
+  it("returns a stable 429 response when the login rate limit is exceeded", async () => {
+    const app = await buildApp({ store: emptyStore, sessionPepper: "test" });
+    const attempt = () =>
+      app.inject({
+        method: "POST",
+        url: "/api/v1/auth/login",
+        headers: mutationHeaders,
+        payload: { username: "unknown.user", password: "incorrect" }
+      });
+    for (let index = 0; index < 5; index += 1) {
+      expect((await attempt()).statusCode).toBe(401);
+    }
+    const limited = await attempt();
+    expect(limited.statusCode).toBe(429);
+    expect(limited.headers["retry-after"]).toBeTruthy();
+    expect(limited.json()).toMatchObject({
+      error: {
+        code: "RATE_LIMIT_EXCEEDED",
+        message: "Too many requests",
+        correlationId: expect.any(String)
+      }
+    });
     await app.close();
   });
 });

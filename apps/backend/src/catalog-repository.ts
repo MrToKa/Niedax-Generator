@@ -414,7 +414,7 @@ async function materializeCandidate(
 export class PgCatalogAdminRepository implements CatalogAdminRepository {
   public constructor(private readonly pool: Pool) {}
 
-  public async getActiveComparison(): Promise<ActiveCatalogComparison | null> {
+  public async getActiveComparison(scope: string): Promise<ActiveCatalogComparison | null> {
     const result = await this.pool.query<{ normalized_bundle: ImportPayload }>(
       `SELECT import.normalized_bundle
          FROM catalog_versions version
@@ -423,8 +423,9 @@ export class PgCatalogAdminRepository implements CatalogAdminRepository {
             WHERE catalog_version_id = version.id AND status IN ('validated', 'superseded')
             ORDER BY created_at DESC LIMIT 1
          ) import ON true
-        WHERE version.status = 'active'
-        ORDER BY version.activated_at DESC LIMIT 1`
+        WHERE version.status = 'active' AND version.scope = $1
+        ORDER BY version.activated_at DESC LIMIT 1`,
+      [scope]
     );
     const bundle = result.rows[0]?.normalized_bundle.pipeline.bundle;
     if (!bundle) return null;

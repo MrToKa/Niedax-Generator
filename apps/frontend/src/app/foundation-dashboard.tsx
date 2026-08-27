@@ -5,6 +5,7 @@ import { CatalogAdminPanel } from "./catalog-admin";
 
 type Language = "bg" | "en";
 type Role = "administrator" | "reviewer";
+type DashboardError = "failed" | "networkFailed" | "sessionFailed" | "logoutFailed";
 
 interface User {
   id: string;
@@ -32,7 +33,11 @@ const copy = {
     application: "Application",
     catalogue: "Catalogue",
     rules: "Calculation rules",
-    failed: "Sign-in failed. Check the credentials and try again."
+    failed: "Sign-in failed. Check the credentials and try again.",
+    networkFailed: "The local API could not be reached. Try again.",
+    sessionLoading: "Checking the current session…",
+    sessionFailed: "The current session could not be checked. Try reloading the page.",
+    logoutFailed: "Sign-out failed. Your session may still be active."
   },
   bg: {
     ready: "Основата е готова",
@@ -46,23 +51,39 @@ const copy = {
     application: "Приложение",
     catalogue: "Каталог",
     rules: "Изчислителни правила",
-    failed: "Неуспешен вход. Проверете данните и опитайте отново."
+    failed: "Неуспешен вход. Проверете данните и опитайте отново.",
+    networkFailed: "Локалното API не е достъпно. Опитайте отново.",
+    sessionLoading: "Проверка на текущата сесия…",
+    sessionFailed: "Текущата сесия не може да бъде проверена. Презаредете страницата.",
+    logoutFailed: "Неуспешен изход. Сесията ви може все още да е активна."
   }
 } as const;
 
 export function FoundationDashboard({ versions }: Readonly<{ versions: Versions }>) {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>("bg");
   const [user, setUser] = useState<User | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DashboardError | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
   const labels = copy[language];
 
   const refreshSession = useCallback(async () => {
-    const response = await fetch("/api/v1/auth/me", { cache: "no-store" });
-    if (response.ok) {
-      const body = (await response.json()) as { user: User };
-      setUser(body.user);
-    } else {
+    setError(null);
+    try {
+      const response = await fetch("/api/v1/auth/me", { cache: "no-store" });
+      if (response.ok) {
+        const body = (await response.json()) as { user: User };
+        setUser(body.user);
+      } else if (response.status === 401 || response.status === 403) {
+        setUser(null);
+      } else {
+        throw new Error(`Session request failed (${response.status})`);
+      }
+    } catch {
       setUser(null);
+      setError("sessionFailed");
+    } finally {
+      setSessionLoading(false);
     }
   }, []);
 
@@ -70,33 +91,60 @@ export function FoundationDashboard({ versions }: Readonly<{ versions: Versions 
     void refreshSession();
   }, [refreshSession]);
 
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setError(null);
-    const form = new FormData(event.currentTarget);
-    const response = await fetch("/api/v1/auth/login", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-niedax-csrf": "1" },
-      body: JSON.stringify({
-        username: form.get("username"),
-        password: form.get("password")
-      })
-    });
-    if (!response.ok) {
-      setError(labels.failed);
-      return;
+    setBusy(true);
+    const form = new FormData(formElement);
+    try {
+      const response = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-niedax-csrf": "1" },
+        body: JSON.stringify({
+          username: form.get("username"),
+          password: form.get("password")
+        })
+      });
+      if (response.status === 401 || response.status === 403) {
+        setError("failed");
+        return;
+      }
+      if (!response.ok) {
+        setError("networkFailed");
+        return;
+      }
+      const body = (await response.json()) as { user: User };
+      setUser(body.user);
+      formElement.reset();
+    } catch {
+      setError("networkFailed");
+    } finally {
+      setBusy(false);
     }
-    const body = (await response.json()) as { user: User };
-    setUser(body.user);
-    event.currentTarget.reset();
   }
 
   async function logout() {
-    await fetch("/api/v1/auth/logout", {
-      method: "POST",
-      headers: { "x-niedax-csrf": "1" }
-    });
-    setUser(null);
+    setError(null);
+    setBusy(true);
+    try {
+      const response = await fetch("/api/v1/auth/logout", {
+        method: "POST",
+        headers: { "x-niedax-csrf": "1" }
+      });
+      if (!response.ok) {
+        throw new Error(`Sign-out request failed (${response.status})`);
+      }
+      setUser(null);
+    } catch {
+      setError("logoutFailed");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -112,10 +160,20 @@ export function FoundationDashboard({ versions }: Readonly<{ versions: Versions 
             <p className="subtitle">{labels.subtitle}</p>
           </div>
           <div className="language" aria-label="Language">
-            <button className={language === "bg" ? "active" : ""} onClick={() => setLanguage("bg")}>
+            <button
+              type="button"
+              className={language === "bg" ? "active" : ""}
+              aria-pressed={language === "bg"}
+              onClick={() => setLanguage("bg")}
+            >
               BG
             </button>
-            <button className={language === "en" ? "active" : ""} onClick={() => setLanguage("en")}>
+            <button
+              type="button"
+              className={language === "en" ? "active" : ""}
+              aria-pressed={language === "en"}
+              onClick={() => setLanguage("en")}
+            >
               EN
             </button>
           </div>
@@ -132,8 +190,15 @@ export function FoundationDashboard({ versions }: Readonly<{ versions: Versions 
           <Version label={labels.rules} value={versions.rules} />
         </div>
 
-        <div className="account">
-          {user ? (
+        <div className="account" aria-busy={sessionLoading || busy}>
+          {error ? (
+            <p className="error" role="alert">
+              {labels[error]}
+            </p>
+          ) : null}
+          {sessionLoading ? (
+            <p role="status">{labels.sessionLoading}</p>
+          ) : user ? (
             <div className="signed-in">
               <div>
                 <small>{labels.signedIn}</small>
@@ -142,7 +207,12 @@ export function FoundationDashboard({ versions }: Readonly<{ versions: Versions 
                   @{user.username} · {labels.role}: {user.role}
                 </span>
               </div>
-              <button className="primary" onClick={() => void logout()}>
+              <button
+                className="primary"
+                disabled={busy}
+                onClick={() => void logout()}
+                type="button"
+              >
                 {labels.logout}
               </button>
             </div>
@@ -157,12 +227,7 @@ export function FoundationDashboard({ versions }: Readonly<{ versions: Versions 
                 {labels.password}
                 <input name="password" type="password" autoComplete="current-password" required />
               </label>
-              {error ? (
-                <p className="error" role="alert">
-                  {error}
-                </p>
-              ) : null}
-              <button className="primary" type="submit">
+              <button className="primary" type="submit" disabled={busy}>
                 {labels.login}
               </button>
             </form>

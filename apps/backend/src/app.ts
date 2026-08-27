@@ -68,6 +68,16 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         error: { code: error.code, message: error.message, correlationId: correlationId(request) }
       });
     }
+    const clientError = publicClientError(error);
+    if (clientError) {
+      return reply.status(clientError.statusCode).send({
+        error: {
+          code: clientError.code,
+          message: clientError.message,
+          correlationId: correlationId(request)
+        }
+      });
+    }
     request.log.error({ err: error }, "request failed");
     return reply.status(500).send({
       error: {
@@ -448,6 +458,52 @@ function correlationId(request: FastifyRequest): string {
   return typeof provided === "string" && /^[A-Za-z0-9._:-]{1,128}$/u.test(provided)
     ? provided
     : request.id;
+}
+
+interface PublicClientError {
+  readonly statusCode: 400 | 413 | 415 | 429;
+  readonly code: string;
+  readonly message: string;
+}
+
+function publicClientError(error: unknown): PublicClientError | null {
+  if (!error || typeof error !== "object") return null;
+  const candidate = error as { readonly statusCode?: unknown; readonly code?: unknown };
+  if (candidate.statusCode === 429) {
+    return {
+      statusCode: 429,
+      code: "RATE_LIMIT_EXCEEDED",
+      message: "Too many requests"
+    };
+  }
+  switch (candidate.code) {
+    case "FST_ERR_VALIDATION":
+      return {
+        statusCode: 400,
+        code: "REQUEST_VALIDATION_FAILED",
+        message: "Request validation failed"
+      };
+    case "FST_ERR_CTP_INVALID_JSON_BODY":
+      return {
+        statusCode: 400,
+        code: "INVALID_JSON_BODY",
+        message: "Request body is not valid JSON"
+      };
+    case "FST_ERR_CTP_BODY_TOO_LARGE":
+      return {
+        statusCode: 413,
+        code: "PAYLOAD_TOO_LARGE",
+        message: "Request body is too large"
+      };
+    case "FST_ERR_CTP_INVALID_MEDIA_TYPE":
+      return {
+        statusCode: 415,
+        code: "UNSUPPORTED_MEDIA_TYPE",
+        message: "Content type is not supported"
+      };
+    default:
+      return null;
+  }
 }
 
 function requireCatalog(options: BuildAppOptions): CatalogAdminService {
