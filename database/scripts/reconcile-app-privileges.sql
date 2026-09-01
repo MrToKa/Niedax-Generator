@@ -29,5 +29,10 @@ BEGIN
   IF to_regclass('public.warnings') IS NOT NULL THEN
     EXECUTE 'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.warnings TO niedax_generator_app';
   END IF;
+
+  IF to_regclass('public.project_audit_events') IS NOT NULL THEN
+    EXECUTE 'REVOKE UPDATE, DELETE, TRUNCATE ON TABLE public.project_audit_events FROM niedax_generator_app';
+    EXECUTE 'GRANT SELECT, INSERT ON TABLE public.project_audit_events TO niedax_generator_app';
+  END IF;
 END
 $$;

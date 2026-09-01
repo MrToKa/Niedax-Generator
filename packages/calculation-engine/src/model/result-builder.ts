@@ -3,7 +3,7 @@ import type {
   CalculationInputV2,
   CalculationResultV2,
   CalculationWarningV2,
-  TraceStepV1
+  TraceStepV2
 } from "@niedax/domain";
 
 import { ExactDecimal, sumDecimals } from "../arithmetic/decimal.js";
@@ -61,7 +61,7 @@ function buildIncludedItems(demand: AggregatedDemand, indexes: CalculationIndexe
     );
 }
 
-function assertLineReconciles(line: BomLineV2, steps: readonly TraceStepV1[]): void {
+function assertLineReconciles(line: BomLineV2, steps: readonly TraceStepV2[]): void {
   const technical = line.technicalQuantity.value;
   const reserve = line.reserveQuantity.value;
   const reserved = line.reservedQuantity.value;
@@ -239,7 +239,7 @@ export function buildCalculationResult(
     catalogSnapshot: input.catalogSnapshot,
     ruleSnapshot: input.ruleSnapshot,
     bomLines: sortedLines,
-    trace: { schemaVersion: "calculation-trace/v1", steps },
+    trace: { schemaVersion: "calculation-trace/v2", steps },
     warnings,
     summary: {
       bomLineCount: sortedLines.length,

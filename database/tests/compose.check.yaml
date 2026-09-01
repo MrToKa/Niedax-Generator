@@ -44,11 +44,28 @@ services:
       [
         "sh",
         "-c",
-        "node dist/migrate.js up && node dist/migrate.js verify && node dist/seed.js && node dist/seed.js && node dist/database-test.js && node dist/stage4-test.js && node dist/stage5-test.js"
+        "node dist/migrate.js up && node dist/migrate.js verify && node dist/seed.js && node dist/seed.js && node dist/database-test.js && node dist/stage4-test.js && node dist/stage5-test.js && node dist/stage7-test.js"
       ]
     depends_on:
       migrations:
         condition: service_completed_successfully
+    networks: [database]
+
+  stage7-acceptance:
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile
+      target: acceptance
+    environment:
+      NODE_ENV: test
+      STAGE7_ACCEPTANCE: "1"
+      PGHOST: postgres
+      PGDATABASE: niedax_generator
+      PGUSER: niedax_generator_migrator
+      PGPASSWORD: ${DB_CHECK_PASSWORD:?set DB_CHECK_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks: [database]
 
 networks:

@@ -99,13 +99,20 @@ export function packageIncrement(
   demand: AggregatedDemand,
   includePackaging: boolean
 ): { readonly enabled: boolean; readonly increment: ExactDecimal } {
+  const catalogIncrement = (): ExactDecimal => {
+    const increment = demand.product?.packageIncrement;
+    if (increment === null || increment === undefined) {
+      throw new CalculationEngineError(
+        "SEMANTIC_INPUT_INVALID",
+        "An orderable catalog demand requires an explicit package increment."
+      );
+    }
+    return ExactDecimal.from(increment.value);
+  };
   if (!includePackaging || demand.packagingPolicy.mode === "disabled")
     return {
       enabled: false,
-      increment:
-        demand.product === null
-          ? ExactDecimal.from("1")
-          : ExactDecimal.from(demand.product.packageIncrement.value)
+      increment: demand.product === null ? ExactDecimal.from("1") : catalogIncrement()
     };
   if (demand.packagingPolicy.mode === "incrementOverride")
     return {
@@ -117,7 +124,7 @@ export function packageIncrement(
       "SEMANTIC_INPUT_INVALID",
       "A free-text item requires an explicit package increment when package rounding is enabled."
     );
-  return { enabled: true, increment: ExactDecimal.from(demand.product.packageIncrement.value) };
+  return { enabled: true, increment: catalogIncrement() };
 }
 
 export function finalizeQuantities(

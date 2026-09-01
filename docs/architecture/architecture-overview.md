@@ -10,8 +10,9 @@ Stage 3 turned the Stage 2 proposed input shape into strict, versioned applicati
 contracts. The contracts deliberately preserve unresolved engineering choices as explicit rule
 records, unresolved material states, warnings, and engineering-review requirements. Stage 6 keeps
 v1 unchanged and adds the fully resolved `CalculationInputV2`, `CalculationResultV2`, and
-`CalculationTraceV1` formula path. It calculates quantities from versioned input facts but does not
-claim anchor capacity or structural suitability.
+formula-trace path. Stage 7 introduced `CalculationTraceV2` for persisted rule-version slugs while
+retaining the SemVer-only `CalculationTraceV1` contract unchanged. It calculates quantities from
+versioned input facts but does not claim anchor capacity or structural suitability.
 
 Detailed contracts: [module boundaries](module-boundaries.md),
 [HTTP API v1](api-contracts-v1.md),

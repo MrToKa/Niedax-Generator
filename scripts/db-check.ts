@@ -10,9 +10,21 @@ const environment = {
 };
 
 try {
-  run("docker", ["compose", "-p", project, "-f", composeFile, "build", "migrations", "verify"], {
-    env: environment
-  });
+  run(
+    "docker",
+    [
+      "compose",
+      "-p",
+      project,
+      "-f",
+      composeFile,
+      "build",
+      "migrations",
+      "verify",
+      "stage7-acceptance"
+    ],
+    { env: environment }
+  );
   run(
     "docker",
     ["compose", "-p", project, "-f", composeFile, "up", "--detach", "--wait", "postgres"],
@@ -26,6 +38,11 @@ try {
   run(
     "docker",
     ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "verify"],
+    { env: environment }
+  );
+  run(
+    "docker",
+    ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "stage7-acceptance"],
     { env: environment }
   );
   run(
@@ -46,6 +63,11 @@ try {
   run(
     "docker",
     ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "verify"],
+    { env: environment }
+  );
+  run(
+    "docker",
+    ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "stage7-acceptance"],
     { env: environment }
   );
 } finally {

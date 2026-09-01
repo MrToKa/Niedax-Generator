@@ -1,8 +1,13 @@
 # Versioned HTTP API and operation contracts
 
-Status: **Accepted Stage 3 contract; handlers are not implemented in this stage**  
+Status: **Accepted Stage 3 contract; the listed Stage 7 project handlers are implemented**
 Base path: `/api/v1`  
 Media type: `application/json` except upload and download operations
+
+> Stage 7 implementation note: the project-list, project-draft, validation, transient calculation,
+> current-calculation, and editor-catalog operations described below are now implemented with
+> strict v2 payload schemas on the existing `/api/v1` HTTP boundary. The retained revision,
+> approval, and export operations in this document remain future contracts.
 
 ## Boundary choice
 
@@ -67,6 +72,51 @@ adapter until the role-name decision is migrated. UI visibility is never authori
 
 ## Operations
 
+### Implemented Stage 7 v2 application payloads
+
+The API major remains v1 because authentication, HTTP semantics, resource paths, and error behavior
+are backward compatible. The previously unwired operations use explicit v2 JSON payloads so the
+backend can invoke the production `CalculationInputV2`/`CalculationResultV2` engine without changing
+the meaning of retained v1 data.
+
+| Operation          | Method and route                                 | Strict response/request schemas                                                  | Notes                                                |
+| ------------------ | ------------------------------------------------ | -------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| List projects      | `GET /api/v1/projects`                           | `ProjectListResponseV2Schema`                                                    | Reviewer sees owned projects; Administrator sees all |
+| Create project     | `POST /api/v1/projects`                          | `CreateProjectDraftRequestV2Schema` / `ProjectDraftResponseV2Schema`             | idempotent, creator becomes owner                    |
+| Get project        | `GET /api/v1/projects/{projectId}`               | path UUID / `ProjectDraftResponseV2Schema`                                       | hydrates the complete draft graph                    |
+| Replace draft      | `PUT /api/v1/projects/{projectId}/draft`         | `ReplaceProjectDraftRequestV2Schema` / `ProjectDraftResponseV2Schema`            | idempotent, optimistic `expectedDraftVersion`        |
+| Validate draft     | `POST /api/v1/projects/{projectId}/validation`   | `ValidateProjectDraftRequestV2Schema` / `ProjectValidationResponseV2Schema`      | read-only; returns blocking/warning/review groups    |
+| Calculate draft    | `POST /api/v1/projects/{projectId}/calculations` | `CalculateProjectDraftRequestV2Schema` / `CalculateProjectDraftResponseV2Schema` | idempotent; replaces transient result only           |
+| Get current result | `GET /api/v1/projects/{projectId}/calculation`   | path UUID / `CurrentCalculationResponseV2Schema`                                 | result declares whether its draft version is stale   |
+| Get editor catalog | `GET /api/v1/catalog/editor-context`             | no body / `EditorCatalogResponseV2Schema`                                        | active, authenticated, presentation-safe choices     |
+
+Create, replace, and calculate require `Idempotency-Key`. Every mutation requires the existing CSRF
+and same-origin checks. Header correlation/idempotency values and actor identity are not accepted in
+JSON bodies. The v2 draft is allowed to be incomplete for autosave; authoritative validation must
+resolve every calculation-required selection before an engine call.
+
+The v2 payload definitions and their authoritative literals are exported by `@niedax/domain`.
+Unknown keys and unsupported literals are rejected. All JSON failures, including these operations,
+still use `ErrorEnvelopeV1Schema`.
+
+`ProjectDraftResponseV2Schema` also returns the catalog and rule snapshot references pinned by the
+acknowledged draft version. The browser compares those references with
+`EditorCatalogResponseV2Schema`; a mismatch requires a replacement/rebase before validation or
+calculation and never authorizes a silent product substitution.
+
+Calculation honors the Stage 6 `warnAndOmit` policy. A successfully evaluated result with an
+unresolved material returns `200` and `completeWithWarnings`: unaffected demand is retained, the
+unknown material is omitted, and the original structured warning remains `blocksApproval` with
+`approvalReady=false`. Input/schema contradictions still return `422 VALIDATION_FAILED`; the
+engine rejecting otherwise schema-valid semantic input returns `422 CALCULATION_FAILED`. The
+backend never manufactures a product or quantity merely to remove an approval warning.
+
+`CalculationResultV2.trace` uses `calculation-trace/v2`. Its rule-reference version accepts the
+same bounded persisted version identifier as v2 catalog/rule snapshots (for example `2022-p0`).
+The retained `calculation-trace/v1` contract remains SemVer-only; its meaning and previously saved
+v1 data are unchanged, and the result reader remains compatible with an already persisted nested
+v1 trace.
+
 ### Project drafts and validation
 
 | Operation              | Method and route                               | Request / response schema                                                                                          | Authorization                                  | Idempotency and transaction                                                               | Success behavior                                                  | Domain errors                                                                                                |
@@ -127,8 +177,8 @@ recalculate engineering or packaging quantities.
 | `403`       | `FORBIDDEN`                                                                                                      |
 | `404`       | `RESOURCE_NOT_FOUND`, `CATALOG_SNAPSHOT_MISSING`, `RULE_SNAPSHOT_MISSING` where hiding existence is not required |
 | `409`       | `CONFLICT_STALE_VERSION`, `INVALID_STATE_TRANSITION`, `IDEMPOTENCY_KEY_CONFLICT`                                 |
-| `422`       | `VALIDATION_FAILED`, `UNSUPPORTED_SCHEMA_VERSION`                                                                |
-| `500`       | `CALCULATION_FAILED`, `CATALOG_IMPORT_FAILED`, `EXPORT_FAILED`, `INTERNAL_ERROR`                                 |
+| `422`       | `VALIDATION_FAILED`, `UNSUPPORTED_SCHEMA_VERSION`, `CALCULATION_FAILED`                                          |
+| `500`       | `CATALOG_IMPORT_FAILED`, `EXPORT_FAILED`, `INTERNAL_ERROR`                                                       |
 
 All JSON errors validate against `ErrorEnvelopeV1Schema`. Validation issues expose safe field paths,
 stable issue codes, and curated messages. Unexpected errors become `INTERNAL_ERROR` with a generic

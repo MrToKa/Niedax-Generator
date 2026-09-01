@@ -5,6 +5,8 @@ import { PgCatalogAdminRepository } from "./catalog-repository.js";
 import { CatalogAdminService } from "./catalog-service.js";
 import { loadRuntimeConfig } from "./config.js";
 import { PgUserStore } from "./pg-store.js";
+import { PgProjectRepository } from "./project-repository.js";
+import { ProjectApplicationService } from "./project-service.js";
 
 const config = loadRuntimeConfig();
 const pool = new Pool({
@@ -23,7 +25,8 @@ const app = await buildApp({
   sessionPepper: config.sessionPepper,
   cookieSecure: config.cookieSecure,
   logger: true,
-  catalogService: new CatalogAdminService(new PgCatalogAdminRepository(pool))
+  catalogService: new CatalogAdminService(new PgCatalogAdminRepository(pool)),
+  projectService: new ProjectApplicationService(new PgProjectRepository(pool))
 });
 
 let stopping = false;

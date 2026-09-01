@@ -21,9 +21,22 @@ Same scope/key plus the same request hash returns the prior representation. Same
 different request hash returns `IDEMPOTENCY_KEY_CONFLICT`. Records are written in the same
 transaction as their durable side effect.
 
+Stage 7 also stores the strict response schema version and response JSON for newly implemented
+project mutations. This permits an exact status/body replay after a process restart; a resource ID
+alone is insufficient because the project may have advanced since the original response.
+
+## Stage 7 draft replacement
+
+Project creation and complete-graph replacement lock an idempotency scope and then commit the
+project row, authoritative versioned draft document, relational graph projection, incremented
+`draft_version`, append-only audit event, and replayable response together. A stale expected version
+or any child-graph/constraint failure rolls back the whole change. Validation is read-only and does
+not receive an idempotency key.
+
 ## Calculate
 
-1. Validate the v1 command and authorize `calculation:execute`.
+1. Validate the implemented Stage 7 v2 command (or a retained v1 command for future compatibility)
+   and authorize `calculation:execute`.
 2. Read the exact project draft version and resolve immutable catalog/rule snapshots, products, and
    assemblies in a consistent read.
 3. Canonicalize the fully resolved calculation input and derive SHA-256 using the documented engine
@@ -32,6 +45,14 @@ transaction as their durable side effect.
 5. Execute the pure engine outside a database transaction.
 6. In a short transaction, verify the draft version is still current, then save/replace the
    transient result, calculation audit metadata, and idempotency record.
+
+The Stage 7 transaction additionally records the exact calculated draft version and the replayable
+v2 response. Its integration assertion verifies that the revision count is unchanged before and
+after autosave, validation, and calculation.
+
+A successful `warnAndOmit` result is stored with its exact warnings. Material carrying
+`blocksApproval` is omitted from demand rather than guessed; the transient result remains
+inspectable and replayable while approval readiness remains false.
 
 A transient run is cacheable and replaceable. It is not revision history. A stale draft at step 6
 returns `CONFLICT_STALE_VERSION`; the computed value may be discarded. Retrying cannot create a

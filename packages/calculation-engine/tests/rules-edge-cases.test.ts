@@ -105,6 +105,20 @@ describe("approved Stage 6 rule edge cases", () => {
     ).toBe(true);
   });
 
+  it("accepts an included-only non-orderable product without packaging data", () => {
+    const input = mutableInput();
+    const fastener = product(input, "product-fastener");
+    fastener.orderable = false;
+    fastener.packageIncrement = null;
+    for (const template of input.assemblyTemplates) {
+      template.components = template.components.filter(
+        (component) => component.productId !== fastener.id
+      );
+    }
+
+    expect(() => calculateV2(input)).not.toThrow();
+  });
+
   it("calculates separate physical support groups as 5 + 5, not continuous 9", () => {
     const input = mutableInput();
     const connection = input.project.connections[0];

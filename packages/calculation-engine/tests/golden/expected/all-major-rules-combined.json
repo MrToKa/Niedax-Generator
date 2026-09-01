@@ -1204,7 +1204,7 @@
     }
   ],
   "trace": {
-    "schemaVersion": "calculation-trace/v1",
+    "schemaVersion": "calculation-trace/v2",
     "steps": [
       {
         "id": "trace-6148ea3c570125c9",

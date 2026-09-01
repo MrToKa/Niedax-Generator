@@ -9,14 +9,28 @@ import {
   Sha256Schema
 } from "../primitives.js";
 import type { DeepReadonly } from "../primitives.js";
-import { CALCULATION_INPUT_V2, CALCULATION_RESULT_V2, CALCULATION_TRACE_V1 } from "../versions.js";
+import {
+  CALCULATION_INPUT_V2,
+  CALCULATION_RESULT_V2,
+  CALCULATION_TRACE_V1,
+  CALCULATION_TRACE_V2
+} from "../versions.js";
 
-export { CALCULATION_INPUT_V2, CALCULATION_RESULT_V2, CALCULATION_TRACE_V1 };
+export { CALCULATION_INPUT_V2, CALCULATION_RESULT_V2, CALCULATION_TRACE_V1, CALCULATION_TRACE_V2 };
 
 const CANONICAL_DECIMAL_V2 = /^(?:0|[1-9]\d*)(?:\.\d*[1-9])?$/u;
 const INTEGER_DECIMAL = /^(?:0|[1-9]\d*)$/u;
 const MAX_DECIMAL_DIGITS = 30;
 const MAX_DECIMAL_SCALE = 18;
+
+export const VersionIdentifierV2Schema = z
+  .string()
+  .min(1)
+  .max(64)
+  .regex(
+    /^[0-9A-Za-z][0-9A-Za-z._-]*$/u,
+    "Expected a bounded semantic version or persisted version slug"
+  );
 
 function decimalDigitCount(value: string): number {
   return value.replace(".", "").length;
@@ -119,7 +133,11 @@ export const CableLoadQuantityV2Schema = z
   .strict();
 
 export const SnapshotReferenceV2Schema = z
-  .object({ snapshotId: IdentifierSchema, version: SemverSchema, contentHash: Sha256Schema })
+  .object({
+    snapshotId: IdentifierSchema,
+    version: VersionIdentifierV2Schema,
+    contentHash: Sha256Schema
+  })
   .strict();
 
 export const SourceReferenceV2Schema = z
@@ -169,7 +187,7 @@ export const RuleConfidenceV2Schema = z.enum([
 const RuleFields = {
   id: IdentifierSchema,
   code: HumanTextSchema,
-  version: SemverSchema,
+  version: VersionIdentifierV2Schema,
   confidence: RuleConfidenceV2Schema,
   status: z.enum(["active", "draft", "retired"]),
   ruleSnapshotId: IdentifierSchema,
@@ -294,7 +312,7 @@ export const ProductSnapshotV2Schema = z
       "other"
     ]),
     orderUnit: OrderUnitV2Schema,
-    packageIncrement: PositiveQuantityV2Schema,
+    packageIncrement: PositiveQuantityV2Schema.nullable(),
     orderable: z.boolean(),
     active: z.boolean(),
     engineeringReviewRequired: z.boolean(),
@@ -303,7 +321,23 @@ export const ProductSnapshotV2Schema = z
     includedItems: z.array(IncludedItemRelationV2Schema),
     source: SourceReferenceV2Schema
   })
-  .strict();
+  .strict()
+  .superRefine((product, context) => {
+    if (product.orderable && product.packageIncrement === null) {
+      context.addIssue({
+        code: "custom",
+        message: "Orderable products require an explicit package increment",
+        path: ["packageIncrement"]
+      });
+    }
+    if (product.packageIncrement !== null && product.packageIncrement.unit !== product.orderUnit) {
+      context.addIssue({
+        code: "custom",
+        message: "Package increment unit must match product order unit",
+        path: ["packageIncrement", "unit"]
+      });
+    }
+  });
 
 export const CompatibilityRelationV2Schema = z
   .object({
@@ -808,13 +842,6 @@ export const CalculationInputV2Schema = z
           path: ["products", productIndex, "catalogSnapshotId"]
         });
       }
-      if (product.packageIncrement.unit !== product.orderUnit) {
-        context.addIssue({
-          code: "custom",
-          message: "Package increment unit must match product order unit",
-          path: ["products", productIndex, "packageIncrement", "unit"]
-        });
-      }
       const supplyIds = new Set<string>();
       for (const [optionIndex, option] of product.supplyOptions.entries()) {
         if (supplyIds.has(option.id)) {
@@ -1220,6 +1247,20 @@ export const CalculationTraceV1Schema = z
   .object({ schemaVersion: z.literal(CALCULATION_TRACE_V1), steps: z.array(TraceStepV1Schema) })
   .strict();
 
+// Retained trace/v1 keeps its original SemVer rule-reference contract. Persisted
+// catalog/rule snapshots also use bounded version slugs (for example `2022-p0`),
+// so CalculationResultV2 emits an explicitly versioned trace/v2 instead of
+// broadening the meaning of the retained v1 schema.
+export const TraceRuleReferenceV2Schema = TraceRuleReferenceV1Schema.extend({
+  version: VersionIdentifierV2Schema
+});
+export const TraceStepV2Schema = TraceStepV1Schema.extend({
+  rule: TraceRuleReferenceV2Schema.nullable()
+});
+export const CalculationTraceV2Schema = z
+  .object({ schemaVersion: z.literal(CALCULATION_TRACE_V2), steps: z.array(TraceStepV2Schema) })
+  .strict();
+
 export const IncludedItemOutputV2Schema = z
   .object({
     relationId: IdentifierSchema,
@@ -1311,7 +1352,7 @@ export const CalculationResultV2Schema = z
     catalogSnapshot: SnapshotReferenceV2Schema,
     ruleSnapshot: SnapshotReferenceV2Schema,
     bomLines: z.array(BomLineV2Schema),
-    trace: CalculationTraceV1Schema,
+    trace: z.union([CalculationTraceV1Schema, CalculationTraceV2Schema]),
     warnings: z.array(CalculationWarningV2Schema),
     summary: z
       .object({
@@ -1423,5 +1464,7 @@ export type WarningCodeV2 = z.infer<typeof WarningCodeV2Schema>;
 export type CalculationWarningV2 = DeepReadonly<z.infer<typeof CalculationWarningV2Schema>>;
 export type TraceStepV1 = DeepReadonly<z.infer<typeof TraceStepV1Schema>>;
 export type CalculationTraceV1 = DeepReadonly<z.infer<typeof CalculationTraceV1Schema>>;
+export type TraceStepV2 = DeepReadonly<z.infer<typeof TraceStepV2Schema>>;
+export type CalculationTraceV2 = DeepReadonly<z.infer<typeof CalculationTraceV2Schema>>;
 export type BomLineV2 = DeepReadonly<z.infer<typeof BomLineV2Schema>>;
 export type CalculationResultV2 = DeepReadonly<z.infer<typeof CalculationResultV2Schema>>;

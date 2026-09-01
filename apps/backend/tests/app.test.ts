@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { ErrorEnvelopeV1Schema } from "@niedax/domain";
+
 import { buildApp } from "../src/app.js";
 import type { UserStore } from "../src/domain.js";
 
@@ -75,12 +77,15 @@ describe("foundation HTTP API", () => {
     });
     expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({
+      schemaVersion: "error-envelope/v1",
+      correlationId: expect.any(String),
       error: {
-        code: "REQUEST_VALIDATION_FAILED",
+        code: "VALIDATION_FAILED",
         message: "Request validation failed",
-        correlationId: expect.any(String)
+        details: { kind: "validation" }
       }
     });
+    expect(ErrorEnvelopeV1Schema.safeParse(response.json()).success).toBe(true);
     await app.close();
   });
 
@@ -93,7 +98,8 @@ describe("foundation HTTP API", () => {
       payload: '{"username":'
     });
     expect(malformed.statusCode).toBe(400);
-    expect(malformed.json()).toMatchObject({ error: { code: "INVALID_JSON_BODY" } });
+    expect(malformed.json()).toMatchObject({ error: { code: "VALIDATION_FAILED" } });
+    expect(ErrorEnvelopeV1Schema.safeParse(malformed.json()).success).toBe(true);
 
     const unsupported = await app.inject({
       method: "POST",
@@ -102,7 +108,8 @@ describe("foundation HTTP API", () => {
       payload: "<login />"
     });
     expect(unsupported.statusCode).toBe(415);
-    expect(unsupported.json()).toMatchObject({ error: { code: "UNSUPPORTED_MEDIA_TYPE" } });
+    expect(unsupported.json()).toMatchObject({ error: { code: "VALIDATION_FAILED" } });
+    expect(ErrorEnvelopeV1Schema.safeParse(unsupported.json()).success).toBe(true);
     await app.close();
   });
 
@@ -122,12 +129,14 @@ describe("foundation HTTP API", () => {
     expect(limited.statusCode).toBe(429);
     expect(limited.headers["retry-after"]).toBeTruthy();
     expect(limited.json()).toMatchObject({
+      schemaVersion: "error-envelope/v1",
+      correlationId: expect.any(String),
       error: {
-        code: "RATE_LIMIT_EXCEEDED",
-        message: "Too many requests",
-        correlationId: expect.any(String)
+        code: "VALIDATION_FAILED",
+        message: "Too many requests"
       }
     });
+    expect(ErrorEnvelopeV1Schema.safeParse(limited.json()).success).toBe(true);
     await app.close();
   });
 });

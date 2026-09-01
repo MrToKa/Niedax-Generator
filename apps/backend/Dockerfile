@@ -17,6 +17,10 @@ FROM deps AS development
 COPY . .
 CMD ["pnpm", "--filter", "@niedax/backend", "dev"]
 
+FROM deps AS acceptance
+COPY . .
+CMD ["pnpm", "exec", "vitest", "run", "--config", "vitest.integration.config.ts", "apps/backend/tests/project-flow.integration.test.ts"]
+
 FROM deps AS build
 COPY . .
 RUN pnpm --filter @niedax/domain build \

@@ -1,5 +1,13 @@
-import { UxPrototype } from "./ux-prototype";
+import { AppHeader } from "./app-header";
+import { ProjectList } from "./project-list";
 
 export default function Home() {
-  return <UxPrototype />;
+  return (
+    <div className="app-page">
+      <AppHeader />
+      <main className="app-main">
+        <ProjectList />
+      </main>
+    </div>
+  );
 }

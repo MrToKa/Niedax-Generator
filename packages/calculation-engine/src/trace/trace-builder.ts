@@ -1,4 +1,4 @@
-import type { CalculationInputV2, CalculationRuleV2, TraceStepV1 } from "@niedax/domain";
+import type { CalculationInputV2, CalculationRuleV2, TraceStepV2 } from "@niedax/domain";
 
 import { ExactDecimal, HUNDRED, ONE } from "../arithmetic/decimal.js";
 import type { AggregatedDemand } from "../model/demand-event.js";
@@ -7,7 +7,7 @@ import type { FinalizedQuantities } from "../rules/policies.js";
 import { formulaReference } from "./formula-catalog.js";
 import { stableId } from "../stable/ids.js";
 
-function traceRule(rule: CalculationRuleV2 | null): TraceStepV1["rule"] {
+function traceRule(rule: CalculationRuleV2 | null): TraceStepV2["rule"] {
   if (rule === null) return null;
   return {
     id: rule.id,
@@ -20,13 +20,13 @@ function traceRule(rule: CalculationRuleV2 | null): TraceStepV1["rule"] {
 
 function traceValue(
   value: ExactDecimal,
-  unit: TraceStepV1["output"]["unit"]
-): TraceStepV1["output"] {
+  unit: TraceStepV2["output"]["unit"]
+): TraceStepV2["output"] {
   return { value: value.toCanonical(), unit };
 }
 
 export interface BuiltLineTrace {
-  readonly steps: readonly TraceStepV1[];
+  readonly steps: readonly TraceStepV2[];
   readonly stepIds: readonly string[];
 }
 
@@ -36,7 +36,7 @@ export function buildLineTrace(
   quantities: FinalizedQuantities,
   lineId: string
 ): BuiltLineTrace {
-  const steps: TraceStepV1[] = [];
+  const steps: TraceStepV2[] = [];
   let sequence = 1;
   const contributionStepIds: string[] = [];
   for (const event of demand.events) {

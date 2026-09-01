@@ -879,7 +879,7 @@
     }
   ],
   "trace": {
-    "schemaVersion": "calculation-trace/v1",
+    "schemaVersion": "calculation-trace/v2",
     "steps": [
       {
         "id": "trace-994c233fa5de3d0c",

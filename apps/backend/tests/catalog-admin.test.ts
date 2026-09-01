@@ -198,7 +198,7 @@ describe("catalog administration authorization", () => {
         payload: { contentHash: hash, reason: "Attempted reviewer transition" }
       });
       expect(response.statusCode).toBe(403);
-      expect(response.json()).toMatchObject({ error: { code: "ADMINISTRATOR_REQUIRED" } });
+      expect(response.json()).toMatchObject({ error: { code: "FORBIDDEN" } });
       expect(response.headers["x-correlation-id"]).toBeTruthy();
     }
     expect(repo.approve).not.toHaveBeenCalled();

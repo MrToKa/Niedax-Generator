@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import cookie from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
@@ -15,6 +17,9 @@ import { AppError, AuthService, PASSWORD_MIN_LENGTH } from "./auth-service.js";
 import type { CatalogAdminService, CatalogUploadFile } from "./catalog-service.js";
 import type { AppRole, SessionIdentity, UserStore } from "./domain.js";
 import { toPublicUser } from "./domain.js";
+import { ProjectApplicationError } from "./project-errors.js";
+import { registerProjectRoutes } from "./project-routes.js";
+import type { ProjectOperations } from "./project-service.js";
 
 const SESSION_COOKIE = "niedax_session";
 
@@ -24,6 +29,7 @@ interface BuildAppOptions {
   readonly cookieSecure?: boolean;
   readonly logger?: boolean;
   readonly catalogService?: CatalogAdminService;
+  readonly projectService?: ProjectOperations;
 }
 
 export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
@@ -58,34 +64,41 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   });
 
   app.setErrorHandler((error, request, reply) => {
+    if (error instanceof ProjectApplicationError) {
+      return reply
+        .status(error.statusCode)
+        .send(
+          errorEnvelope(
+            request,
+            normalizedErrorCode(error.statusCode, error.code),
+            error.message,
+            error.details
+          )
+        );
+    }
     if (error instanceof AppError) {
-      return reply.status(error.statusCode).send({
-        error: { code: error.code, message: error.message, correlationId: correlationId(request) }
-      });
+      return reply
+        .status(error.statusCode)
+        .send(
+          errorEnvelope(request, normalizedErrorCode(error.statusCode, error.code), error.message)
+        );
     }
     if (error instanceof CatalogImportError) {
-      return reply.status(422).send({
-        error: { code: error.code, message: error.message, correlationId: correlationId(request) }
-      });
+      return reply.status(422).send(errorEnvelope(request, "CATALOG_IMPORT_FAILED", error.message));
     }
     const clientError = publicClientError(error);
     if (clientError) {
-      return reply.status(clientError.statusCode).send({
-        error: {
-          code: clientError.code,
-          message: clientError.message,
-          correlationId: correlationId(request)
-        }
-      });
+      return reply.status(clientError.statusCode).send(
+        errorEnvelope(request, "VALIDATION_FAILED", clientError.message, {
+          kind: "validation",
+          issues: [{ path: [], code: clientError.code, message: clientError.message }]
+        })
+      );
     }
     request.log.error({ err: error }, "request failed");
-    return reply.status(500).send({
-      error: {
-        code: "INTERNAL_ERROR",
-        message: "The request could not be completed",
-        correlationId: correlationId(request)
-      }
-    });
+    return reply
+      .status(500)
+      .send(errorEnvelope(request, "INTERNAL_ERROR", "The request could not be completed"));
   });
 
   app.get(
@@ -411,6 +424,14 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     return { options: await requireCatalog(options).listSelectionOptions() };
   });
 
+  if (options.projectService) {
+    registerProjectRoutes(app, {
+      auth,
+      service: options.projectService,
+      correlationId
+    });
+  }
+
   return app;
 }
 
@@ -453,11 +474,89 @@ const transitionBodySchema = {
   }
 } as const;
 
+const correlationIds = new WeakMap<object, string>();
+const CORRELATION_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/u;
+
 function correlationId(request: FastifyRequest): string {
+  const existing = correlationIds.get(request);
+  if (existing) return existing;
   const provided = request.headers["x-correlation-id"];
-  return typeof provided === "string" && /^[A-Za-z0-9._:-]{1,128}$/u.test(provided)
-    ? provided
-    : request.id;
+  const selected =
+    typeof provided === "string" && CORRELATION_PATTERN.test(provided)
+      ? provided
+      : CORRELATION_PATTERN.test(request.id)
+        ? request.id
+        : randomUUID();
+  correlationIds.set(request, selected);
+  return selected;
+}
+
+type PublicErrorCode =
+  | "VALIDATION_FAILED"
+  | "CONFLICT_STALE_VERSION"
+  | "INVALID_STATE_TRANSITION"
+  | "AUTHENTICATION_REQUIRED"
+  | "FORBIDDEN"
+  | "RESOURCE_NOT_FOUND"
+  | "CATALOG_SNAPSHOT_MISSING"
+  | "RULE_SNAPSHOT_MISSING"
+  | "UNSUPPORTED_SCHEMA_VERSION"
+  | "IDEMPOTENCY_KEY_CONFLICT"
+  | "CALCULATION_FAILED"
+  | "CATALOG_IMPORT_FAILED"
+  | "EXPORT_FAILED"
+  | "INTERNAL_ERROR";
+
+function normalizedErrorCode(statusCode: number, code: string): PublicErrorCode {
+  const accepted = new Set<PublicErrorCode>([
+    "VALIDATION_FAILED",
+    "CONFLICT_STALE_VERSION",
+    "INVALID_STATE_TRANSITION",
+    "AUTHENTICATION_REQUIRED",
+    "FORBIDDEN",
+    "RESOURCE_NOT_FOUND",
+    "CATALOG_SNAPSHOT_MISSING",
+    "RULE_SNAPSHOT_MISSING",
+    "UNSUPPORTED_SCHEMA_VERSION",
+    "IDEMPOTENCY_KEY_CONFLICT",
+    "CALCULATION_FAILED",
+    "CATALOG_IMPORT_FAILED",
+    "EXPORT_FAILED",
+    "INTERNAL_ERROR"
+  ]);
+  if (accepted.has(code as PublicErrorCode)) return code as PublicErrorCode;
+  if (statusCode === 401) return "AUTHENTICATION_REQUIRED";
+  if (statusCode === 403) return "FORBIDDEN";
+  if (statusCode === 404) return "RESOURCE_NOT_FOUND";
+  if (statusCode === 409) return "CONFLICT_STALE_VERSION";
+  if (statusCode >= 400 && statusCode < 500) return "VALIDATION_FAILED";
+  return "INTERNAL_ERROR";
+}
+
+function safeMessage(message: string): string {
+  const trimmed = message.trim();
+  return (trimmed || "The request could not be completed").slice(0, 2_000);
+}
+
+function errorEnvelope(
+  request: FastifyRequest,
+  code: PublicErrorCode,
+  message: string,
+  details: unknown = null
+): {
+  readonly schemaVersion: "error-envelope/v1";
+  readonly correlationId: string;
+  readonly error: {
+    readonly code: PublicErrorCode;
+    readonly message: string;
+    readonly details: unknown;
+  };
+} {
+  return {
+    schemaVersion: "error-envelope/v1",
+    correlationId: correlationId(request),
+    error: { code, message: safeMessage(message), details }
+  };
 }
 
 interface PublicClientError {

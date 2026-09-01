@@ -8,7 +8,7 @@ BEGIN
   IF to_regclass('public.revisions') IS NULL THEN RAISE EXCEPTION 'revisions table missing'; END IF;
   IF to_regclass('public.bom_lines') IS NULL THEN RAISE EXCEPTION 'bom_lines table missing'; END IF;
   IF to_regclass('public.schema_migrations') IS NULL THEN RAISE EXCEPTION 'migration metadata missing'; END IF;
-  IF (SELECT count(*) FROM schema_migrations) <> 6 THEN RAISE EXCEPTION 'unexpected migration count'; END IF;
+  IF (SELECT count(*) FROM schema_migrations) <> 7 THEN RAISE EXCEPTION 'unexpected migration count'; END IF;
   IF has_table_privilege('niedax_generator_app', 'public.schema_migrations', 'SELECT')
      OR has_table_privilege('niedax_generator_app', 'public.schema_migrations', 'INSERT')
      OR has_table_privilege('niedax_generator_app', 'public.schema_migrations', 'UPDATE')
