@@ -1,13 +1,15 @@
 # Versioned HTTP API and operation contracts
 
-Status: **Accepted Stage 3 contract; the listed Stage 7 project handlers are implemented**
+Status: **Accepted Stage 3 contract; Stage 7 project and Stage 8 access/revision handlers are implemented**
 Base path: `/api/v1`  
 Media type: `application/json` except upload and download operations
 
-> Stage 7 implementation note: the project-list, project-draft, validation, transient calculation,
-> current-calculation, and editor-catalog operations described below are now implemented with
-> strict v2 payload schemas on the existing `/api/v1` HTTP boundary. The retained revision,
-> approval, and export operations in this document remain future contracts.
+> Implementation note: Stage 7 project-draft, validation, transient calculation,
+> current-calculation, and editor-catalog operations use strict v2 payloads on the existing
+> `/api/v1` boundary. Stage 8 implements cursor pagination with `project-list-response/v3`, plus
+> identity/capabilities, four-role user administration, project access, explicit v2 revision
+> save/list/detail/audit, Check, and Approve. Retained v1 revisions remain readable without
+> reinterpretation. Export operations remain future contracts.
 
 ## Boundary choice
 
@@ -55,20 +57,24 @@ changes; the repository application/package version records them.
 
 ## Authorization capabilities
 
-| Capability            | Meaning                                                                   |
-| --------------------- | ------------------------------------------------------------------------- |
-| `project:read`        | Read projects, calculations, revisions, and export status                 |
-| `project:write`       | Create or materially edit a draft                                         |
-| `calculation:execute` | Validate and calculate a draft                                            |
-| `revision:save`       | Create an explicit immutable revision                                     |
-| `revision:check`      | Transition exact Calculated revision to Checked                           |
-| `revision:approve`    | Transition exact Checked revision to Approved; Administrator/Checker only |
-| `catalog:import`      | Upload and validate staged catalog data                                   |
-| `catalog:activate`    | Activate catalog/rule snapshot; Administrator only                        |
-| `export:create`       | Request an export from an immutable revision                              |
+| Capability            | Meaning                                                     |
+| --------------------- | ----------------------------------------------------------- |
+| `project:create`      | Create a project owned by the authenticated actor           |
+| `project:read`        | Read projects and their current/historical representations  |
+| `project:edit`        | Materially edit a permitted draft                           |
+| `calculation:execute` | Validate and calculate a permitted draft                    |
+| `revision:save`       | Save an explicit immutable revision                         |
+| `revision:check`      | Transition the latest exact Calculated revision to Checked  |
+| `revision:approve`    | Transition the latest eligible Checked revision to Approved |
+| `users:administer`    | Create/enable/disable users and assign canonical roles      |
+| `catalog:administer`  | Operate the protected catalog lifecycle                     |
+| `audit:read`          | Read permitted bounded revision/audit history               |
 
-The current persisted `reviewer` role may be mapped to Checker capabilities by the authorization
-adapter until the role-name decision is migrated. UI visibility is never authorization.
+The exact roles are `designer`, `reviewer`, `administrator`, and `viewer`. Designer reads and
+mutates owned projects. Reviewer reads all projects, mutates owned projects, and may Check/Approve
+the latest eligible revision across projects. Administrator has all-project mutation and both
+administration capabilities. Viewer has read-only all-project/history access. UI visibility is
+never authorization; application services and repositories both apply capability/resource policy.
 
 ## Operations
 
@@ -79,16 +85,16 @@ are backward compatible. The previously unwired operations use explicit v2 JSON 
 backend can invoke the production `CalculationInputV2`/`CalculationResultV2` engine without changing
 the meaning of retained v1 data.
 
-| Operation          | Method and route                                 | Strict response/request schemas                                                  | Notes                                                |
-| ------------------ | ------------------------------------------------ | -------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| List projects      | `GET /api/v1/projects`                           | `ProjectListResponseV2Schema`                                                    | Reviewer sees owned projects; Administrator sees all |
-| Create project     | `POST /api/v1/projects`                          | `CreateProjectDraftRequestV2Schema` / `ProjectDraftResponseV2Schema`             | idempotent, creator becomes owner                    |
-| Get project        | `GET /api/v1/projects/{projectId}`               | path UUID / `ProjectDraftResponseV2Schema`                                       | hydrates the complete draft graph                    |
-| Replace draft      | `PUT /api/v1/projects/{projectId}/draft`         | `ReplaceProjectDraftRequestV2Schema` / `ProjectDraftResponseV2Schema`            | idempotent, optimistic `expectedDraftVersion`        |
-| Validate draft     | `POST /api/v1/projects/{projectId}/validation`   | `ValidateProjectDraftRequestV2Schema` / `ProjectValidationResponseV2Schema`      | read-only; returns blocking/warning/review groups    |
-| Calculate draft    | `POST /api/v1/projects/{projectId}/calculations` | `CalculateProjectDraftRequestV2Schema` / `CalculateProjectDraftResponseV2Schema` | idempotent; replaces transient result only           |
-| Get current result | `GET /api/v1/projects/{projectId}/calculation`   | path UUID / `CurrentCalculationResponseV2Schema`                                 | result declares whether its draft version is stale   |
-| Get editor catalog | `GET /api/v1/catalog/editor-context`             | no body / `EditorCatalogResponseV2Schema`                                        | active, authenticated, presentation-safe choices     |
+| Operation          | Method and route                                    | Strict response/request schemas                                                  | Notes                                                |
+| ------------------ | --------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| List projects      | `GET /api/v1/projects?limit={1..100}&cursor={uuid}` | `ProjectListResponseV3Schema`                                                    | Ascending UUID-ID keyset pages; returns `nextCursor` |
+| Create project     | `POST /api/v1/projects`                             | `CreateProjectDraftRequestV2Schema` / `ProjectDraftResponseV2Schema`             | idempotent, creator becomes owner                    |
+| Get project        | `GET /api/v1/projects/{projectId}`                  | path UUID / `ProjectDraftResponseV2Schema`                                       | hydrates the complete draft graph                    |
+| Replace draft      | `PUT /api/v1/projects/{projectId}/draft`            | `ReplaceProjectDraftRequestV2Schema` / `ProjectDraftResponseV2Schema`            | idempotent, optimistic `expectedDraftVersion`        |
+| Validate draft     | `POST /api/v1/projects/{projectId}/validation`      | `ValidateProjectDraftRequestV2Schema` / `ProjectValidationResponseV2Schema`      | read-only; returns blocking/warning/review groups    |
+| Calculate draft    | `POST /api/v1/projects/{projectId}/calculations`    | `CalculateProjectDraftRequestV2Schema` / `CalculateProjectDraftResponseV2Schema` | idempotent; replaces transient result only           |
+| Get current result | `GET /api/v1/projects/{projectId}/calculation`      | path UUID / `CurrentCalculationResponseV2Schema`                                 | result declares whether its draft version is stale   |
+| Get editor catalog | `GET /api/v1/catalog/editor-context`                | no body / `EditorCatalogResponseV2Schema`                                        | active, authenticated, presentation-safe choices     |
 
 Create, replace, and calculate require `Idempotency-Key`. Every mutation requires the existing CSRF
 and same-origin checks. Header correlation/idempotency values and actor identity are not accepted in
@@ -98,6 +104,11 @@ resolve every calculation-required selection before an engine call.
 The v2 payload definitions and their authoritative literals are exported by `@niedax/domain`.
 Unknown keys and unsupported literals are rejected. All JSON failures, including these operations,
 still use `ErrorEnvelopeV1Schema`.
+
+The Stage 7 `ProjectListResponseV2Schema` remains exported as a retained contract. Stage 8 adds the
+v3 response because `nextCursor` is a new required field: at most 100 v2-shaped project items are
+ordered by ascending project UUID `id`, and `nextCursor` is the final emitted ID or `null`. The
+query is strict; the default limit is 50.
 
 `ProjectDraftResponseV2Schema` also returns the catalog and rule snapshot references pinned by the
 acknowledged draft version. The browser compares those references with
@@ -117,27 +128,58 @@ The retained `calculation-trace/v1` contract remains SemVer-only; its meaning an
 v1 data are unchanged, and the result reader remains compatible with an already persisted nested
 v1 trace.
 
+### Implemented Stage 8 access and revision payloads
+
+| Operation               | Method and route                                   | Strict request / response                                                         | Authorization and behavior                                                           |
+| ----------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Current identity        | `GET /api/v1/auth/me`                              | `AuthenticatedIdentityResponseV2Schema`                                           | Safe current identity plus server-derived capabilities                               |
+| Admin users             | `GET/POST /api/v1/admin/users`                     | bounded list / `CreateAdminUserRequestV2Schema`, admin-user v2 response           | Administrator only; mutations are audited                                            |
+| Change user role/status | `PATCH /api/v1/admin/users/{id}/role` or `/status` | strict update request / admin-user v2 response                                    | Administrator only; revokes target sessions; preserves a final enabled Administrator |
+| Project access          | `GET /api/v1/projects/{projectId}/access`          | path UUID / `ProjectAccessResponseV2Schema`                                       | Server-computed resource permissions; supports metadata-only retained history        |
+| List revisions          | `GET /api/v1/projects/{projectId}/revisions`       | `limit=1..100`, optional UUID cursor / `ProjectRevisionListResponseV2Schema`      | Bounded newest-first owned/all read scope                                            |
+| Save revision           | `POST /api/v1/projects/{projectId}/revisions`      | `SaveProjectRevisionRequestV2Schema` / `ProjectRevisionResponseV2Schema`          | Explicit save only; owned Designer/Reviewer or any Administrator project; `201`      |
+| Revision detail         | `GET /api/v1/revisions/{revisionId}`               | path UUID / `ProjectRevisionResponseV2Schema`                                     | Immutable `revision/v2` detail or explicit retained `revision/v1` detail             |
+| Check                   | `POST /api/v1/revisions/{revisionId}/check`        | `CheckProjectRevisionRequestV2Schema` / revision response                         | Reviewer/Administrator; latest Calculated only                                       |
+| Approve                 | `POST /api/v1/revisions/{revisionId}/approve`      | `ApproveProjectRevisionRequestV2Schema` / revision response                       | Reviewer/Administrator; latest Checked plus saved approval readiness                 |
+| Revision audit          | `GET /api/v1/projects/{projectId}/revision-audit`  | `limit=1..100`, optional UUID cursor / `ProjectRevisionAuditListResponseV2Schema` | Bounded append-only lifecycle evidence                                               |
+
+Save, Check, and Approve require session, same-origin evidence, `X-Niedax-CSRF: 1`, and an
+`Idempotency-Key`. Each compares explicit optimistic state and returns the stored original
+status/body for the same actor/scope/key/request after restart. A reused key with different input,
+stale latest number/fingerprint/status, a superseded revision, or a blocked approval makes no
+business-state change. See `docs/stage8-users-roles-revisions.md` for the complete matrix and exact
+snapshot contents.
+
+Expected stale or invalid Check/Approve attempts write one bounded rejected lifecycle tombstone in
+the same locked transaction as the decision to reject, with SHA-256 attempt and canonical-request
+digests. A retry of that attempt cannot become successful after state advances: matching request
+bytes return the original reason, while different bytes return `IDEMPOTENCY_KEY_CONFLICT`.
+Authorization rejection evidence likewise never changes the protected revision/project state.
+
 ### Project drafts and validation
 
 | Operation              | Method and route                               | Request / response schema                                                                                          | Authorization                                  | Idempotency and transaction                                                               | Success behavior                                                  | Domain errors                                                                                                |
 | ---------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Create project draft   | `POST /api/v1/projects`                        | `UpsertProjectDraftCommandV1Schema` with `expectedDraftVersion=null` / `ProjectDraftResponseV1Schema`              | `project:write`                                | Required; one transaction for project, draft, audit, and idempotency record               | `201`; replay returns the original `201` representation           | `VALIDATION_FAILED`, `FORBIDDEN`, `IDEMPOTENCY_KEY_CONFLICT`                                                 |
-| Replace/update draft   | `PUT /api/v1/projects/{projectId}/draft`       | `UpsertProjectDraftCommandV1Schema` with matching project ID and expected version / `ProjectDraftResponseV1Schema` | `project:write`                                | Required; optimistic `draft_version` predicate; update + audit + idempotency atomic       | `200`; increments draft version once; replay returns same version | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `RESOURCE_NOT_FOUND`, `FORBIDDEN`, `IDEMPOTENCY_KEY_CONFLICT` |
+| Create project draft   | `POST /api/v1/projects`                        | `UpsertProjectDraftCommandV1Schema` with `expectedDraftVersion=null` / `ProjectDraftResponseV1Schema`              | `project:create`                               | Required; one transaction for project, draft, audit, and idempotency record               | `201`; replay returns the original `201` representation           | `VALIDATION_FAILED`, `FORBIDDEN`, `IDEMPOTENCY_KEY_CONFLICT`                                                 |
+| Replace/update draft   | `PUT /api/v1/projects/{projectId}/draft`       | `UpsertProjectDraftCommandV1Schema` with matching project ID and expected version / `ProjectDraftResponseV1Schema` | `project:edit`                                 | Required; optimistic `draft_version` predicate; update + audit + idempotency atomic       | `200`; increments draft version once; replay returns same version | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `RESOURCE_NOT_FOUND`, `FORBIDDEN`, `IDEMPOTENCY_KEY_CONFLICT` |
 | Validate project input | `POST /api/v1/projects/{projectId}/validation` | `ValidateProjectInputCommandV1Schema` / `ValidationResultV1Schema`                                                 | `project:read`, normally `calculation:execute` | No idempotency needed and no write transaction; reads one consistent active-snapshot view | `200`; separates blocking, warning, and engineering-review issues | `VALIDATION_FAILED`, `RESOURCE_NOT_FOUND`, `CATALOG_SNAPSHOT_MISSING`, `RULE_SNAPSHOT_MISSING`               |
 
 Draft replacement accepts incomplete route arrays so work can be saved. Calculation validation adds
 the stricter `CalculationInputV1Schema` readiness checks. Validation does not change project status.
 
-### Calculation and explicit revisions
+### Retained Stage 3 calculation/revision contract family
 
-| Operation              | Method and route                                 | Request / response schema                                     | Authorization                                  | Idempotency and transaction                                                                                                                                                                         | Success behavior                                                                                                     | Domain errors                                                                                                                                        |
-| ---------------------- | ------------------------------------------------ | ------------------------------------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Calculate draft        | `POST /api/v1/projects/{projectId}/calculations` | `CalculateCommandV1Schema` / `CalculationRunResponseV1Schema` | `calculation:execute`                          | Required; unique `(project_id,input_fingerprint,engine_version)`. Resolution and pure calculation occur outside a long DB transaction; transient run/result + audit + idempotency commit atomically | `200` for completed/cache hit, `202` if queued later. Replaces/caches transient draft result; never creates revision | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `CATALOG_SNAPSHOT_MISSING`, `RULE_SNAPSHOT_MISSING`, `CALCULATION_FAILED`, `IDEMPOTENCY_KEY_CONFLICT` |
-| Save explicit revision | `POST /api/v1/projects/{projectId}/revisions`    | `SaveRevisionCommandV1Schema` / `RevisionResponseV1Schema`    | `revision:save`                                | Required; optimistic draft and latest-revision versions. Revision, immutable result, input/snapshot references, audit, and idempotency record commit in one transaction                             | `201`; same key returns the existing revision and cannot duplicate history                                           | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `RESOURCE_NOT_FOUND`, `INVALID_STATE_TRANSITION`, `IDEMPOTENCY_KEY_CONFLICT`                          |
-| Check revision         | `POST /api/v1/revisions/{revisionId}/check`      | `CheckRevisionCommandV1Schema` / `RevisionResponseV1Schema`   | `revision:check`                               | Required; lock exact revision and atomically transition Calculated to Checked with audit/idempotency                                                                                                | `200`; same actor-independent request key returns the checked revision                                               | `FORBIDDEN`, `RESOURCE_NOT_FOUND`, `CONFLICT_STALE_VERSION`, `INVALID_STATE_TRANSITION`, `IDEMPOTENCY_KEY_CONFLICT`                                  |
-| Approve revision       | `POST /api/v1/revisions/{revisionId}/approve`    | `ApproveRevisionCommandV1Schema` / `RevisionResponseV1Schema` | `revision:approve`; Administrator/Checker only | Required; row lock plus exact fingerprint/status predicate; status and immutable audit event commit atomically                                                                                      | `200`; repeat of the same approval is safe and returns exact approved revision                                       | `FORBIDDEN`, `RESOURCE_NOT_FOUND`, `CONFLICT_STALE_VERSION`, `INVALID_STATE_TRANSITION`, `IDEMPOTENCY_KEY_CONFLICT`                                  |
-| Get calculation        | `GET /api/v1/calculations/{runId}`               | Identifier path / `CalculationRunResponseV1Schema`            | `project:read` on owning project               | Read-only; no idempotency                                                                                                                                                                           | `200`; transient runs may be `running`, `succeeded`, or `failed`                                                     | `RESOURCE_NOT_FOUND`, `FORBIDDEN`                                                                                                                    |
-| Get revision           | `GET /api/v1/revisions/{revisionId}`             | Identifier path / `RevisionResponseV1Schema`                  | `project:read` on owning project               | Read-only; no idempotency                                                                                                                                                                           | `200`; exact immutable result and snapshot provenance                                                                | `RESOURCE_NOT_FOUND`, `FORBIDDEN`                                                                                                                    |
+The following v1 rows record the earlier accepted contract family. Implemented Stage 7/8 runtime
+operations use the strict v2 schemas above; these v1 schemas remain unchanged for compatibility.
+
+| Operation              | Method and route                                 | Request / response schema                                     | Authorization                              | Idempotency and transaction                                                                                                                                                                         | Success behavior                                                                                                     | Domain errors                                                                                                                                        |
+| ---------------------- | ------------------------------------------------ | ------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Calculate draft        | `POST /api/v1/projects/{projectId}/calculations` | `CalculateCommandV1Schema` / `CalculationRunResponseV1Schema` | `calculation:execute`                      | Required; unique `(project_id,input_fingerprint,engine_version)`. Resolution and pure calculation occur outside a long DB transaction; transient run/result + audit + idempotency commit atomically | `200` for completed/cache hit, `202` if queued later. Replaces/caches transient draft result; never creates revision | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `CATALOG_SNAPSHOT_MISSING`, `RULE_SNAPSHOT_MISSING`, `CALCULATION_FAILED`, `IDEMPOTENCY_KEY_CONFLICT` |
+| Save explicit revision | `POST /api/v1/projects/{projectId}/revisions`    | `SaveRevisionCommandV1Schema` / `RevisionResponseV1Schema`    | `revision:save`                            | Required; optimistic draft and latest-revision versions. Revision, immutable result, input/snapshot references, audit, and idempotency record commit in one transaction                             | `201`; same key returns the existing revision and cannot duplicate history                                           | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `RESOURCE_NOT_FOUND`, `INVALID_STATE_TRANSITION`, `IDEMPOTENCY_KEY_CONFLICT`                          |
+| Check revision         | `POST /api/v1/revisions/{revisionId}/check`      | `CheckRevisionCommandV1Schema` / `RevisionResponseV1Schema`   | `revision:check`; Reviewer/Administrator   | Required; lock exact revision and atomically transition Calculated to Checked with audit/idempotency                                                                                                | `200`; same actor-scoped request key returns the checked revision                                                    | `FORBIDDEN`, `RESOURCE_NOT_FOUND`, `CONFLICT_STALE_VERSION`, `INVALID_STATE_TRANSITION`, `IDEMPOTENCY_KEY_CONFLICT`                                  |
+| Approve revision       | `POST /api/v1/revisions/{revisionId}/approve`    | `ApproveRevisionCommandV1Schema` / `RevisionResponseV1Schema` | `revision:approve`; Reviewer/Administrator | Required; row lock plus exact fingerprint/status predicate; status and immutable audit event commit atomically                                                                                      | `200`; repeat of the same approval is safe and returns exact approved revision                                       | `FORBIDDEN`, `RESOURCE_NOT_FOUND`, `CONFLICT_STALE_VERSION`, `INVALID_STATE_TRANSITION`, `IDEMPOTENCY_KEY_CONFLICT`                                  |
+| Get calculation        | `GET /api/v1/calculations/{runId}`               | Identifier path / `CalculationRunResponseV1Schema`            | `project:read` on owning project           | Read-only; no idempotency                                                                                                                                                                           | `200`; transient runs may be `running`, `succeeded`, or `failed`                                                     | `RESOURCE_NOT_FOUND`, `FORBIDDEN`                                                                                                                    |
+| Get revision           | `GET /api/v1/revisions/{revisionId}`             | Identifier path / `RevisionResponseV1Schema`                  | `project:read` on owning project           | Read-only; no idempotency                                                                                                                                                                           | `200`; exact immutable result and snapshot provenance                                                                | `RESOURCE_NOT_FOUND`, `FORBIDDEN`                                                                                                                    |
 
 `Calculate` retries never create durable revision rows. `Save revision` is the sole creation path.
 Approval rejects a stale fingerprint, a changed/superseded revision, any status other than Checked,
@@ -145,12 +187,12 @@ unresolved blocking review policy, and unauthorized actors.
 
 ### Catalog and rule versions
 
-| Operation                   | Method and route                                       | Request / response schema                                                                | Authorization                      | Idempotency and transaction                                                                                  | Success behavior                                                        | Domain errors                                                                                                   |
-| --------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Upload and validate catalog | `POST /api/v1/catalog-imports` (`multipart/form-data`) | File part plus `CatalogImportMetadataV1Schema` / `CatalogImportValidationResultV1Schema` | `catalog:import`                   | Required; bounded streaming upload, content hash check, staged records and diagnostics commit; no activation | `200` after validation; invalid rows return `status=invalid`, not a 500 | `VALIDATION_FAILED`, `CATALOG_IMPORT_FAILED`, `IDEMPOTENCY_KEY_CONFLICT`, `FORBIDDEN`                           |
-| Retrieve import validation  | `GET /api/v1/catalog-imports/{importId}/validation`    | Identifier path / `CatalogImportValidationResultV1Schema`                                | `catalog:import`                   | Read-only                                                                                                    | `200`                                                                   | `RESOURCE_NOT_FOUND`, `FORBIDDEN`                                                                               |
-| Activate catalog snapshot   | `POST /api/v1/catalog-versions/{snapshotId}/activate`  | catalog variant of `ActivateVersionCommandV1Schema` / `ActivationResponseV1Schema`       | Administrator + `catalog:activate` | Required; validated-status and expected-active pointer check; pointer, audit, idempotency atomic             | `200`; never mutates old products or calculation snapshots              | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `CATALOG_IMPORT_FAILED`, `IDEMPOTENCY_KEY_CONFLICT`, `FORBIDDEN` |
-| Activate rule snapshot      | `POST /api/v1/rule-versions/{snapshotId}/activate`     | rules variant of `ActivateVersionCommandV1Schema` / `ActivationResponseV1Schema`         | Administrator + `catalog:activate` | Required; same pointer-swap transaction semantics                                                            | `200`; existing revisions retain old rule snapshot                      | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `RULE_SNAPSHOT_MISSING`, `IDEMPOTENCY_KEY_CONFLICT`, `FORBIDDEN` |
+| Operation                   | Method and route                                       | Request / response schema                                                                | Authorization                       | Idempotency and transaction                                                                                  | Success behavior                                                        | Domain errors                                                                                                   |
+| --------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Upload and validate catalog | `POST /api/v1/catalog-imports` (`multipart/form-data`) | File part plus `CatalogImportMetadataV1Schema` / `CatalogImportValidationResultV1Schema` | `catalog:administer`; Administrator | Required; bounded streaming upload, content hash check, staged records and diagnostics commit; no activation | `200` after validation; invalid rows return `status=invalid`, not a 500 | `VALIDATION_FAILED`, `CATALOG_IMPORT_FAILED`, `IDEMPOTENCY_KEY_CONFLICT`, `FORBIDDEN`                           |
+| Retrieve import validation  | `GET /api/v1/catalog-imports/{importId}/validation`    | Identifier path / `CatalogImportValidationResultV1Schema`                                | `catalog:administer`; Administrator | Read-only                                                                                                    | `200`                                                                   | `RESOURCE_NOT_FOUND`, `FORBIDDEN`                                                                               |
+| Activate catalog snapshot   | `POST /api/v1/catalog-versions/{snapshotId}/activate`  | catalog variant of `ActivateVersionCommandV1Schema` / `ActivationResponseV1Schema`       | `catalog:administer`; Administrator | Required; validated-status and expected-active pointer check; pointer, audit, idempotency atomic             | `200`; never mutates old products or calculation snapshots              | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `CATALOG_IMPORT_FAILED`, `IDEMPOTENCY_KEY_CONFLICT`, `FORBIDDEN` |
+| Activate rule snapshot      | `POST /api/v1/rule-versions/{snapshotId}/activate`     | rules variant of `ActivateVersionCommandV1Schema` / `ActivationResponseV1Schema`         | `catalog:administer`; Administrator | Required; same pointer-swap transaction semantics                                                            | `200`; existing revisions retain old rule snapshot                      | `VALIDATION_FAILED`, `CONFLICT_STALE_VERSION`, `RULE_SNAPSHOT_MISSING`, `IDEMPOTENCY_KEY_CONFLICT`, `FORBIDDEN` |
 
 File name, media type, size, and SHA-256 are logged as bounded metadata. File bodies and complete
 row contents are never logged. CSV/Excel parsing adapters must convert rows to

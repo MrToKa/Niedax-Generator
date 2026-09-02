@@ -125,10 +125,29 @@ function markReplay(
 }
 
 export function registerProjectRoutes(app: FastifyInstance, options: ProjectRouteOptions): void {
-  app.get("/api/v1/projects", async (request) => {
-    const identity = await requireIdentity(request, options.auth);
-    return options.service.listProjects(actor(identity), options.correlationId(request));
-  });
+  app.get<{ Querystring: { limit?: number; cursor?: string } }>(
+    "/api/v1/projects",
+    {
+      schema: {
+        querystring: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            limit: { type: "integer", minimum: 1, maximum: 100, default: 50 },
+            cursor: { type: "string", format: "uuid" }
+          }
+        }
+      }
+    },
+    async (request) => {
+      const identity = await requireIdentity(request, options.auth);
+      return options.service.listProjects(
+        actor(identity),
+        { limit: request.query.limit ?? 50, cursor: request.query.cursor ?? null },
+        options.correlationId(request)
+      );
+    }
+  );
 
   app.post<{ Body: unknown }>("/api/v1/projects", async (request, reply) => {
     const identity = await requireIdentity(request, options.auth);
@@ -155,6 +174,18 @@ export function registerProjectRoutes(app: FastifyInstance, options: ProjectRout
       options.correlationId(request)
     );
   });
+
+  app.get<{ Params: { projectId: string } }>(
+    "/api/v1/projects/:projectId/access",
+    async (request) => {
+      const identity = await requireIdentity(request, options.auth);
+      return options.service.getProjectAccess(
+        actor(identity),
+        projectId(request),
+        options.correlationId(request)
+      );
+    }
+  );
 
   app.put<{ Params: { projectId: string }; Body: unknown }>(
     "/api/v1/projects/:projectId/draft",

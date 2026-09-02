@@ -7,9 +7,16 @@ import type {
   ProjectListItemV2,
   ProjectV2
 } from "@niedax/domain";
+import { DatabaseIdV2Schema } from "@niedax/domain";
 import type { Pool, PoolClient } from "pg";
 
 import type { AppRole } from "./domain.js";
+import {
+  canAccessProject,
+  canCreateProject,
+  projectAccessScope,
+  type ProjectResourceAction
+} from "./authorization-policy.js";
 import { ProjectApplicationError } from "./project-errors.js";
 
 const PROJECT_DRAFT_DOCUMENT_V2 = "project-draft-document/v2" as const;
@@ -18,6 +25,11 @@ export interface ProjectActor {
   readonly id: string;
   readonly role: AppRole;
   readonly displayName: string;
+}
+
+export interface ProjectListPage {
+  readonly projects: readonly ProjectListItemV2[];
+  readonly nextCursor: string | null;
 }
 
 interface ProjectRow {
@@ -206,14 +218,20 @@ export interface CalculationMutationResult {
   readonly replayed: boolean;
 }
 
-function asIso(value: Date): string {
-  return value.toISOString();
-}
-
-function authorize(row: { readonly owner_id: string | null }, actor: ProjectActor): void {
-  if (actor.role !== "administrator" && row.owner_id !== actor.id) {
+function authorize(
+  row: { readonly owner_id: string | null },
+  actor: ProjectActor,
+  action: ProjectResourceAction
+): void {
+  if (canAccessProject(actor, row.owner_id, action)) return;
+  if (projectAccessScope(actor.role, action) === "none") {
     throw new ProjectApplicationError(403, "FORBIDDEN", "Project access is forbidden");
   }
+  throw new ProjectApplicationError(404, "RESOURCE_NOT_FOUND", "Project not found");
+}
+
+function asIso(value: Date): string {
+  return value.toISOString();
 }
 
 async function inTransaction<T>(
@@ -513,8 +531,13 @@ function projectFromRow(row: ProjectRow): ProjectRecord {
 async function lockedProject(
   client: PoolClient,
   projectId: string,
-  actor: ProjectActor
+  actor: ProjectActor,
+  action: Extract<ProjectResourceAction, "edit" | "calculate" | "saveRevision">
 ): Promise<ProjectRow> {
+  const access = projectAccessScope(actor.role, action);
+  if (access === "none") {
+    throw new ProjectApplicationError(403, "FORBIDDEN", "Project access is forbidden");
+  }
   const result = await client.query<ProjectRow>(
     `SELECT project.id, project.code, project.name, project.description, project.status,
             project.default_locale, project.default_spare_percent::text,
@@ -534,14 +557,15 @@ async function lockedProject(
          ON catalog_snapshot.id = project.active_catalog_version_id
        JOIN rule_sets rule_snapshot ON rule_snapshot.id = project.active_rule_set_id
       WHERE project.id = $1
+        AND ($2::boolean OR ($3::boolean AND project.owner_id = $4))
       FOR UPDATE OF project`,
-    [projectId]
+    [projectId, access === "all", access === "owned", actor.id]
   );
   const row = result.rows[0];
   if (!row) {
     throw new ProjectApplicationError(404, "RESOURCE_NOT_FOUND", "Project not found");
   }
-  authorize(row, actor);
+  authorize(row, actor, action);
   if (row.payload === null) {
     throw new ProjectApplicationError(
       409,
@@ -822,7 +846,49 @@ function persistenceConflict(error: unknown): never {
 export class PgProjectRepository {
   public constructor(private readonly pool: Pool) {}
 
-  public async listProjects(actor: ProjectActor): Promise<readonly ProjectListItemV2[]> {
+  public async getProjectMetadataForAccess(
+    projectId: string,
+    actor: ProjectActor
+  ): Promise<{
+    readonly ownerId: string | null;
+    readonly editorState: "editable" | "retainedReadOnly";
+  }> {
+    const access = projectAccessScope(actor.role, "read");
+    if (access === "none") {
+      throw new ProjectApplicationError(403, "FORBIDDEN", "Project access is forbidden");
+    }
+    const result = await this.pool.query<{
+      owner_id: string | null;
+      editor_state: "editable" | "retainedReadOnly";
+    }>(
+      `SELECT project.owner_id,
+              CASE WHEN document.project_id IS NULL THEN 'retainedReadOnly'
+                   ELSE 'editable' END AS editor_state
+         FROM projects project
+         LEFT JOIN project_draft_documents document ON document.project_id = project.id
+        WHERE project.id = $1
+          AND ($2::boolean OR ($3::boolean AND project.owner_id = $4))`,
+      [projectId, access === "all", access === "owned", actor.id]
+    );
+    const row = result.rows[0];
+    if (!row) throw new ProjectApplicationError(404, "RESOURCE_NOT_FOUND", "Project not found");
+    return { ownerId: row.owner_id, editorState: row.editor_state };
+  }
+
+  public async listProjects(
+    actor: ProjectActor,
+    page: { readonly limit: number; readonly cursor: string | null }
+  ): Promise<ProjectListPage> {
+    const access = projectAccessScope(actor.role, "read");
+    if (access === "none") {
+      throw new ProjectApplicationError(403, "FORBIDDEN", "Project access is forbidden");
+    }
+    if (!Number.isInteger(page.limit) || page.limit < 1 || page.limit > 100) {
+      throw new ProjectApplicationError(422, "VALIDATION_FAILED", "Project page limit is invalid");
+    }
+    if (page.cursor !== null && !DatabaseIdV2Schema.safeParse(page.cursor).success) {
+      throw new ProjectApplicationError(422, "VALIDATION_FAILED", "Project page cursor is invalid");
+    }
     const result = await this.pool.query<ProjectListRow>(
       `SELECT project.id, project.code, project.name, project.description, project.status,
               project.default_locale, project.default_spare_percent::text,
@@ -833,11 +899,15 @@ export class PgProjectRepository {
          FROM projects project
          LEFT JOIN project_draft_documents document ON document.project_id = project.id
          LEFT JOIN users owner ON owner.id = project.owner_id
-        WHERE ($1::boolean OR project.owner_id = $2)
-        ORDER BY project.updated_at DESC, project.id`,
-      [actor.role === "administrator", actor.id]
+        WHERE ($1::boolean OR ($2::boolean AND project.owner_id = $3))
+          AND ($4::uuid IS NULL OR project.id > $4::uuid)
+        ORDER BY project.id
+        LIMIT $5`,
+      [access === "all", access === "owned", actor.id, page.cursor, page.limit + 1]
     );
-    return result.rows.map((row) => ({
+    const hasNextPage = result.rows.length > page.limit;
+    const rows = result.rows.slice(0, page.limit);
+    const projects = rows.map((row) => ({
       id: row.id,
       code: row.code,
       name: row.name,
@@ -852,9 +922,17 @@ export class PgProjectRepository {
       createdAt: asIso(row.created_at),
       updatedAt: asIso(row.updated_at)
     }));
+    return {
+      projects,
+      nextCursor: hasNextPage ? (projects.at(-1)?.id ?? null) : null
+    };
   }
 
   public async getProject(projectId: string, actor: ProjectActor): Promise<ProjectRecord> {
+    const access = projectAccessScope(actor.role, "read");
+    if (access === "none") {
+      throw new ProjectApplicationError(403, "FORBIDDEN", "Project access is forbidden");
+    }
     return inReadTransaction(this.pool, async (client) => {
       const result = await client.query<ProjectRow>(
         `SELECT project.id, project.code, project.name, project.description, project.status,
@@ -874,12 +952,13 @@ export class PgProjectRepository {
            JOIN catalog_versions catalog_snapshot
              ON catalog_snapshot.id = project.active_catalog_version_id
            JOIN rule_sets rule_snapshot ON rule_snapshot.id = project.active_rule_set_id
-          WHERE project.id = $1`,
-        [projectId]
+          WHERE project.id = $1
+            AND ($2::boolean OR ($3::boolean AND project.owner_id = $4))`,
+        [projectId, access === "all", access === "owned", actor.id]
       );
       const row = result.rows[0];
       if (!row) throw new ProjectApplicationError(404, "RESOURCE_NOT_FOUND", "Project not found");
-      authorize(row, actor);
+      authorize(row, actor, "read");
       return projectFromRow(requireStage7Document(row));
     });
   }
@@ -891,6 +970,9 @@ export class PgProjectRepository {
     readonly idempotencyKey: string;
     readonly requestHash: string;
   }): Promise<ProjectMutationResult> {
+    if (!canCreateProject(input.actor.role)) {
+      throw new ProjectApplicationError(403, "FORBIDDEN", "Project creation is forbidden");
+    }
     try {
       return await inTransaction(this.pool, async (client) => {
         const scope = `project.create:${input.actor.id}`;
@@ -984,7 +1066,7 @@ export class PgProjectRepository {
       return await inTransaction(this.pool, async (client) => {
         const scope = `project.draft:${input.projectId}:${input.actor.id}`;
         await lockIdempotencyScope(client, scope);
-        const current = await lockedProject(client, input.projectId, input.actor);
+        const current = await lockedProject(client, input.projectId, input.actor, "edit");
         const existing = await replay(client, scope, input.idempotencyKey, input.requestHash);
         if (existing) {
           return {
@@ -1108,6 +1190,10 @@ export class PgProjectRepository {
     projectId: string,
     actor: ProjectActor
   ): Promise<ProjectCalculationContext> {
+    const access = projectAccessScope(actor.role, "calculate");
+    if (access === "none") {
+      throw new ProjectApplicationError(403, "FORBIDDEN", "Project calculation is forbidden");
+    }
     return inReadTransaction(this.pool, async (client) => {
       const result = await client.query<ProjectRow>(
         `SELECT project.id, project.code, project.name, project.description, project.status,
@@ -1127,12 +1213,13 @@ export class PgProjectRepository {
            JOIN catalog_versions catalog_snapshot
              ON catalog_snapshot.id = project.active_catalog_version_id
            JOIN rule_sets rule_snapshot ON rule_snapshot.id = project.active_rule_set_id
-          WHERE project.id = $1`,
-        [projectId]
+          WHERE project.id = $1
+            AND ($2::boolean OR ($3::boolean AND project.owner_id = $4))`,
+        [projectId, access === "all", access === "owned", actor.id]
       );
       const row = result.rows[0];
       if (!row) throw new ProjectApplicationError(404, "RESOURCE_NOT_FOUND", "Project not found");
-      authorize(row, actor);
+      authorize(row, actor, "calculate");
       const hydrated = requireStage7Document(row);
       const pair = await pinnedPair(
         client,
@@ -1149,13 +1236,18 @@ export class PgProjectRepository {
     readonly idempotencyKey: string;
     readonly requestHash: string;
   }): Promise<CalculationMutationResult | null> {
+    const access = projectAccessScope(input.actor.role, "calculate");
+    if (access === "none") {
+      throw new ProjectApplicationError(403, "FORBIDDEN", "Project calculation is forbidden");
+    }
     const project = await this.pool.query<{ owner_id: string | null }>(
-      "SELECT owner_id FROM projects WHERE id = $1",
-      [input.projectId]
+      `SELECT owner_id FROM projects
+        WHERE id = $1 AND ($2::boolean OR ($3::boolean AND owner_id = $4))`,
+      [input.projectId, access === "all", access === "owned", input.actor.id]
     );
     const current = project.rows[0];
     if (!current) throw new ProjectApplicationError(404, "RESOURCE_NOT_FOUND", "Project not found");
-    authorize(current, input.actor);
+    authorize(current, input.actor, "calculate");
     const scope = `project.calculate:${input.projectId}:${input.actor.id}`;
     const result = await this.pool.query<IdempotencyRow>(
       `SELECT request_hash, response_status, response_payload
@@ -1203,7 +1295,7 @@ export class PgProjectRepository {
     return inTransaction(this.pool, async (client) => {
       const scope = `project.calculate:${input.projectId}:${input.actor.id}`;
       await lockIdempotencyScope(client, scope);
-      const current = await lockedProject(client, input.projectId, input.actor);
+      const current = await lockedProject(client, input.projectId, input.actor, "calculate");
       const existing = await replay(client, scope, input.idempotencyKey, input.requestHash);
       if (existing) {
         return {
@@ -1321,6 +1413,10 @@ export class PgProjectRepository {
     projectId: string,
     actor: ProjectActor
   ): Promise<CalculationDraftV2 | null> {
+    const access = projectAccessScope(actor.role, "read");
+    if (access === "none") {
+      throw new ProjectApplicationError(403, "FORBIDDEN", "Project access is forbidden");
+    }
     return inReadTransaction(this.pool, async (client) => {
       const projectResult = await client.query<ProjectRow>(
         `SELECT project.id, project.code, project.name, project.description, project.status,
@@ -1340,13 +1436,14 @@ export class PgProjectRepository {
            JOIN catalog_versions catalog_snapshot
              ON catalog_snapshot.id = project.active_catalog_version_id
            JOIN rule_sets rule_snapshot ON rule_snapshot.id = project.active_rule_set_id
-          WHERE project.id = $1`,
-        [projectId]
+          WHERE project.id = $1
+            AND ($2::boolean OR ($3::boolean AND project.owner_id = $4))`,
+        [projectId, access === "all", access === "owned", actor.id]
       );
       const projectRow = projectResult.rows[0];
       if (!projectRow)
         throw new ProjectApplicationError(404, "RESOURCE_NOT_FOUND", "Project not found");
-      authorize(projectRow, actor);
+      authorize(projectRow, actor, "read");
       const project = projectFromRow(requireStage7Document(projectRow));
       const result = await client.query<{
         id: string;

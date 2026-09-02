@@ -168,6 +168,25 @@ BEGIN
   THEN
     RAISE EXCEPTION 'application role has an invalid restored append-only approvals access policy';
   END IF;
+  IF to_regclass('public.users') IS NOT NULL
+     AND (has_table_privilege('niedax_generator_app', 'public.users', 'UPDATE')
+       OR has_table_privilege('niedax_generator_app', 'public.users', 'DELETE')
+       OR has_table_privilege('niedax_generator_app', 'public.users', 'TRUNCATE')
+       OR NOT has_column_privilege('niedax_generator_app', 'public.users', 'role', 'UPDATE')
+       OR NOT has_column_privilege('niedax_generator_app', 'public.users', 'enabled', 'UPDATE')
+       OR has_column_privilege('niedax_generator_app', 'public.users', 'password_hash', 'UPDATE'))
+  THEN
+    RAISE EXCEPTION 'application role has an invalid restored user-security access policy';
+  END IF;
+  IF to_regclass('public.sessions') IS NOT NULL
+     AND (has_table_privilege('niedax_generator_app', 'public.sessions', 'UPDATE')
+       OR has_table_privilege('niedax_generator_app', 'public.sessions', 'DELETE')
+       OR has_table_privilege('niedax_generator_app', 'public.sessions', 'TRUNCATE')
+       OR NOT has_column_privilege('niedax_generator_app', 'public.sessions', 'revoked_at', 'UPDATE')
+       OR NOT has_column_privilege('niedax_generator_app', 'public.sessions', 'last_seen_at', 'UPDATE'))
+  THEN
+    RAISE EXCEPTION 'application role has an invalid restored session access policy';
+  END IF;
   IF to_regclass('public.warnings') IS NOT NULL
      AND (NOT has_table_privilege('niedax_generator_app', 'public.warnings', 'SELECT')
        OR NOT has_table_privilege('niedax_generator_app', 'public.warnings', 'INSERT')
@@ -175,6 +194,36 @@ BEGIN
        OR NOT has_table_privilege('niedax_generator_app', 'public.warnings', 'DELETE'))
   THEN
     RAISE EXCEPTION 'application role has an invalid restored warnings access policy';
+  END IF;
+  IF EXISTS (
+    SELECT 1
+      FROM unnest(ARRAY[
+        'idempotency_records',
+        'revision_bom_lines_v2',
+        'revision_warnings_v2',
+        'revision_lifecycle_events',
+        'user_administration_audit_events'
+      ]) AS protected(table_name)
+     WHERE to_regclass('public.' || protected.table_name) IS NOT NULL
+       AND (
+         has_table_privilege(
+           'niedax_generator_app', 'public.' || protected.table_name, 'UPDATE'
+         )
+         OR has_table_privilege(
+           'niedax_generator_app', 'public.' || protected.table_name, 'DELETE'
+         )
+         OR has_table_privilege(
+           'niedax_generator_app', 'public.' || protected.table_name, 'TRUNCATE'
+         )
+         OR NOT has_table_privilege(
+           'niedax_generator_app', 'public.' || protected.table_name, 'SELECT'
+         )
+         OR NOT has_table_privilege(
+           'niedax_generator_app', 'public.' || protected.table_name, 'INSERT'
+         )
+       )
+  ) THEN
+    RAISE EXCEPTION 'application role has an invalid restored Stage 8 protected-table access policy';
   END IF;
 END
 $$;

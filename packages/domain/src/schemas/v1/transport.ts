@@ -275,6 +275,9 @@ export const ExportArtifactV1Schema = z
 
 export const ErrorCodeV1Schema = z.enum([
   "VALIDATION_FAILED",
+  "INVALID_USERNAME",
+  "INVALID_DISPLAY_NAME",
+  "WEAK_PASSWORD",
   "CONFLICT_STALE_VERSION",
   "INVALID_STATE_TRANSITION",
   "AUTHENTICATION_REQUIRED",

@@ -6,6 +6,18 @@ import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { getCalculationEngineReadiness } from "@niedax/calculation-engine";
 import {
+  ADMIN_USER_LIST_RESPONSE_V2,
+  ADMIN_USER_RESPONSE_V2,
+  APP_ROLES,
+  AUTHENTICATED_IDENTITY_RESPONSE_V2,
+  AdminUserListResponseV2Schema,
+  AdminUserResponseV2Schema,
+  AuthenticatedIdentityResponseV2Schema,
+  CreateAdminUserRequestV2Schema,
+  UpdateAdminUserRoleRequestV2Schema,
+  UpdateAdminUserStatusRequestV2Schema
+} from "@niedax/domain";
+import {
   CatalogImportError,
   createXlsxTemplate,
   exportValidationIssuesCsv
@@ -18,8 +30,11 @@ import type { CatalogAdminService, CatalogUploadFile } from "./catalog-service.j
 import type { AppRole, SessionIdentity, UserStore } from "./domain.js";
 import { toPublicUser } from "./domain.js";
 import { ProjectApplicationError } from "./project-errors.js";
+import { canAdministerCatalog } from "./authorization-policy.js";
 import { registerProjectRoutes } from "./project-routes.js";
 import type { ProjectOperations } from "./project-service.js";
+import { registerRevisionRoutes } from "./revision-routes.js";
+import type { RevisionOperations } from "./revision-service.js";
 
 const SESSION_COOKIE = "niedax_session";
 
@@ -30,6 +45,7 @@ interface BuildAppOptions {
   readonly logger?: boolean;
   readonly catalogService?: CatalogAdminService;
   readonly projectService?: ProjectOperations;
+  readonly revisionService?: RevisionOperations;
 }
 
 export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
@@ -89,10 +105,15 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     const clientError = publicClientError(error);
     if (clientError) {
       return reply.status(clientError.statusCode).send(
-        errorEnvelope(request, "VALIDATION_FAILED", clientError.message, {
-          kind: "validation",
-          issues: [{ path: [], code: clientError.code, message: clientError.message }]
-        })
+        errorEnvelope(
+          request,
+          normalizedErrorCode(clientError.statusCode, clientError.code),
+          clientError.message,
+          {
+            kind: "validation",
+            issues: [{ path: [], code: clientError.code, message: clientError.message }]
+          }
+        )
       );
     }
     request.log.error({ err: error }, "request failed");
@@ -154,7 +175,11 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         sameSite: "lax",
         secure: options.cookieSecure ?? false
       });
-      return { user: result.user };
+      return AuthenticatedIdentityResponseV2Schema.parse({
+        schemaVersion: AUTHENTICATED_IDENTITY_RESPONSE_V2,
+        correlationId: correlationId(request),
+        user: result.user
+      });
     }
   );
 
@@ -170,11 +195,49 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
 
   app.get("/api/v1/auth/me", async (request) => {
     const identity = await requireIdentity(request, auth);
-    return { user: toPublicUser(identity.user) };
+    return AuthenticatedIdentityResponseV2Schema.parse({
+      schemaVersion: AUTHENTICATED_IDENTITY_RESPONSE_V2,
+      correlationId: correlationId(request),
+      user: toPublicUser(identity.user)
+    });
   });
 
+  app.get<{ Querystring: { limit?: number; cursor?: string } }>(
+    "/api/v1/admin/users",
+    {
+      schema: {
+        querystring: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            limit: { type: "integer", minimum: 1, maximum: 100, default: 50 },
+            cursor: { type: "string", format: "uuid" }
+          }
+        }
+      }
+    },
+    async (request) => {
+      const actor = await requireIdentity(request, auth);
+      const result = await auth.listUsers(actor, {
+        limit: request.query.limit ?? 50,
+        cursor: request.query.cursor ?? null
+      });
+      return AdminUserListResponseV2Schema.parse({
+        schemaVersion: ADMIN_USER_LIST_RESPONSE_V2,
+        correlationId: correlationId(request),
+        ...result
+      });
+    }
+  );
+
   app.post<{
-    Body: { username: string; displayName: string; password: string; role: AppRole };
+    Body: {
+      schemaVersion: "create-admin-user-request/v2";
+      username: string;
+      displayName: string;
+      password: string;
+      role: AppRole;
+    };
   }>(
     "/api/v1/admin/users",
     {
@@ -182,24 +245,43 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         body: {
           type: "object",
           additionalProperties: false,
-          required: ["username", "displayName", "password", "role"],
+          required: ["schemaVersion", "username", "displayName", "password", "role"],
           properties: {
-            username: { type: "string", minLength: 3, maxLength: 64 },
+            schemaVersion: { const: "create-admin-user-request/v2" },
+            username: {
+              type: "string",
+              minLength: 3,
+              maxLength: 64,
+              pattern: "^[a-z0-9][a-z0-9._-]{2,63}$"
+            },
             displayName: { type: "string", minLength: 2, maxLength: 100 },
             password: { type: "string", minLength: PASSWORD_MIN_LENGTH, maxLength: 1024 },
-            role: { enum: ["administrator", "reviewer"] }
+            role: { enum: APP_ROLES }
           }
         }
       }
     },
     async (request, reply) => {
       const actor = await requireIdentity(request, auth);
-      const user = await auth.createUser(actor, request.body);
-      return reply.status(201).send({ user });
+      const command = CreateAdminUserRequestV2Schema.safeParse(request.body);
+      if (!command.success) {
+        throw new AppError(400, "VALIDATION_FAILED", "Request validation failed");
+      }
+      const user = await auth.createUser(actor, command.data, correlationId(request));
+      return reply.status(201).send(
+        AdminUserResponseV2Schema.parse({
+          schemaVersion: ADMIN_USER_RESPONSE_V2,
+          correlationId: correlationId(request),
+          user
+        })
+      );
     }
   );
 
-  app.patch<{ Params: { id: string }; Body: { enabled: boolean } }>(
+  app.patch<{
+    Params: { id: string };
+    Body: { schemaVersion: "update-admin-user-status-request/v2"; enabled: boolean };
+  }>(
     "/api/v1/admin/users/:id/status",
     {
       schema: {
@@ -211,18 +293,38 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         body: {
           type: "object",
           additionalProperties: false,
-          required: ["enabled"],
-          properties: { enabled: { type: "boolean" } }
+          required: ["schemaVersion", "enabled"],
+          properties: {
+            schemaVersion: { const: "update-admin-user-status-request/v2" },
+            enabled: { type: "boolean" }
+          }
         }
       }
     },
     async (request) => {
       const actor = await requireIdentity(request, auth);
-      return { user: await auth.setEnabled(actor, request.params.id, request.body.enabled) };
+      const command = UpdateAdminUserStatusRequestV2Schema.safeParse(request.body);
+      if (!command.success) {
+        throw new AppError(400, "VALIDATION_FAILED", "Request validation failed");
+      }
+      const user = await auth.setEnabled(
+        actor,
+        request.params.id,
+        command.data.enabled,
+        correlationId(request)
+      );
+      return AdminUserResponseV2Schema.parse({
+        schemaVersion: ADMIN_USER_RESPONSE_V2,
+        correlationId: correlationId(request),
+        user
+      });
     }
   );
 
-  app.patch<{ Params: { id: string }; Body: { role: AppRole } }>(
+  app.patch<{
+    Params: { id: string };
+    Body: { schemaVersion: "update-admin-user-role-request/v2"; role: AppRole };
+  }>(
     "/api/v1/admin/users/:id/role",
     {
       schema: {
@@ -234,14 +336,31 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         body: {
           type: "object",
           additionalProperties: false,
-          required: ["role"],
-          properties: { role: { enum: ["administrator", "reviewer"] } }
+          required: ["schemaVersion", "role"],
+          properties: {
+            schemaVersion: { const: "update-admin-user-role-request/v2" },
+            role: { enum: APP_ROLES }
+          }
         }
       }
     },
     async (request) => {
       const actor = await requireIdentity(request, auth);
-      return { user: await auth.setRole(actor, request.params.id, request.body.role) };
+      const command = UpdateAdminUserRoleRequestV2Schema.safeParse(request.body);
+      if (!command.success) {
+        throw new AppError(400, "VALIDATION_FAILED", "Request validation failed");
+      }
+      const user = await auth.setRole(
+        actor,
+        request.params.id,
+        command.data.role,
+        correlationId(request)
+      );
+      return AdminUserResponseV2Schema.parse({
+        schemaVersion: ADMIN_USER_RESPONSE_V2,
+        correlationId: correlationId(request),
+        user
+      });
     }
   );
 
@@ -250,8 +369,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     { schema: { body: catalogUploadBodySchema } },
     async (request) => {
       const actor = await requireAdministrator(request, auth);
-      void actor;
-      return requireCatalog(options).preview(request.body.files);
+      return requireCatalog(options).preview(request.body.files, actor.user.role);
     }
   );
 
@@ -263,6 +381,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
       const draft = await requireCatalog(options).importDraft({
         files: request.body.files,
         actorId: actor.user.id,
+        actorRole: actor.user.role,
         correlationId: correlationId(request)
       });
       return reply.status(201).send({ catalog: draft });
@@ -278,6 +397,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         catalog: await requireCatalog(options).validate({
           catalogVersionId: request.params.id,
           actorId: actor.user.id,
+          actorRole: actor.user.role,
           correlationId: correlationId(request)
         })
       };
@@ -296,6 +416,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         catalog: await requireCatalog(options).approve({
           catalogVersionId: request.params.id,
           actorId: actor.user.id,
+          actorRole: actor.user.role,
           correlationId: correlationId(request),
           reason: request.body.reason,
           contentHash: request.body.contentHash
@@ -316,6 +437,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         catalog: await requireCatalog(options).activate({
           catalogVersionId: request.params.id,
           actorId: actor.user.id,
+          actorRole: actor.user.role,
           correlationId: correlationId(request),
           reason: request.body.reason,
           contentHash: request.body.contentHash
@@ -343,6 +465,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         catalog: await requireCatalog(options).archive({
           catalogVersionId: request.params.id,
           actorId: actor.user.id,
+          actorRole: actor.user.role,
           correlationId: correlationId(request),
           reason: request.body.reason
         })
@@ -351,8 +474,8 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   );
 
   app.get("/api/v1/admin/catalog-versions", async (request) => {
-    await requireAdministrator(request, auth);
-    return { versions: await requireCatalog(options).listVersions() };
+    const actor = await requireAdministrator(request, auth);
+    return { versions: await requireCatalog(options).listVersions(actor.user.role) };
   });
 
   app.get("/api/v1/admin/catalog-import-template.xlsx", async (request, reply) => {
@@ -366,8 +489,11 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     "/api/v1/admin/catalog-versions/:id/report.csv",
     { schema: { params: uuidParamsSchema } },
     async (request, reply) => {
-      await requireAdministrator(request, auth);
-      const report = await requireCatalog(options).exportLatestReport(request.params.id);
+      const actor = await requireAdministrator(request, auth);
+      const report = await requireCatalog(options).exportLatestReport(
+        request.params.id,
+        actor.user.role
+      );
       if (!report)
         throw new AppError(404, "CATALOG_REPORT_NOT_FOUND", "Validation report not found");
       reply.type("text/csv; charset=utf-8");
@@ -428,6 +554,14 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     registerProjectRoutes(app, {
       auth,
       service: options.projectService,
+      correlationId
+    });
+  }
+
+  if (options.revisionService) {
+    registerRevisionRoutes(app, {
+      auth,
+      service: options.revisionService,
       correlationId
     });
   }
@@ -493,6 +627,9 @@ function correlationId(request: FastifyRequest): string {
 
 type PublicErrorCode =
   | "VALIDATION_FAILED"
+  | "INVALID_USERNAME"
+  | "INVALID_DISPLAY_NAME"
+  | "WEAK_PASSWORD"
   | "CONFLICT_STALE_VERSION"
   | "INVALID_STATE_TRANSITION"
   | "AUTHENTICATION_REQUIRED"
@@ -510,6 +647,9 @@ type PublicErrorCode =
 function normalizedErrorCode(statusCode: number, code: string): PublicErrorCode {
   const accepted = new Set<PublicErrorCode>([
     "VALIDATION_FAILED",
+    "INVALID_USERNAME",
+    "INVALID_DISPLAY_NAME",
+    "WEAK_PASSWORD",
     "CONFLICT_STALE_VERSION",
     "INVALID_STATE_TRANSITION",
     "AUTHENTICATION_REQUIRED",
@@ -560,14 +700,18 @@ function errorEnvelope(
 }
 
 interface PublicClientError {
-  readonly statusCode: 400 | 413 | 415 | 429;
+  readonly statusCode: 400 | 413 | 415 | 422 | 429;
   readonly code: string;
   readonly message: string;
 }
 
 function publicClientError(error: unknown): PublicClientError | null {
   if (!error || typeof error !== "object") return null;
-  const candidate = error as { readonly statusCode?: unknown; readonly code?: unknown };
+  const candidate = error as {
+    readonly statusCode?: unknown;
+    readonly code?: unknown;
+    readonly validation?: unknown;
+  };
   if (candidate.statusCode === 429) {
     return {
       statusCode: 429,
@@ -577,6 +721,24 @@ function publicClientError(error: unknown): PublicClientError | null {
   }
   switch (candidate.code) {
     case "FST_ERR_VALIDATION":
+      if (
+        Array.isArray(candidate.validation) &&
+        candidate.validation.some(
+          (issue: unknown) =>
+            typeof issue === "object" &&
+            issue !== null &&
+            "instancePath" in issue &&
+            "keyword" in issue &&
+            (issue as { readonly instancePath?: unknown }).instancePath === "/schemaVersion" &&
+            (issue as { readonly keyword?: unknown }).keyword === "const"
+        )
+      ) {
+        return {
+          statusCode: 422,
+          code: "UNSUPPORTED_SCHEMA_VERSION",
+          message: "The request schema version is not supported"
+        };
+      }
       return {
         statusCode: 400,
         code: "REQUEST_VALIDATION_FAILED",
@@ -626,7 +788,7 @@ async function requireAdministrator(
   auth: AuthService
 ): Promise<SessionIdentity> {
   const identity = await requireIdentity(request, auth);
-  if (identity.user.role !== "administrator") {
+  if (!canAdministerCatalog(identity.user.role)) {
     throw new AppError(403, "ADMINISTRATOR_REQUIRED", "Administrator role required");
   }
   return identity;

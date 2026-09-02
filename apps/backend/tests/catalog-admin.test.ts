@@ -32,7 +32,9 @@ function createStore(): UserStore {
       displayName: "Catalog Admin",
       role: "administrator",
       enabled: true,
-      passwordHash
+      passwordHash,
+      createdAt: new Date("2026-08-16T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-16T00:00:00.000Z")
     },
     {
       id: "10000000-0000-4000-8000-000000000102",
@@ -40,7 +42,9 @@ function createStore(): UserStore {
       displayName: "Catalog Reviewer",
       role: "reviewer",
       enabled: true,
-      passwordHash
+      passwordHash,
+      createdAt: new Date("2026-08-16T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-16T00:00:00.000Z")
     }
   ];
   const sessions = new Map<string, SessionIdentity>();
@@ -58,6 +62,8 @@ function createStore(): UserStore {
     revokeSession: async (sessionHash) => {
       sessions.delete(sessionHash);
     },
+    listUsers: async () => ({ users, nextCursor: null }),
+    recordUserAdministrationRejection: async () => undefined,
     createUser: async () => {
       throw new Error("not used");
     },
@@ -94,7 +100,7 @@ function repository(): CatalogAdminRepository {
     approve: vi.fn(async () => version("approved")),
     activate: vi.fn(async () => version("active")),
     archive: vi.fn(async () => version("archived")),
-    listVersions: async () => [version("active")],
+    listVersions: vi.fn(async () => [version("active")]),
     findSelectableProducts: async (filter) =>
       filter.system === "KL" &&
       filter.heightMm === 60 &&
@@ -182,6 +188,22 @@ const mutationHeaders = (cookie: string) => ({
 });
 
 describe("catalog administration authorization", () => {
+  it.each(["designer", "reviewer", "viewer"] as const)(
+    "enforces Administrator-only catalog access at the service boundary for %s",
+    async (role) => {
+      const repo = repository();
+      const service = new CatalogAdminService(repo);
+
+      expect(() => service.listVersions(role)).toThrowError(
+        expect.objectContaining({
+          statusCode: 403,
+          code: "FORBIDDEN"
+        })
+      );
+      expect(repo.listVersions).not.toHaveBeenCalled();
+    }
+  );
+
   it("denies approve and activate to an authenticated reviewer before the service is called", async () => {
     const repo = repository();
     const app = await buildApp({

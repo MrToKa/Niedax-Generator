@@ -75,12 +75,18 @@ try {
     parsed,
     pipeline
   });
-  const validated = await service.validate({ catalogVersionId: draft.id, actorId, correlationId });
+  const validated = await service.validate({
+    catalogVersionId: draft.id,
+    actorId,
+    actorRole: "administrator",
+    correlationId
+  });
   let status = validated.status;
   if (approve) {
     const approved = await service.approve({
       catalogVersionId: draft.id,
       actorId,
+      actorRole: "administrator",
       correlationId,
       reason,
       contentHash: pipeline.bundle.contentHash
@@ -91,6 +97,7 @@ try {
     const active = await service.activate({
       catalogVersionId: draft.id,
       actorId,
+      actorRole: "administrator",
       correlationId,
       reason,
       contentHash: pipeline.bundle.contentHash

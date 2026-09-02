@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { AuthService, validatePassword } from "../src/auth-service.js";
 import type { AppError } from "../src/auth-service.js";
 import type { AppRole, SessionIdentity, UserRecord, UserStore } from "../src/domain.js";
+import { UserStoreInvariantError } from "../src/domain.js";
 
 class MemoryStore implements UserStore {
   public readonly users = new Map<string, UserRecord>();
@@ -38,6 +39,22 @@ class MemoryStore implements UserStore {
   public async revokeSession(hash: string): Promise<void> {
     this.sessions.delete(hash);
   }
+  public async listUsers(input: { limit: number; cursor: string | null }) {
+    const users = [...this.users.values()].sort((left, right) =>
+      left.username.localeCompare(right.username)
+    );
+    const start = input.cursor
+      ? Math.max(0, users.findIndex((user) => user.id === input.cursor) + 1)
+      : 0;
+    const page = users.slice(start, start + input.limit);
+    return {
+      users: page,
+      nextCursor: users.length > start + input.limit ? (page.at(-1)?.id ?? null) : null
+    };
+  }
+  public async recordUserAdministrationRejection(): Promise<void> {
+    return undefined;
+  }
   public async createUser(input: {
     username: string;
     displayName: string;
@@ -45,33 +62,61 @@ class MemoryStore implements UserStore {
     passwordHash: string;
     createdBy: string | null;
   }): Promise<UserRecord> {
+    if ([...this.users.values()].some((user) => user.username === input.username)) {
+      throw new UserStoreInvariantError("USERNAME_ALREADY_EXISTS");
+    }
     const user: UserRecord = {
       id: randomUUID(),
       username: input.username,
       displayName: input.displayName,
       role: input.role,
       enabled: true,
-      passwordHash: input.passwordHash
+      passwordHash: input.passwordHash,
+      createdAt: this.now,
+      updatedAt: this.now
     };
     this.users.set(user.id, user);
     return user;
   }
-  public async setUserEnabled(id: string, enabled: boolean): Promise<UserRecord | null> {
-    const existing = this.users.get(id);
+  public async setUserEnabled(input: {
+    userId: string;
+    enabled: boolean;
+  }): Promise<UserRecord | null> {
+    const existing = this.users.get(input.userId);
     if (!existing) return null;
-    const user = { ...existing, enabled };
-    this.users.set(id, user);
-    if (!enabled) {
+    if (
+      !input.enabled &&
+      existing.enabled &&
+      existing.role === "administrator" &&
+      [...this.users.values()].filter((user) => user.enabled && user.role === "administrator")
+        .length <= 1
+    ) {
+      throw new UserStoreInvariantError("LAST_ENABLED_ADMINISTRATOR");
+    }
+    const user = { ...existing, enabled: input.enabled, updatedAt: this.now };
+    this.users.set(input.userId, user);
+    if (!input.enabled) {
       for (const [hash, session] of this.sessions)
-        if (session.user.id === id) this.sessions.delete(hash);
+        if (session.user.id === input.userId) this.sessions.delete(hash);
     }
     return user;
   }
-  public async setUserRole(id: string, role: AppRole): Promise<UserRecord | null> {
-    const existing = this.users.get(id);
+  public async setUserRole(input: { userId: string; role: AppRole }): Promise<UserRecord | null> {
+    const existing = this.users.get(input.userId);
     if (!existing) return null;
-    const user = { ...existing, role };
-    this.users.set(id, user);
+    if (
+      input.role !== "administrator" &&
+      existing.enabled &&
+      existing.role === "administrator" &&
+      [...this.users.values()].filter((user) => user.enabled && user.role === "administrator")
+        .length <= 1
+    ) {
+      throw new UserStoreInvariantError("LAST_ENABLED_ADMINISTRATOR");
+    }
+    const user = { ...existing, role: input.role, updatedAt: this.now };
+    this.users.set(input.userId, user);
+    for (const [hash, session] of this.sessions)
+      if (session.user.id === input.userId) this.sessions.delete(hash);
     return user;
   }
 }
@@ -129,6 +174,34 @@ describe("authentication and authorization foundation", () => {
     expect(store.users.get(reviewer.id)?.enabled).toBe(false);
   });
 
+  it("maps a duplicate normalized username to a stable safe conflict", async () => {
+    const store = new MemoryStore();
+    const auth = new AuthService(store, "test-pepper", () => store.now);
+    await auth.createInitialAdministrator({
+      username: "local.admin",
+      displayName: "Local Admin",
+      password: strongPassword
+    });
+    const login = await auth.login("local.admin", strongPassword);
+    const actor = await auth.resolveSession(login.token);
+    if (!actor) throw new Error("Expected administrator session");
+    const sizeBefore = store.users.size;
+
+    await expect(
+      auth.createUser(actor, {
+        username: " LOCAL.ADMIN ",
+        displayName: "Duplicate Local Admin",
+        password: "Duplicate-Local-42!",
+        role: "viewer"
+      })
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      code: "VALIDATION_FAILED",
+      message: "Username is already in use"
+    });
+    expect(store.users.size).toBe(sizeBefore);
+  });
+
   it("denies administrator actions to reviewers", async () => {
     const store = new MemoryStore();
     const auth = new AuthService(store, "test-pepper", () => store.now);
@@ -160,6 +233,159 @@ describe("authentication and authorization foundation", () => {
       })
     ).rejects.toEqual(
       expect.objectContaining<Partial<AppError>>({ statusCode: 403, code: "FORBIDDEN" })
+    );
+  });
+
+  it("rejects a missing actor at the internal user-administration boundary", async () => {
+    const store = new MemoryStore();
+    const auth = new AuthService(store, "test-pepper", () => store.now);
+    await auth.createInitialAdministrator({
+      username: "local.admin",
+      displayName: "Local Admin",
+      password: strongPassword
+    });
+    const userCount = store.users.size;
+
+    await expect(
+      auth.createUser(null as unknown as SessionIdentity, {
+        username: "missing.actor",
+        displayName: "Missing Actor",
+        password: "Missing-Actor-42!",
+        role: "administrator"
+      })
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
+    expect(store.users.size).toBe(userCount);
+  });
+
+  it("lets an administrator create and page every canonical Stage 8 role", async () => {
+    const store = new MemoryStore();
+    const auth = new AuthService(store, "test-pepper", () => store.now);
+    await auth.createInitialAdministrator({
+      username: "local.admin",
+      displayName: "Local Admin",
+      password: strongPassword
+    });
+    const login = await auth.login("local.admin", strongPassword);
+    const actor = await auth.resolveSession(login.token);
+    if (!actor) throw new Error("Expected administrator session");
+
+    for (const role of ["designer", "reviewer", "administrator", "viewer"] as const) {
+      const user = await auth.createUser(actor, {
+        username: `stage8.${role}`,
+        displayName: `Stage 8 ${role}`,
+        password: `Stage8-${role}-42!`,
+        role
+      });
+      expect(user.role).toBe(role);
+    }
+
+    const firstPage = await auth.listUsers(actor, { limit: 2, cursor: null });
+    expect(firstPage.users).toHaveLength(2);
+    expect(firstPage.nextCursor).not.toBeNull();
+    const secondPage = await auth.listUsers(actor, {
+      limit: 100,
+      cursor: firstPage.nextCursor
+    });
+    expect([...firstPage.users, ...secondPage.users].map((user) => user.role)).toEqual(
+      expect.arrayContaining(["designer", "reviewer", "administrator", "viewer"])
+    );
+  });
+
+  it.each(["designer", "reviewer", "viewer"] as const)(
+    "denies every user administration operation to %s",
+    async (role) => {
+      const store = new MemoryStore();
+      const auth = new AuthService(store, "test-pepper", () => store.now);
+      const administrator = await auth.createInitialAdministrator({
+        username: "local.admin",
+        displayName: "Local Admin",
+        password: strongPassword
+      });
+      const administratorRecord = store.users.get(administrator.id);
+      if (!administratorRecord) throw new Error("Expected administrator");
+      const user = await store.createUser({
+        username: `stage8.${role}`,
+        displayName: `Stage 8 ${role}`,
+        passwordHash: "unused",
+        role,
+        createdBy: administrator.id
+      });
+      const actor: SessionIdentity = {
+        sessionHash: "forged-session-for-policy-test",
+        user,
+        expiresAt: new Date("2027-01-01T00:00:00Z")
+      };
+
+      const forbidden = expect.objectContaining<Partial<AppError>>({
+        statusCode: 403,
+        code: "FORBIDDEN"
+      });
+      await expect(auth.listUsers(actor, { limit: 50, cursor: null })).rejects.toEqual(forbidden);
+      await expect(
+        auth.createUser(actor, {
+          username: "forbidden.user",
+          displayName: "Forbidden User",
+          password: "Forbidden-Foundation-42!",
+          role: "viewer"
+        })
+      ).rejects.toEqual(forbidden);
+      await expect(auth.setRole(actor, administrator.id, "viewer")).rejects.toEqual(forbidden);
+      await expect(auth.setEnabled(actor, administrator.id, false)).rejects.toEqual(forbidden);
+    }
+  );
+
+  it("revokes active sessions immediately after role or enabled-state changes", async () => {
+    const store = new MemoryStore();
+    const auth = new AuthService(store, "test-pepper", () => store.now);
+    await auth.createInitialAdministrator({
+      username: "local.admin",
+      displayName: "Local Admin",
+      password: strongPassword
+    });
+    const administratorLogin = await auth.login("local.admin", strongPassword);
+    const administrator = await auth.resolveSession(administratorLogin.token);
+    if (!administrator) throw new Error("Expected administrator session");
+    const reviewerPassword = "Reviewer-Foundation-42!";
+    const reviewer = await auth.createUser(administrator, {
+      username: "role.session.reviewer",
+      displayName: "Role Session Reviewer",
+      password: reviewerPassword,
+      role: "reviewer"
+    });
+    const reviewerLogin = await auth.login(reviewer.username, reviewerPassword);
+    expect(await auth.resolveSession(reviewerLogin.token)).not.toBeNull();
+    await auth.setRole(administrator, reviewer.id, "viewer");
+    expect(await auth.resolveSession(reviewerLogin.token)).toBeNull();
+
+    const viewerLogin = await auth.login(reviewer.username, reviewerPassword);
+    expect((await auth.resolveSession(viewerLogin.token))?.user.role).toBe("viewer");
+    await auth.setEnabled(administrator, reviewer.id, false);
+    expect(await auth.resolveSession(viewerLogin.token)).toBeNull();
+  });
+
+  it("protects both the current and last enabled Administrator", async () => {
+    const store = new MemoryStore();
+    const auth = new AuthService(store, "test-pepper", () => store.now);
+    const administrator = await auth.createInitialAdministrator({
+      username: "local.admin",
+      displayName: "Local Admin",
+      password: strongPassword
+    });
+    const login = await auth.login("local.admin", strongPassword);
+    const actor = await auth.resolveSession(login.token);
+    if (!actor) throw new Error("Expected administrator session");
+
+    await expect(auth.setEnabled(actor, administrator.id, false)).rejects.toEqual(
+      expect.objectContaining<Partial<AppError>>({ statusCode: 409, code: "SELF_DISABLE" })
+    );
+    await expect(auth.setRole(actor, administrator.id, "reviewer")).rejects.toEqual(
+      expect.objectContaining<Partial<AppError>>({ statusCode: 409, code: "SELF_DEMOTION" })
+    );
+    await expect(
+      store.setUserEnabled({ userId: administrator.id, enabled: false })
+    ).rejects.toEqual(expect.objectContaining({ code: "LAST_ENABLED_ADMINISTRATOR" }));
+    await expect(store.setUserRole({ userId: administrator.id, role: "viewer" })).rejects.toEqual(
+      expect.objectContaining({ code: "LAST_ENABLED_ADMINISTRATOR" })
     );
   });
 });

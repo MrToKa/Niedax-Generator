@@ -188,4 +188,35 @@ describe("Stage 3 v1 runtime schemas", () => {
       }).success
     ).toBe(true);
   });
+
+  it.each(["INVALID_USERNAME", "INVALID_DISPLAY_NAME", "WEAK_PASSWORD"] as const)(
+    "accepts the bounded public authentication error code %s",
+    (code) => {
+      expect(
+        ErrorEnvelopeV1Schema.safeParse({
+          schemaVersion: "error-envelope/v1",
+          correlationId: "authentication-validation-error",
+          error: {
+            code,
+            message: "Authentication input validation failed",
+            details: null
+          }
+        }).success
+      ).toBe(true);
+    }
+  );
+
+  it("rejects an unlisted public error code", () => {
+    expect(
+      ErrorEnvelopeV1Schema.safeParse({
+        schemaVersion: "error-envelope/v1",
+        correlationId: "authentication-validation-error",
+        error: {
+          code: "UNBOUNDED_INTERNAL_FAILURE",
+          message: "Internal details must not cross the boundary",
+          details: null
+        }
+      }).success
+    ).toBe(false);
+  });
 });

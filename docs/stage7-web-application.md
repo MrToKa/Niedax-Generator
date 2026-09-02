@@ -16,11 +16,12 @@ retained Stage 2 prototype and fixtures are not imported by a production route.
 
 ## Contract decision
 
-The HTTP major remains `/api/v1`, while the newly implemented project operations carry strict v2
-payload literals. This resolves the previously documented integration gap without changing retained
-`CalculationInputV1`, `CalculationResultV1`, or saved v1 revision data. Version literals live in
-`packages/domain/src/schemas/versions.ts`; request and response schemas live in the shared domain
-package and reject unknown keys.
+The HTTP major remains `/api/v1`, while the Stage 7 project operations carry strict v2 payload
+literals. Stage 8 supersedes only the list envelope with `project-list-response/v3` to add explicit
+cursor pagination; the project item shape remains v2. This resolves the previously documented
+integration gap without changing retained `CalculationInputV1`, `CalculationResultV1`, or saved v1
+revision data. Version literals live in `packages/domain/src/schemas/versions.ts`; request and
+response schemas live in the shared domain package and reject unknown keys.
 
 The draft contract is deliberately less strict than `CalculationInputV2`: it can persist unresolved
 catalog selections and nullable support choices. Authoritative validation must resolve those facts
@@ -45,19 +46,24 @@ demand.
 All routes require the existing session cookie. Browser mutations additionally require a valid
 same-origin request, `X-Niedax-CSRF: 1`, and, where shown below, an `Idempotency-Key`.
 
-| Operation                | Route                                           | Payload                                                              |
-| ------------------------ | ----------------------------------------------- | -------------------------------------------------------------------- |
-| List accessible projects | `GET /api/v1/projects`                          | `ProjectListResponseV2`                                              |
-| Create draft             | `POST /api/v1/projects`                         | `CreateProjectDraftRequestV2` → `ProjectDraftResponseV2`             |
-| Hydrate draft            | `GET /api/v1/projects/:projectId`               | `ProjectDraftResponseV2`                                             |
-| Replace complete graph   | `PUT /api/v1/projects/:projectId/draft`         | `ReplaceProjectDraftRequestV2` → `ProjectDraftResponseV2`            |
-| Validate saved draft     | `POST /api/v1/projects/:projectId/validation`   | `ValidateProjectDraftRequestV2` → `ProjectValidationResponseV2`      |
-| Calculate saved draft    | `POST /api/v1/projects/:projectId/calculations` | `CalculateProjectDraftRequestV2` → `CalculateProjectDraftResponseV2` |
-| Load transient result    | `GET /api/v1/projects/:projectId/calculation`   | `CurrentCalculationResponseV2`                                       |
-| Load editor choices      | `GET /api/v1/catalog/editor-context`            | `EditorCatalogResponseV2`                                            |
+| Operation                | Route                                               | Payload                                                              |
+| ------------------------ | --------------------------------------------------- | -------------------------------------------------------------------- |
+| List accessible projects | `GET /api/v1/projects?limit={1..100}&cursor={uuid}` | `ProjectListResponseV3`                                              |
+| Create draft             | `POST /api/v1/projects`                             | `CreateProjectDraftRequestV2` → `ProjectDraftResponseV2`             |
+| Hydrate draft            | `GET /api/v1/projects/:projectId`                   | `ProjectDraftResponseV2`                                             |
+| Replace complete graph   | `PUT /api/v1/projects/:projectId/draft`             | `ReplaceProjectDraftRequestV2` → `ProjectDraftResponseV2`            |
+| Validate saved draft     | `POST /api/v1/projects/:projectId/validation`       | `ValidateProjectDraftRequestV2` → `ProjectValidationResponseV2`      |
+| Calculate saved draft    | `POST /api/v1/projects/:projectId/calculations`     | `CalculateProjectDraftRequestV2` → `CalculateProjectDraftResponseV2` |
+| Load transient result    | `GET /api/v1/projects/:projectId/calculation`       | `CurrentCalculationResponseV2`                                       |
+| Load editor choices      | `GET /api/v1/catalog/editor-context`                | `EditorCatalogResponseV2`                                            |
 
 Create, replace, and calculate are idempotent. The public error shape remains
 `ErrorEnvelopeV1Schema`; unexpected exception text and stack traces are not returned.
+
+The project list defaults to 50 items, uses ascending project UUID `id` keyset order, and returns
+the final emitted ID as `nextCursor` or `null`. The UI loads the first page explicitly and exposes
+an accessible BG/EN **Load more** action; session/generation guards prevent results from an older
+request being appended to a newer list.
 
 ## Application and persistence flow
 
@@ -116,16 +122,54 @@ an explicit conflict state and is never overwritten automatically. Invalid local
 the form and does not replace the last valid server draft. Calculate is tied to the latest
 successfully acknowledged draft. Any later edit marks the displayed calculation stale.
 
-## Ownership policy before Stage 8
+## Stage 8 role-aware frontend extension
 
-New projects are owned by the authenticated creator. A Reviewer can list, read, replace, validate,
-calculate, and retrieve only their own projects. An Administrator may access all projects under the
-existing administrative policy. Owner identity is displayed read-only. This is the narrow Stage 7
-mapping; it does not add Designer/Viewer roles, checking, approval, or capability redesign.
+The production shell now consumes the backend-owned authenticated identity and its effective public
+capabilities. It displays the current identity and canonical role as Designer, Reviewer,
+Administrator, or View only, while keeping the persisted identifiers untranslated. The
+Administrator account area provides a bounded, cursor-paginated user list, creation with all four
+roles, and role/status controls. The current Administrator controls remain visibly protected, and
+every mutation is still authorized by the server; a hidden or stale client control never grants an
+operation.
+
+New projects remain owned by their authenticated creator. Per-project presentation is driven by the
+strict `/access` response rather than by recomputing role/owner policy in React. An owner with the
+required capability can edit, autosave, validate, calculate, and explicitly save a revision. A
+Reviewer inspecting another user's project gets the same complete draft and revision context in a
+separate semantic read-only renderer, without draft inputs or autosave. View only gets the same
+usable read-only project/history experience and no mutation affordances. Administrator access is
+also represented by the server response. A later authoritative `403` is localized and remains final
+even if previously loaded client capability state has become stale.
 
 Authorized projects retained from before Stage 7 are listed as `retainedReadOnly`; they are not
 silently hidden or fabricated into a v2 draft. Their editor action explains that no lossless Stage 7
-document exists. Direct draft access returns `UNSUPPORTED_SCHEMA_VERSION`.
+document exists. Direct draft access returns `UNSUPPORTED_SCHEMA_VERSION`. A separate history-only
+entry uses the server's metadata access decision and exposes retained v1 revision list/detail data
+without trying to hydrate or replace a mutable draft. Retained lifecycle actions remain unavailable
+according to the server-provided revision action fields.
+
+### Revision workspace
+
+The editor has a Revisions step only when the project access response allows history. Save revision
+is an explicit named action and is offered only for an acknowledged, non-stale transient
+calculation. Its versioned command carries the exact draft version, latest known revision number,
+calculation run, fingerprint, trimmed name, optional comment, and a stable idempotency key for a
+retry of the same payload. Autosave, validation, Calculate, navigation, and result viewing do not
+invoke this command and do not create history.
+
+Revision list and non-sensitive lifecycle audit requests are bounded and cursor-paginated. Selecting
+a revision loads a distinct immutable-detail state: it never dispatches into the current draft
+reducer, reconciles against the active editor catalog, starts autosave, or recalculates. V2 detail
+renders the saved calculation result and BOM directly from its snapshot, plus saved author,
+catalog/rule identities, warnings, readiness, checksums, lifecycle actors/times/comments, status
+transitions, and correlation evidence. Retained v1 detail remains a readable escaped snapshot.
+
+Check and Approve controls come from each revision summary's server-derived action availability.
+Unavailable latest/status/readiness states include an explanation; unauthorized controls are not
+present. Each allowed transition uses a keyboard-contained confirmation dialog, optional comment,
+exact expected status/number/fingerprint, CSRF evidence, and stable retry identity. Conflicts refresh
+bounded history without replacing the mutable draft. Approved detail is always presented as
+read-only and directs later work back to the draft and a new revision.
 
 ## User-facing errors and accessibility
 
@@ -138,12 +182,20 @@ Controls use labels and accessible names, asynchronous state is announced throug
 keyboard focus remains visible, reduced-motion preferences are respected, and wide result tables
 remain usable inside bounded overflow containers at narrow widths.
 
+The Stage 8 revision and administration additions preserve those rules. Confirmation dialogs focus
+Cancel first, trap Tab/Shift+Tab, close with Escape only while idle, restore the invoking focus, and
+prevent dismissal during a pending transition. Save/check/approve and user mutations expose busy
+text and live success/failure announcements. Revision metadata reflows to one column, list rows keep
+large full-width targets, and retained JSON/result tables stay inside bounded scrolling regions on
+narrow screens. BG/EN switching rerenders labels, roles, statuses, errors, and dates without
+remounting the editor, changing user-entered names/comments, changing selected revision, or
+translating canonical IDs and snapshot evidence.
+
 ## Deferred work
 
-Stage 7 intentionally does not create immutable revisions or implement check/approval workflows and
-new roles (Stage 8), export artifacts (Stage 9), or the complete Playwright regression program
-(Stage 10). It also does not add prices, structural/anchor-capacity approval, cutting optimization,
-new product formulas, external services, or telemetry.
+The implemented Stage 8 frontend does not add export artifacts (Stage 9) or the complete Playwright
+regression program (Stage 10). It also does not add prices, structural/anchor-capacity approval,
+cutting optimization, new product formulas, external services, or telemetry.
 
 ## Verification evidence
 
@@ -157,6 +209,11 @@ configured routes joined by a logical continuation and a tracked manual item, re
 draft, validates and calculates a schema-valid partial result, parses the persisted v2 input/result,
 replays the calculation idempotently, and proves the revision count is unchanged. The exact final
 commands and observed outcomes are recorded in the Stage 7 handoff.
+
+The Stage 8 T13 persistence assertion subsequently activates a different synthetic catalog/rule
+pair and repins the mutable project, then proves the already-saved revision retains its original
+snapshot IDs and exact bytes. T14 performs the four-role authenticated workflow and failure/retry
+checks only in a disposable database; the normal persistent-stack auth probe is read-only.
 
 On 2026-09-01, the production image was also exercised with controlled Chrome through Caddy at
 `http://localhost:8080`; no direct frontend or backend port was published. The run covered the

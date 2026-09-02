@@ -1,9 +1,11 @@
 import { createHash, randomBytes } from "node:crypto";
 
 import { hash, verify } from "@node-rs/argon2";
+import type { AdminUserSummaryV2 } from "@niedax/domain";
 
-import type { AppRole, PublicUser, SessionIdentity, UserStore } from "./domain.js";
-import { toPublicUser } from "./domain.js";
+import type { AppRole, PublicUser, SessionIdentity, UserRecord, UserStore } from "./domain.js";
+import { toAdminUser, toPublicUser, UserStoreInvariantError } from "./domain.js";
+import { canAdministerUsers } from "./authorization-policy.js";
 
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 export const PASSWORD_MIN_LENGTH = 6;
@@ -86,20 +88,45 @@ export class AuthService {
     username: string;
     displayName: string;
     password: string;
-  }): Promise<PublicUser> {
+  }): Promise<AdminUserSummaryV2> {
     if ((await this.store.countAdministrators()) > 0) {
       throw new AppError(409, "ADMINISTRATOR_EXISTS", "An administrator already exists");
     }
-    return this.createUser(null, { ...input, role: "administrator" });
+    try {
+      return await this.createValidatedUser(
+        null,
+        { ...input, role: "administrator" },
+        "initial-administrator"
+      );
+    } catch (error) {
+      this.mapStoreInvariant(error);
+    }
   }
 
   public async createUser(
-    actor: SessionIdentity | null,
-    input: { username: string; displayName: string; password: string; role: AppRole }
-  ): Promise<PublicUser> {
-    if (actor && actor.user.role !== "administrator") {
+    actor: SessionIdentity,
+    input: { username: string; displayName: string; password: string; role: AppRole },
+    correlationId = "internal-user-create"
+  ): Promise<AdminUserSummaryV2> {
+    if (!actor || !canAdministerUsers(actor.user.role)) {
+      if (actor) {
+        await this.store.recordUserAdministrationRejection({
+          actor,
+          targetUserId: null,
+          requestedAction: "user.create",
+          correlationId
+        });
+      }
       throw new AppError(403, "FORBIDDEN", "Administrator role required");
     }
+    return this.createValidatedUser(actor, input, correlationId);
+  }
+
+  private async createValidatedUser(
+    actor: SessionIdentity | null,
+    input: { username: string; displayName: string; password: string; role: AppRole },
+    correlationId: string
+  ): Promise<AdminUserSummaryV2> {
     const username = normalizeUsername(input.username);
     if (!/^[a-z0-9][a-z0-9._-]{2,63}$/u.test(username)) {
       throw new AppError(400, "INVALID_USERNAME", "Username format is invalid");
@@ -112,22 +139,52 @@ export class AuthService {
     if (failures.length > 0) {
       throw new AppError(400, "WEAK_PASSWORD", `Password requires ${failures.join(", ")}`);
     }
-    const user = await this.store.createUser({
-      username,
-      displayName,
-      role: input.role,
-      passwordHash: await hashPassword(input.password),
-      createdBy: actor?.user.id ?? null
+    let user: UserRecord;
+    try {
+      user = await this.store.createUser({
+        username,
+        displayName,
+        role: input.role,
+        passwordHash: await hashPassword(input.password),
+        createdBy: actor?.user.id ?? null,
+        administration: { actor, correlationId }
+      });
+    } catch (error) {
+      this.mapStoreInvariant(error);
+    }
+    return toAdminUser(user);
+  }
+
+  public async listUsers(
+    actor: SessionIdentity,
+    input: { readonly limit: number; readonly cursor: string | null }
+  ): Promise<{
+    readonly users: readonly AdminUserSummaryV2[];
+    readonly nextCursor: string | null;
+  }> {
+    this.requireAdministrator(actor);
+    const page = await this.store.listUsers({
+      ...input,
+      administration: { actor, correlationId: "user-list" }
     });
-    return toPublicUser(user);
+    return { users: page.users.map(toAdminUser), nextCursor: page.nextCursor };
   }
 
   public async setEnabled(
     actor: SessionIdentity,
     userId: string,
-    enabled: boolean
-  ): Promise<PublicUser> {
-    this.requireAdministrator(actor);
+    enabled: boolean,
+    correlationId = "internal-user-status"
+  ): Promise<AdminUserSummaryV2> {
+    if (!canAdministerUsers(actor.user.role)) {
+      await this.store.recordUserAdministrationRejection({
+        actor,
+        targetUserId: userId,
+        requestedAction: "user.status",
+        correlationId
+      });
+      throw new AppError(403, "FORBIDDEN", "Administrator role required");
+    }
     if (actor.user.id === userId && !enabled) {
       throw new AppError(
         409,
@@ -135,13 +192,36 @@ export class AuthService {
         "Administrators cannot disable their current account"
       );
     }
-    const user = await this.store.setUserEnabled(userId, enabled, actor.user.id);
+    let user: UserRecord | null;
+    try {
+      user = await this.store.setUserEnabled({
+        userId,
+        enabled,
+        updatedBy: actor.user.id,
+        administration: { actor, correlationId }
+      });
+    } catch (error) {
+      this.mapStoreInvariant(error);
+    }
     if (!user) throw new AppError(404, "USER_NOT_FOUND", "User not found");
-    return toPublicUser(user);
+    return toAdminUser(user);
   }
 
-  public async setRole(actor: SessionIdentity, userId: string, role: AppRole): Promise<PublicUser> {
-    this.requireAdministrator(actor);
+  public async setRole(
+    actor: SessionIdentity,
+    userId: string,
+    role: AppRole,
+    correlationId = "internal-user-role"
+  ): Promise<AdminUserSummaryV2> {
+    if (!canAdministerUsers(actor.user.role)) {
+      await this.store.recordUserAdministrationRejection({
+        actor,
+        targetUserId: userId,
+        requestedAction: "user.role",
+        correlationId
+      });
+      throw new AppError(403, "FORBIDDEN", "Administrator role required");
+    }
     if (actor.user.id === userId && role !== "administrator") {
       throw new AppError(
         409,
@@ -149,15 +229,52 @@ export class AuthService {
         "Administrators cannot demote their current account"
       );
     }
-    const user = await this.store.setUserRole(userId, role, actor.user.id);
+    let user: UserRecord | null;
+    try {
+      user = await this.store.setUserRole({
+        userId,
+        role,
+        updatedBy: actor.user.id,
+        administration: { actor, correlationId }
+      });
+    } catch (error) {
+      this.mapStoreInvariant(error);
+    }
     if (!user) throw new AppError(404, "USER_NOT_FOUND", "User not found");
-    return toPublicUser(user);
+    return toAdminUser(user);
   }
 
   private requireAdministrator(actor: SessionIdentity): void {
-    if (actor.user.role !== "administrator") {
+    if (!canAdministerUsers(actor.user.role)) {
       throw new AppError(403, "FORBIDDEN", "Administrator role required");
     }
+  }
+
+  private mapStoreInvariant(error: unknown): never {
+    if (error instanceof UserStoreInvariantError) {
+      if (error.code === "USERNAME_ALREADY_EXISTS") {
+        throw new AppError(409, "VALIDATION_FAILED", "Username is already in use");
+      }
+      if (error.code === "INITIAL_ADMINISTRATOR_EXISTS") {
+        throw new AppError(409, "ADMINISTRATOR_EXISTS", "An administrator already exists");
+      }
+      if (error.code === "ADMINISTRATOR_ACTOR_REQUIRED") {
+        throw new AppError(403, "FORBIDDEN", "Administrator role required");
+      }
+      if (error.code === "CURRENT_ADMINISTRATOR_PROTECTED") {
+        throw new AppError(
+          409,
+          "CONFLICT_STALE_VERSION",
+          "Administrators cannot disable or demote their current account"
+        );
+      }
+      throw new AppError(
+        409,
+        "CONFLICT_STALE_VERSION",
+        "At least one enabled Administrator must remain"
+      );
+    }
+    throw error;
   }
 
   private hashSession(token: string): string {

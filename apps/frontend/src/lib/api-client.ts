@@ -50,27 +50,52 @@ export async function requestJson<T>(
 
   const raw = await response.json().catch(() => null);
   if (!response.ok) {
-    const parsed = ErrorEnvelopeV1Schema.safeParse(raw);
-    if (parsed.success) {
-      throw new ApiError(
-        response.status,
-        parsed.data.error.code,
-        parsed.data.correlationId,
-        parsed.data.error.details,
-        parsed.data.error.message
-      );
-    }
-    const headerCorrelation = response.headers.get("x-correlation-id");
-    throw new ApiError(
-      response.status,
-      "INTERNAL_ERROR",
-      headerCorrelation,
-      null,
-      "Request failed"
-    );
+    throw apiErrorFromResponse(response, raw);
   }
 
   return schema.parse(raw);
+}
+
+export async function requestNoContent(
+  path: `/api/v1/${string}`,
+  options: Omit<JsonRequestOptions, "body"> = {}
+): Promise<void> {
+  const mutation = options.method !== undefined && !["GET", "HEAD"].includes(options.method);
+  const { correlationId, idempotencyKey, signal, ...requestOptions } = options;
+  const response = await fetch(path, {
+    ...requestOptions,
+    cache: "no-store",
+    ...(signal ? { signal } : {}),
+    headers: {
+      ...(mutation ? { "x-niedax-csrf": "1" } : {}),
+      ...(idempotencyKey ? { "idempotency-key": idempotencyKey } : {}),
+      ...(correlationId ? { "x-correlation-id": correlationId } : {})
+    }
+  });
+  if (!response.ok) {
+    const raw = await response.json().catch(() => null);
+    throw apiErrorFromResponse(response, raw);
+  }
+}
+
+function apiErrorFromResponse(response: Response, raw: unknown): ApiError {
+  const parsed = ErrorEnvelopeV1Schema.safeParse(raw);
+  if (parsed.success) {
+    return new ApiError(
+      response.status,
+      parsed.data.error.code,
+      parsed.data.correlationId,
+      parsed.data.error.details,
+      parsed.data.error.message
+    );
+  }
+  return new ApiError(
+    response.status,
+    "INTERNAL_ERROR",
+    response.headers.get("x-correlation-id"),
+    null,
+    "Request failed"
+  );
 }
 
 export function isAuthenticationError(error: unknown): boolean {

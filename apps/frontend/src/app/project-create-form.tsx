@@ -1,23 +1,28 @@
 "use client";
 
+import { ProjectLocaleV2Schema } from "@niedax/domain";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { isAuthenticationError, newRequestKey } from "@/lib/api-client";
+import { ApiError, isAuthenticationError, newRequestKey } from "@/lib/api-client";
+import { hasCapability } from "@/lib/access-presentation";
 import { createEmptyProjectDraft, validateDraftLocally } from "@/lib/editor-state";
 import { useI18n } from "@/lib/i18n";
 import { createProject } from "@/lib/project-api";
 
 import { AuthenticationRequired, FormField, StatusNotice } from "./shared-ui";
+import { useSession } from "./session-provider";
 
 export function ProjectCreateForm() {
   const router = useRouter();
   const { t } = useI18n();
+  const { markAnonymous, status: sessionStatus, user } = useSession();
   const [draft, setDraft] = useState(() => createEmptyProjectDraft());
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<"failed" | "authentication" | null>(null);
+  const [error, setError] = useState<"failed" | "authentication" | "forbidden" | null>(null);
   const requestKey = useRef<string | null>(null);
+  const requestController = useRef<AbortController | null>(null);
   const validation = useMemo(() => validateDraftLocally(draft), [draft]);
   const reserve = Number(draft.defaultReservePercent);
   const reserveError =
@@ -27,22 +32,63 @@ export function ProjectCreateForm() {
     setError(null);
     setDraft((current) => ({ ...current, ...patch }));
   }
+  useEffect(
+    () => () => {
+      requestController.current?.abort();
+      requestController.current = null;
+    },
+    [user]
+  );
+  useEffect(() => {
+    if (sessionStatus === "authenticated" && user) return;
+    requestController.current?.abort();
+    requestController.current = null;
+    requestKey.current = null;
+    setDraft(createEmptyProjectDraft());
+    setBusy(false);
+    setError(null);
+  }, [sessionStatus, user]);
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!validation.validForSave) return;
+    if (!validation.validForSave || !user) return;
     setBusy(true);
     setError(null);
     requestKey.current ??= newRequestKey();
+    const controller = new AbortController();
+    requestController.current?.abort();
+    requestController.current = controller;
     try {
-      const response = await createProject(draft, requestKey.current);
+      const response = await createProject(draft, requestKey.current, controller.signal);
+      if (controller.signal.aborted) return;
       router.replace(`/projects/${response.project.id}`);
     } catch (caught) {
-      setError(isAuthenticationError(caught) ? "authentication" : "failed");
+      if (controller.signal.aborted) return;
+      const authenticationFailure = isAuthenticationError(caught);
+      if (authenticationFailure && !markAnonymous(user)) return;
+      setError(
+        authenticationFailure
+          ? "authentication"
+          : caught instanceof ApiError && caught.status === 403
+            ? "forbidden"
+            : "failed"
+      );
     } finally {
-      setBusy(false);
+      if (requestController.current === controller) {
+        requestController.current = null;
+        setBusy(false);
+      }
     }
   }
-  if (error === "authentication") return <AuthenticationRequired />;
+  if (sessionStatus === "loading") return <p role="status">{t("sessionLoading")}</p>;
+  if (sessionStatus === "failed")
+    return <StatusNotice tone="error">{t("sessionLoadFailed")}</StatusNotice>;
+  if (error === "authentication" || sessionStatus === "anonymous" || !user)
+    return <AuthenticationRequired />;
+  if (
+    error === "forbidden" ||
+    (user !== null && !hasCapability(user.capabilities, "project:create"))
+  )
+    return <StatusNotice tone="error">{t("forbiddenAction")}</StatusNotice>;
   return (
     <>
       <div className="page-heading">
@@ -111,7 +157,9 @@ export function ProjectCreateForm() {
               <select
                 {...props}
                 value={draft.defaultLocale}
-                onChange={(event) => change({ defaultLocale: event.target.value as "bg" | "en" })}
+                onChange={(event) =>
+                  change({ defaultLocale: ProjectLocaleV2Schema.parse(event.target.value) })
+                }
               >
                 <option value="bg">Български</option>
                 <option value="en">English</option>

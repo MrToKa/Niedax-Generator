@@ -68,6 +68,18 @@ services:
         condition: service_healthy
     networks: [database]
 
+  stage8-acceptance:
+    build:
+      context: ../..
+      dockerfile: database/Dockerfile.migrations
+    environment:
+      <<: *test-database
+    command: ["node", "dist/stage8-test.js"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [database]
+
 networks:
   database:
     internal: true

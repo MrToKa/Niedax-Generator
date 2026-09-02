@@ -27,6 +27,7 @@ export class ProjectApplicationError extends AppError {
     code:
       | "VALIDATION_FAILED"
       | "CONFLICT_STALE_VERSION"
+      | "INVALID_STATE_TRANSITION"
       | "AUTHENTICATION_REQUIRED"
       | "FORBIDDEN"
       | "RESOURCE_NOT_FOUND"

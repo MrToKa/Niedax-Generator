@@ -9,7 +9,7 @@ import {
   CurrentCalculationResponseV2Schema,
   EditorCatalogResponseV2Schema,
   ProjectDraftResponseV2Schema,
-  ProjectListResponseV2Schema,
+  ProjectListResponseV3Schema,
   ProjectValidationResponseV2Schema,
   ReplaceProjectDraftRequestV2Schema,
   ValidateProjectDraftRequestV2Schema,
@@ -18,14 +18,23 @@ import {
   type EditorCatalogResponseV2,
   type ProjectDraftResponseV2,
   type ProjectDraftInputV2,
-  type ProjectListResponseV2,
+  type ProjectListResponseV3,
   type ProjectValidationResponseV2
 } from "@niedax/domain";
 
 import { requestJson } from "./api-client";
 
-export function listProjects(signal?: AbortSignal): Promise<ProjectListResponseV2> {
-  return requestJson("/api/v1/projects", ProjectListResponseV2Schema, { signal });
+export const PROJECT_LIST_PAGE_LIMIT = 50;
+
+export function listProjects(
+  cursor: string | null = null,
+  signal?: AbortSignal
+): Promise<ProjectListResponseV3> {
+  const parameters = new URLSearchParams({ limit: String(PROJECT_LIST_PAGE_LIMIT) });
+  if (cursor) parameters.set("cursor", cursor);
+  return requestJson(`/api/v1/projects?${parameters.toString()}`, ProjectListResponseV3Schema, {
+    signal
+  });
 }
 
 export function createProject(

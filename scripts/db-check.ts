@@ -21,7 +21,8 @@ try {
       "build",
       "migrations",
       "verify",
-      "stage7-acceptance"
+      "stage7-acceptance",
+      "stage8-acceptance"
     ],
     { env: environment }
   );
@@ -38,6 +39,11 @@ try {
   run(
     "docker",
     ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "verify"],
+    { env: environment }
+  );
+  run(
+    "docker",
+    ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "stage8-acceptance"],
     { env: environment }
   );
   run(
@@ -63,6 +69,11 @@ try {
   run(
     "docker",
     ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "verify"],
+    { env: environment }
+  );
+  run(
+    "docker",
+    ["compose", "-p", project, "-f", composeFile, "run", "--rm", "--no-deps", "stage8-acceptance"],
     { env: environment }
   );
   run(

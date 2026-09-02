@@ -10,6 +10,10 @@ import {
   type CatalogValidationReport,
   type ParsedCatalogBundle
 } from "@niedax/catalog-import";
+import type { AppRole } from "@niedax/domain";
+
+import { AppError } from "./auth-service.js";
+import { canAdministerCatalog } from "./authorization-policy.js";
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
@@ -190,7 +194,11 @@ export async function runCatalogPipelineForActiveScope(
 export class CatalogAdminService {
   public constructor(private readonly repository: CatalogAdminRepository) {}
 
-  public async preview(files: readonly CatalogUploadFile[]): Promise<CatalogPipelineResult> {
+  public async preview(
+    files: readonly CatalogUploadFile[],
+    actorRole: AppRole
+  ): Promise<CatalogPipelineResult> {
+    this.requireAdministrator(actorRole);
     const upload = await parseUpload(files);
     return runCatalogPipelineForActiveScope(upload.parsed, this.repository);
   }
@@ -198,8 +206,10 @@ export class CatalogAdminService {
   public async importDraft(input: {
     files: readonly CatalogUploadFile[];
     actorId: string;
+    actorRole: AppRole;
     correlationId: string;
   }): Promise<CatalogDraftSummary> {
+    this.requireAdministrator(input.actorRole);
     const upload = await parseUpload(input.files);
     const pipeline = await runCatalogPipelineForActiveScope(upload.parsed, this.repository);
     if (!pipeline.bundle.manifest.length) {
@@ -219,8 +229,10 @@ export class CatalogAdminService {
   public async validate(input: {
     catalogVersionId: string;
     actorId: string;
+    actorRole: AppRole;
     correlationId: string;
   }): Promise<CatalogDraftSummary> {
+    this.requireAdministrator(input.actorRole);
     const parsed = await this.repository.loadDraft(input.catalogVersionId);
     if (!parsed)
       throw new CatalogImportError("Draft catalog import was not found", "CATALOG_DRAFT_NOT_FOUND");
@@ -231,10 +243,12 @@ export class CatalogAdminService {
   public async approve(input: {
     catalogVersionId: string;
     actorId: string;
+    actorRole: AppRole;
     correlationId: string;
     reason: string;
     contentHash: string;
   }): Promise<CatalogVersionSummary> {
+    this.requireAdministrator(input.actorRole);
     if (!input.reason.trim())
       throw new CatalogImportError("Approval reason is required", "REASON_REQUIRED");
     return this.repository.approve(input);
@@ -243,10 +257,12 @@ export class CatalogAdminService {
   public async activate(input: {
     catalogVersionId: string;
     actorId: string;
+    actorRole: AppRole;
     correlationId: string;
     reason: string;
     contentHash: string;
   }): Promise<CatalogVersionSummary> {
+    this.requireAdministrator(input.actorRole);
     if (!input.reason.trim())
       throw new CatalogImportError("Activation reason is required", "REASON_REQUIRED");
     return this.repository.activate(input);
@@ -255,15 +271,18 @@ export class CatalogAdminService {
   public async archive(input: {
     catalogVersionId: string;
     actorId: string;
+    actorRole: AppRole;
     correlationId: string;
     reason: string;
   }): Promise<CatalogVersionSummary> {
+    this.requireAdministrator(input.actorRole);
     if (!input.reason.trim())
       throw new CatalogImportError("Archive reason is required", "REASON_REQUIRED");
     return this.repository.archive(input);
   }
 
-  public listVersions(): Promise<readonly CatalogVersionSummary[]> {
+  public listVersions(actorRole: AppRole): Promise<readonly CatalogVersionSummary[]> {
+    this.requireAdministrator(actorRole);
     return this.repository.listVersions();
   }
 
@@ -277,7 +296,17 @@ export class CatalogAdminService {
     return this.repository.listSelectionOptions();
   }
 
-  public exportLatestReport(catalogVersionId: string): Promise<CatalogValidationReport | null> {
+  public exportLatestReport(
+    catalogVersionId: string,
+    actorRole: AppRole
+  ): Promise<CatalogValidationReport | null> {
+    this.requireAdministrator(actorRole);
     return this.repository.exportLatestReport(catalogVersionId);
+  }
+
+  private requireAdministrator(role: AppRole): void {
+    if (!canAdministerCatalog(role)) {
+      throw new AppError(403, "FORBIDDEN", "Administrator role required");
+    }
   }
 }

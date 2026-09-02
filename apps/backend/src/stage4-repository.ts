@@ -389,7 +389,8 @@ export class PgStage4Repository {
     return inTransaction(this.pool, async (client) => {
       const replay = await client.query<RevisionIdentityRow>(
         `SELECT id, revision_number FROM revisions
-          WHERE project_id = $1 AND idempotency_key = $2`,
+          WHERE project_id = $1 AND idempotency_key = $2
+            AND snapshot_schema_version = 'revision-snapshot/v1'`,
         [raw.projectId, raw.idempotencyKey]
       );
       if (replay.rows[0])

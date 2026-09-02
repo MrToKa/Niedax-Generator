@@ -3,6 +3,7 @@
 import type {
   CalculationDraftV2,
   EditorCatalogResponseV2,
+  ProjectAccessV2,
   ProjectDraftInputV2,
   ProjectV2,
   ProjectValidationResponseV2
@@ -20,6 +21,8 @@ import {
 } from "react";
 
 import { ApiError, isAuthenticationError, newRequestKey } from "@/lib/api-client";
+import { readOnlyProjectTranslationKey } from "@/lib/access-presentation";
+import { getProjectAccess } from "@/lib/auth-api";
 import {
   asyncRequestIsCurrent,
   calculationRequestWasSuperseded,
@@ -44,9 +47,18 @@ import {
   replaceProjectDraft,
   validateProjectDraft
 } from "@/lib/project-api";
+import { workflowErrorKey } from "@/lib/workflow-error";
 
 import { CalculationResults } from "./calculation-results";
-import { EditorSections, editorSteps, type EditorStep } from "./project-editor-sections";
+import {
+  EditorSections,
+  editorSteps,
+  isEditorStep,
+  type EditorStep
+} from "./project-editor-sections";
+import { ReadOnlyEditorSections } from "./project-read-only-sections";
+import { RevisionPanel } from "./revision-panel";
+import { useSession } from "./session-provider";
 import { AuthenticationRequired, LoadingPanel, StatusNotice } from "./shared-ui";
 
 type LoadState = "loading" | "ready" | "authentication" | "failed";
@@ -57,8 +69,10 @@ interface FailedSave {
 
 export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
   const { t } = useI18n();
+  const { markAnonymous, status: sessionStatus, user } = useSession();
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [project, setProject] = useState<ProjectV2 | null>(null);
+  const [access, setAccess] = useState<ProjectAccessV2 | null>(null);
   const [draft, dispatchDraft] = useReducer(projectDraftReducer, null);
   const [catalog, setCatalog] = useState<EditorCatalogResponseV2 | null>(null);
   const [catalogFailed, setCatalogFailed] = useState(false);
@@ -139,6 +153,7 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
       saveStatusRef.current = "idle";
       setLoadState("loading");
       setProject(null);
+      setAccess(null);
       setDraft(null);
       setCatalog(null);
       setCatalogFailed(false);
@@ -160,29 +175,37 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
         const response = await getProject(projectId, signal);
         if (!isCurrent()) return;
         const nextDraft = projectToDraft(response.project);
-        const [catalogResult, calculationResult] = await Promise.allSettled([
+        const [accessResult, catalogResult, calculationResult] = await Promise.allSettled([
+          getProjectAccess(projectId, signal),
           getEditorCatalog(signal),
           getCurrentCalculation(projectId, signal)
         ]);
         if (!isCurrent()) return;
-        const sessionFailure = [catalogResult, calculationResult].find(
+        const sessionFailure = [accessResult, catalogResult, calculationResult].find(
           (result) => result.status === "rejected" && isAuthenticationError(result.reason)
         );
         if (sessionFailure) {
-          setLoadState("authentication");
+          if (markAnonymous(user)) setLoadState("authentication");
           return;
         }
+        if (accessResult.status === "rejected") {
+          setLoadState("failed");
+          return;
+        }
+        const nextAccess = accessResult.value.access;
         let hydratedDraft = nextDraft;
         let requiresRebase = false;
         if (catalogResult.status === "fulfilled") {
           const nextCatalog = catalogResult.value;
-          requiresRebase = !isSameCatalogContext(response, nextCatalog);
+          requiresRebase = nextAccess.canEditDraft && !isSameCatalogContext(response, nextCatalog);
           setCatalog(nextCatalog);
           setCatalogFailed(false);
-          const reconciled = reconcileProjectDraftCatalog(nextDraft, nextCatalog);
-          if (reconciled.cleared.length) {
-            hydratedDraft = reconciled.draft;
-            setCatalogClearedFields(reconciled.cleared);
+          if (nextAccess.canEditDraft) {
+            const reconciled = reconcileProjectDraftCatalog(nextDraft, nextCatalog);
+            if (reconciled.cleared.length) {
+              hydratedDraft = reconciled.draft;
+              setCatalogClearedFields(reconciled.cleared);
+            }
           }
         } else {
           setCatalogFailed(true);
@@ -194,6 +217,7 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
         catalogRebaseRequired.current = requiresRebase;
         setCatalogRebasePending(requiresRebase);
         setProject(response.project);
+        setAccess(nextAccess);
         setDraft(hydratedDraft);
         draftRef.current = hydratedDraft;
         setSelectedRouteId(hydratedDraft.routes[0]?.id ?? null);
@@ -204,29 +228,72 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
         setLoadState("ready");
       } catch (error) {
         if (!isCurrent()) return;
-        setLoadState(isAuthenticationError(error) ? "authentication" : "failed");
+        if (isAuthenticationError(error)) {
+          if (markAnonymous(user)) setLoadState("authentication");
+        } else setLoadState("failed");
       }
     },
-    [projectId, updateSaveStatus]
+    [markAnonymous, projectId, updateSaveStatus, user]
   );
 
   useEffect(() => {
+    if (sessionStatus !== "authenticated" || !user) return;
     const controller = new AbortController();
     void load(controller.signal);
     return () => controller.abort();
-  }, [load]);
+  }, [load, sessionStatus, user]);
 
   useEffect(() => {
-    if (loadState !== "ready" || !draft || !catalog) return;
+    if (sessionStatus === "authenticated" && user) return;
+    loadGeneration.current += 1;
+    validationGeneration.current += 1;
+    calculationGeneration.current += 1;
+    saveGeneration.current += 1;
+    requestController.current?.abort();
+    requestController.current = null;
+    if (debounceTimer.current !== null) {
+      window.clearTimeout(debounceTimer.current);
+      debounceTimer.current = null;
+    }
+    inFlight.current = false;
+    inFlightSave.current = null;
+    resaveAfterFlight.current = false;
+    failedSave.current = null;
+    acknowledged.current = { version: 0, content: "" };
+    draftRef.current = null;
+    setProject(null);
+    setAccess(null);
+    setDraft(null);
+    setCatalog(null);
+    setCatalogFailed(false);
+    setActiveStep("project");
+    setSelectedRouteId(null);
+    setCalculation(null);
+    setCalculationBusy(false);
+    setValidation(null);
+    setValidationBusy(false);
+    setActionError(null);
+    setCorrelationId(null);
+    setActionAnnouncement(null);
+    setBufferedEditorDirty(false);
+    setCatalogClearedFields([]);
+    catalogRebaseRequired.current = false;
+    setCatalogRebasePending(false);
+    updateSaveStatus("idle");
+  }, [sessionStatus, setDraft, updateSaveStatus, user]);
+
+  useEffect(() => {
+    if (loadState !== "ready" || !draft || !catalog || !access?.canEditDraft) return;
     const reconciled = reconcileProjectDraftCatalog(draft, catalog);
     if (!reconciled.cleared.length) return;
     setDraft(reconciled.draft);
     draftRef.current = reconciled.draft;
     setCatalogClearedFields(reconciled.cleared);
-  }, [catalog, draft, loadState, setDraft]);
+  }, [access?.canEditDraft, catalog, draft, loadState, setDraft]);
 
   const performSave = useCallback(
     (snapshot: ProjectDraftInputV2, idempotencyKey: string): Promise<boolean> => {
+      if (!access?.canEditDraft) return Promise.resolve(false);
       if (inFlightSave.current) return inFlightSave.current;
       const operation: Promise<boolean> = (async () => {
         resaveAfterFlight.current = false;
@@ -259,8 +326,9 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
             nextCatalog = await getEditorCatalog(controller.signal);
           } catch (error) {
             if (!mounted.current || controller.signal.aborted) return false;
-            if (isAuthenticationError(error)) setLoadState("authentication");
-            else {
+            if (isAuthenticationError(error)) {
+              if (markAnonymous(user)) setLoadState("authentication");
+            } else {
               catalogRebaseRequired.current = false;
               setCatalogRebasePending(false);
               setCatalog(null);
@@ -299,12 +367,18 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
           return true;
         } catch (error) {
           if (!mounted.current || controller.signal.aborted) return false;
-          if (isAuthenticationError(error)) setLoadState("authentication");
-          else if (error instanceof ApiError && error.code === "CONFLICT_STALE_VERSION")
+          if (isAuthenticationError(error)) {
+            if (markAnonymous(user)) setLoadState("authentication");
+          } else if (error instanceof ApiError && error.code === "CONFLICT_STALE_VERSION")
             updateSaveStatus("conflict");
           else {
             updateSaveStatus("failed");
-            if (error instanceof ApiError) setCorrelationId(error.correlationId);
+            if (error instanceof ApiError) {
+              setCorrelationId(error.correlationId);
+              if (workflowErrorKey(error) === "forbiddenAction") {
+                setActionError(t("forbiddenAction"));
+              }
+            }
           }
           return false;
         } finally {
@@ -322,11 +396,12 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
       inFlightSave.current = operation;
       return operation;
     },
-    [projectId, updateSaveStatus]
+    [access?.canEditDraft, markAnonymous, projectId, t, updateSaveStatus, user]
   );
 
   useEffect(() => {
-    if (loadState !== "ready" || !draft || !project || inFlight.current) return;
+    if (loadState !== "ready" || !draft || !project || !access?.canEditDraft || inFlight.current)
+      return;
     if (bufferedEditorDirty) {
       updateSaveStatus("unsaved");
       return;
@@ -349,9 +424,19 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
       window.clearTimeout(timeout);
       if (debounceTimer.current === timeout) debounceTimer.current = null;
     };
-  }, [bufferedEditorDirty, draft, loadState, performSave, project, saveNonce, updateSaveStatus]);
+  }, [
+    access?.canEditDraft,
+    bufferedEditorDirty,
+    draft,
+    loadState,
+    performSave,
+    project,
+    saveNonce,
+    updateSaveStatus
+  ]);
 
   const flushLatestDraft = useCallback(async (): Promise<boolean> => {
+    if (!access?.canEditDraft) return false;
     if (debounceTimer.current !== null) {
       window.clearTimeout(debounceTimer.current);
       debounceTimer.current = null;
@@ -381,7 +466,7 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
     updateSaveStatus("unsaved");
     setSaveNonce((value) => value + 1);
     return false;
-  }, [performSave, updateSaveStatus]);
+  }, [access?.canEditDraft, performSave, updateSaveStatus]);
 
   async function retryFailedSave() {
     const failed = failedSave.current;
@@ -389,6 +474,7 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
   }
 
   function requestCatalogRebase() {
+    if (!access?.canEditDraft) return;
     catalogRebaseRequired.current = true;
     setCatalogRebasePending(true);
     if (failedSave.current || ["failed", "conflict"].includes(saveStatusRef.current)) return;
@@ -397,7 +483,7 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
   }
 
   async function runValidation() {
-    if (bufferedEditorDirty) return;
+    if (bufferedEditorDirty || !access?.canValidate) return;
     const generation = ++validationGeneration.current;
     const requestedLoadGeneration = loadGeneration.current;
     const isCurrent = () =>
@@ -441,13 +527,17 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
       if (firstBlocking) focusValidationIssue(firstBlocking.path, requestedLoadGeneration);
     } catch (error) {
       if (!isCurrent()) return;
-      if (isAuthenticationError(error)) setLoadState("authentication");
-      else if (error instanceof ApiError) {
-        setActionError(error.message);
+      if (isAuthenticationError(error)) {
+        if (markAnonymous(user)) setLoadState("authentication");
+      } else if (error instanceof ApiError) {
+        const errorKey = workflowErrorKey(error);
+        setActionError(
+          t(errorKey && errorKey !== "revisionConflict" ? errorKey : "validationFailed")
+        );
         setCorrelationId(error.correlationId);
         if (error.code === "CATALOG_SNAPSHOT_MISSING" || error.code === "RULE_SNAPSHOT_MISSING")
           requestCatalogRebase();
-      } else setActionError(t("calculationFailed"));
+      } else setActionError(t("validationFailed"));
     } finally {
       if (isCurrent()) setValidationBusy(false);
     }
@@ -483,7 +573,7 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
   }
 
   async function runCalculation() {
-    if (bufferedEditorDirty) return;
+    if (bufferedEditorDirty || !access?.canCalculate) return;
     const generation = ++calculationGeneration.current;
     const requestedLoadGeneration = loadGeneration.current;
     const isCurrent = () =>
@@ -524,9 +614,13 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
       setValidation(null);
     } catch (error) {
       if (!isCurrent()) return;
-      if (isAuthenticationError(error)) setLoadState("authentication");
-      else if (error instanceof ApiError) {
-        setActionError(error.message);
+      if (isAuthenticationError(error)) {
+        if (markAnonymous(user)) setLoadState("authentication");
+      } else if (error instanceof ApiError) {
+        const errorKey = workflowErrorKey(error);
+        setActionError(
+          t(errorKey && errorKey !== "revisionConflict" ? errorKey : "calculationFailed")
+        );
         setCorrelationId(error.correlationId);
         if (error.code === "CONFLICT_STALE_VERSION") {
           const pendingSave = inFlightSave.current;
@@ -594,7 +688,7 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
               : "saveFailed"
   );
   const localCanCalculate = draft
-    ? canCalculateLocally(draft, catalog) && !catalogRebasePending
+    ? Boolean(access?.canCalculate) && canCalculateLocally(draft, catalog) && !catalogRebasePending
     : false;
   const fieldErrors = useMemo(() => {
     const errors = new Map(validationFieldErrors(validation));
@@ -621,9 +715,13 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
     setActiveStep(step);
   }
 
+  if (sessionStatus === "loading") return <LoadingPanel label={t("sessionLoading")} />;
+  if (sessionStatus === "failed")
+    return <StatusNotice tone="error">{t("sessionLoadFailed")}</StatusNotice>;
+  if (sessionStatus === "anonymous" || !user) return <AuthenticationRequired />;
   if (loadState === "loading") return <LoadingPanel label={t("loadingProject")} />;
   if (loadState === "authentication") return <AuthenticationRequired />;
-  if (loadState === "failed" || !draft || !project) {
+  if (loadState === "failed" || !draft || !project || !access) {
     return (
       <StatusNotice tone="error">
         <p>{t("projectLoadFailed")}</p>
@@ -645,16 +743,22 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
             {acknowledged.current.version} · {project.status}
           </p>
         </div>
-        <div aria-live="polite" className="save-indicator" role="status">
-          <span aria-hidden="true">
-            {saveStatus === "saved" || saveStatus === "idle"
-              ? "✓"
-              : saveStatus === "conflict" || saveStatus === "failed"
-                ? "!"
-                : "●"}
+        {access.canEditDraft ? (
+          <div aria-live="polite" className="save-indicator" role="status">
+            <span aria-hidden="true">
+              {saveStatus === "saved" || saveStatus === "idle"
+                ? "✓"
+                : saveStatus === "conflict" || saveStatus === "failed"
+                  ? "!"
+                  : "●"}
+            </span>
+            {saveLabel}
+          </div>
+        ) : (
+          <span className="status-badge">
+            {t(readOnlyProjectTranslationKey(user?.role ?? null))}
           </span>
-          {saveLabel}
-        </div>
+        )}
       </div>
       {catalogFailed ? (
         <StatusNotice tone="warning">
@@ -762,17 +866,19 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
       ) : null}
       <div className="editor-layout">
         <nav aria-label={t("step")} className="editor-navigation">
-          {editorSteps.map((step, index) => (
-            <button
-              aria-current={activeStep === step.id ? "step" : undefined}
-              key={step.id}
-              onClick={() => changeStep(step.id)}
-              type="button"
-            >
-              <span>{index + 1}</span>
-              {t(step.label)}
-            </button>
-          ))}
+          {editorSteps
+            .filter((step) => step.id !== "revisions" || access.canReadHistory)
+            .map((step, index) => (
+              <button
+                aria-current={activeStep === step.id ? "step" : undefined}
+                key={step.id}
+                onClick={() => changeStep(step.id)}
+                type="button"
+              >
+                <span>{index + 1}</span>
+                {t(step.label)}
+              </button>
+            ))}
         </nav>
         <div aria-busy={validationBusy || calculationBusy} className="editor-workspace">
           <span aria-live="polite" className="sr-only" role="status">
@@ -788,49 +894,68 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
             {t("step")}
             <select
               value={activeStep}
-              onChange={(event) => changeStep(event.target.value as EditorStep)}
+              onChange={(event) => {
+                if (isEditorStep(event.target.value)) changeStep(event.target.value);
+              }}
             >
-              {editorSteps.map((step) => (
-                <option key={step.id} value={step.id}>
-                  {t(step.label)}
-                </option>
-              ))}
+              {editorSteps
+                .filter((step) => step.id !== "revisions" || access.canReadHistory)
+                .map((step) => (
+                  <option key={step.id} value={step.id}>
+                    {t(step.label)}
+                  </option>
+                ))}
             </select>
           </label>
-          <div className="editor-toolbar">
-            <div className="editor-actions">
-              <button
-                className="secondary-button"
-                disabled={
-                  validationBusy ||
-                  calculationBusy ||
-                  ["validationBlocked", "conflict", "failed"].includes(saveStatus) ||
-                  bufferedEditorDirty
-                }
-                onClick={() => void runValidation()}
-                type="button"
-              >
-                {validationBusy ? t("validating") : t("validate")}
-              </button>
-              <button
-                className="primary-button"
-                disabled={
-                  calculationBusy ||
-                  validationBusy ||
-                  ["validationBlocked", "conflict", "failed"].includes(saveStatus) ||
-                  !localCanCalculate ||
-                  bufferedEditorDirty
-                }
-                onClick={() => void runCalculation()}
-                type="button"
-              >
-                {calculationBusy ? t("calculating") : t("calculate")}
-              </button>
+          {access.canValidate || access.canCalculate ? (
+            <div className="editor-toolbar">
+              <div className="editor-actions">
+                {access.canValidate ? (
+                  <button
+                    className="secondary-button"
+                    disabled={
+                      validationBusy ||
+                      calculationBusy ||
+                      ["validationBlocked", "conflict", "failed"].includes(saveStatus) ||
+                      bufferedEditorDirty
+                    }
+                    onClick={() => void runValidation()}
+                    type="button"
+                  >
+                    {validationBusy ? t("validating") : t("validate")}
+                  </button>
+                ) : null}
+                {access.canCalculate ? (
+                  <button
+                    className="primary-button"
+                    disabled={
+                      calculationBusy ||
+                      validationBusy ||
+                      ["validationBlocked", "conflict", "failed"].includes(saveStatus) ||
+                      !localCanCalculate ||
+                      bufferedEditorDirty
+                    }
+                    onClick={() => void runCalculation()}
+                    type="button"
+                  >
+                    {calculationBusy ? t("calculating") : t("calculate")}
+                  </button>
+                ) : null}
+              </div>
             </div>
-          </div>
-          {activeStep === "results" ? (
+          ) : null}
+          {activeStep === "revisions" ? (
+            <RevisionPanel
+              access={access}
+              acknowledgedDraftVersion={acknowledged.current.version}
+              calculation={calculation}
+              calculationStale={resultStale}
+              onReturnToDraft={() => setActiveStep("results")}
+              projectId={projectId}
+            />
+          ) : activeStep === "results" ? (
             <CalculationResults result={calculation?.result ?? null} stale={resultStale} />
-          ) : (
+          ) : access.canEditDraft ? (
             <EditorSections
               activeStep={activeStep}
               catalog={catalog}
@@ -842,6 +967,15 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
                 setValidation(null);
                 setDraft(value);
               }}
+              setSelectedRouteId={setSelectedRouteId}
+            />
+          ) : (
+            <ReadOnlyEditorSections
+              activeStep={activeStep}
+              catalog={catalog}
+              draft={draft}
+              reason={t(readOnlyProjectTranslationKey(user?.role ?? null))}
+              selectedRouteId={selectedRouteId}
               setSelectedRouteId={setSelectedRouteId}
             />
           )}

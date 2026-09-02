@@ -4,4 +4,7 @@ export * from "./schemas/versions.js";
 export * from "./schemas/v1/calculation.js";
 export * from "./schemas/v1/transport.js";
 export * from "./schemas/v2/calculation.js";
+export * from "./schemas/v2/access-control.js";
 export * from "./schemas/v2/project-transport.js";
+export * from "./schemas/v2/revision-transport.js";
+export * from "./schemas/v3/project-list.js";

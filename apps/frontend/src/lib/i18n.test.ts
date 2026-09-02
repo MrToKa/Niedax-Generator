@@ -22,6 +22,25 @@ describe("UI resources", () => {
   });
 
   it.each([
+    ["roleDesigner", "Проектант", "Designer"],
+    ["roleReviewer", "Проверяващ", "Reviewer"],
+    ["roleAdministrator", "Администратор", "Administrator"],
+    ["roleViewer", "Само за преглед", "View only"]
+  ] satisfies readonly (readonly [TranslationKey, string, string])[])(
+    "localizes the Stage 8 role label %s without changing its canonical identifier",
+    (key, bulgarian, english) => {
+      expect(translate("bg", key)).toBe(bulgarian);
+      expect(translate("en", key)).toBe(english);
+    }
+  );
+
+  it("keeps user-entered revision evidence unchanged during interpolation", () => {
+    const name = "R-01 · Client <script> evidence";
+    expect(translate("bg", "dependentCleared", { fields: name })).toContain(name);
+    expect(translate("en", "dependentCleared", { fields: name })).toContain(name);
+  });
+
+  it.each([
     [
       "validationSuperseded",
       "Черновата се промени по време на проверката. По-старата проверка беше отхвърлена.",

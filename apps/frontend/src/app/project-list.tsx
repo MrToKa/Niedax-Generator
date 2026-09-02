@@ -2,36 +2,129 @@
 
 import type { ProjectListItemV2 } from "@niedax/domain";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { isAuthenticationError } from "@/lib/api-client";
+import { hasCapability } from "@/lib/access-presentation";
 import { useI18n } from "@/lib/i18n";
 import { listProjects } from "@/lib/project-api";
+import { appendProjectPage } from "@/lib/project-pagination";
+import { sessionRequestIsCurrent } from "@/lib/session-state";
 
 import { AuthenticationRequired, LoadingPanel, StatusNotice } from "./shared-ui";
+import { useSession } from "./session-provider";
 
 type LoadState = "loading" | "ready" | "authentication" | "failed";
 
 export function ProjectList() {
   const { language, t } = useI18n();
+  const { markAnonymous, status: sessionStatus, user } = useSession();
   const [state, setState] = useState<LoadState>("loading");
   const [projects, setProjects] = useState<readonly ProjectListItemV2[]>([]);
-  const load = useCallback(async (signal?: AbortSignal) => {
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreFailed, setLoadMoreFailed] = useState(false);
+  const [loadedMoreCount, setLoadedMoreCount] = useState<number | null>(null);
+  const requestController = useRef<AbortController | null>(null);
+  const requestGeneration = useRef(0);
+
+  const cancelRequest = useCallback(() => {
+    requestGeneration.current += 1;
+    requestController.current?.abort();
+    requestController.current = null;
+  }, []);
+
+  const load = useCallback(async () => {
+    cancelRequest();
+    const controller = new AbortController();
+    requestController.current = controller;
+    const generation = ++requestGeneration.current;
     setState("loading");
+    setNextCursor(null);
+    setLoadingMore(false);
+    setLoadMoreFailed(false);
+    setLoadedMoreCount(null);
     try {
-      const response = await listProjects(signal);
+      const response = await listProjects(null, controller.signal);
+      if (
+        controller.signal.aborted ||
+        !sessionRequestIsCurrent(generation, requestGeneration.current)
+      )
+        return;
       setProjects(response.projects);
+      setNextCursor(response.nextCursor);
       setState("ready");
     } catch (error) {
-      if (signal?.aborted) return;
-      setState(isAuthenticationError(error) ? "authentication" : "failed");
+      if (
+        controller.signal.aborted ||
+        !sessionRequestIsCurrent(generation, requestGeneration.current)
+      )
+        return;
+      if (isAuthenticationError(error)) {
+        if (markAnonymous(user)) setState("authentication");
+      } else setState("failed");
+    } finally {
+      if (requestController.current === controller) requestController.current = null;
     }
-  }, []);
+  }, [cancelRequest, markAnonymous, user]);
+
   useEffect(() => {
+    if (sessionStatus !== "authenticated" || !user) {
+      cancelRequest();
+      setProjects([]);
+      setNextCursor(null);
+      setLoadingMore(false);
+      setLoadMoreFailed(false);
+      setLoadedMoreCount(null);
+      setState(sessionStatus === "anonymous" ? "authentication" : "loading");
+      return;
+    }
+    void load();
+    return cancelRequest;
+  }, [cancelRequest, load, sessionStatus, user]);
+
+  async function loadMore() {
+    if (!nextCursor || loadingMore || sessionStatus !== "authenticated" || !user) return;
+    cancelRequest();
     const controller = new AbortController();
-    void load(controller.signal);
-    return () => controller.abort();
-  }, [load]);
+    requestController.current = controller;
+    const generation = ++requestGeneration.current;
+    const requestedCursor = nextCursor;
+    setLoadingMore(true);
+    setLoadMoreFailed(false);
+    setLoadedMoreCount(null);
+    try {
+      const response = await listProjects(requestedCursor, controller.signal);
+      if (
+        controller.signal.aborted ||
+        !sessionRequestIsCurrent(generation, requestGeneration.current)
+      )
+        return;
+      const mergedProjects = appendProjectPage(projects, response.projects);
+      setProjects(mergedProjects);
+      setNextCursor(response.nextCursor);
+      setLoadedMoreCount(mergedProjects.length - projects.length);
+    } catch (error) {
+      if (
+        controller.signal.aborted ||
+        !sessionRequestIsCurrent(generation, requestGeneration.current)
+      )
+        return;
+      if (isAuthenticationError(error)) {
+        if (markAnonymous(user)) setState("authentication");
+      } else setLoadMoreFailed(true);
+    } finally {
+      if (requestController.current === controller) {
+        requestController.current = null;
+        setLoadingMore(false);
+      }
+    }
+  }
+
+  if (sessionStatus === "loading") return <LoadingPanel label={t("sessionLoading")} />;
+  if (sessionStatus === "failed")
+    return <StatusNotice tone="error">{t("sessionLoadFailed")}</StatusNotice>;
+  if (sessionStatus === "anonymous" || !user) return <AuthenticationRequired />;
   if (state === "loading") return <LoadingPanel label={t("loadingProjects")} />;
   if (state === "authentication") return <AuthenticationRequired />;
   if (state === "failed") {
@@ -44,6 +137,7 @@ export function ProjectList() {
       </StatusNotice>
     );
   }
+  const canCreate = user !== null && hasCapability(user.capabilities, "project:create");
   return (
     <>
       <div className="page-heading">
@@ -51,17 +145,23 @@ export function ProjectList() {
           <h1>{t("projects")}</h1>
           <p>{t("currentDraft")}</p>
         </div>
-        <Link className="primary-button" href="/projects/new">
-          + {t("createProject")}
-        </Link>
+        {canCreate ? (
+          <Link className="primary-button" href="/projects/new">
+            + {t("createProject")}
+          </Link>
+        ) : null}
       </div>
       {projects.length === 0 ? (
         <section className="empty-panel">
           <h1>{t("noProjects")}</h1>
           <p>{t("noProjectsHint")}</p>
-          <Link className="primary-button" href="/projects/new">
-            {t("createProject")}
-          </Link>
+          {canCreate ? (
+            <Link className="primary-button" href="/projects/new">
+              {t("createProject")}
+            </Link>
+          ) : (
+            <p className="read-only-explanation">{t("readOnlySession")}</p>
+          )}
         </section>
       ) : (
         <div className="project-grid">
@@ -103,12 +203,39 @@ export function ProjectList() {
                   {t("openProject")} →
                 </Link>
               ) : (
-                <p className="read-only-explanation">{t("retainedReadOnly")}</p>
+                <>
+                  <p className="read-only-explanation">{t("retainedReadOnly")}</p>
+                  <Link className="secondary-button" href={`/projects/${project.id}?view=history`}>
+                    {t("revisionHistory")} →
+                  </Link>
+                </>
               )}
             </article>
           ))}
         </div>
       )}
+      <span aria-live="polite" className="sr-only" role="status">
+        {loadingMore
+          ? t("loadingProjects")
+          : loadedMoreCount !== null
+            ? t("projectsLoadedMore", { count: loadedMoreCount })
+            : ""}
+      </span>
+      {loadMoreFailed ? (
+        <StatusNotice tone="error" live>
+          {t("moreProjectsLoadFailed")}
+        </StatusNotice>
+      ) : null}
+      {nextCursor || loadedMoreCount !== null ? (
+        <button
+          className="secondary-button history-load-more"
+          disabled={loadingMore || !nextCursor}
+          onClick={() => void loadMore()}
+          type="button"
+        >
+          {loadingMore ? t("loadingProjects") : nextCursor ? t("loadMore") : t("allProjectsLoaded")}
+        </button>
+      ) : null}
     </>
   );
 }

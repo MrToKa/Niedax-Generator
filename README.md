@@ -11,9 +11,14 @@ and export boundaries. Stage 4 adds the versioned catalog/rule/project data mode
 calculation drafts, immutable saved-revision snapshots, deterministic synthetic seed, and real
 PostgreSQL constraint tests. Stage 5 adds the verified official P0 Niedax catalog bundle, canonical
 CSV/XLSX pipeline, and protected draft/validate/approve/activate/archive workflow. Stage 6 formulas
-exist only in `packages/calculation-engine` through the resolved v2 contract. Start with the
+exist only in `packages/calculation-engine` through the resolved v2 contract. Stage 7 adds the
+authenticated PostgreSQL-backed project editor and transient v2 calculation flow. Stage 8 adds the
+four-role authorization model, explicit immutable v2 revision snapshots, Calculated -> Checked ->
+Approved lifecycle, and read-only historical review. Start with the
 [Stage 3 architecture overview](docs/architecture/architecture-overview.md),
 [Stage 4 ER model](docs/database/stage4-er-model.md), and [catalog import operations](docs/catalogs/catalog-import.md).
+The current role and revision design is documented in
+[Stage 8 users, roles, approval, and revisions](docs/stage8-users-roles-revisions.md).
 
 ## Architecture and access
 
@@ -93,8 +98,10 @@ pnpm user:create-admin
 The command prompts for username, display name, and a hidden password; it never accepts a password
 argument and refuses to create a first administrator if one already exists. Passwords need at least
 6 characters with lower/upper case, a digit, and a symbol, and cannot contain the username.
-Administrators create or disable colleagues and assign the explicit `administrator` or `reviewer`
-role through the protected API. See [authentication](docs/authentication.md).
+Administrators create or disable colleagues and assign one of the exact `designer`, `reviewer`,
+`administrator`, or `viewer` roles through the protected UI/API. The final enabled Administrator
+cannot be disabled or demoted. A role or enabled-state change revokes that user's active sessions.
+See [authentication](docs/authentication.md).
 
 ## Database and migrations
 
@@ -112,11 +119,12 @@ pnpm db:check
 pnpm db:reset:test
 ```
 
-`db:check` creates an isolated PostgreSQL 18 Compose project with ephemeral random credentials,
+`db:check` creates isolated PostgreSQL 18 Compose projects with ephemeral random credentials,
 applies migrations from scratch, seeds twice, validates history/checksums, executes constraint,
-concurrency, and immutable-revision assertions, destroys only that disposable database, and proves
-a second migrate/seed/test cycle. `db:reset:test` is an explicit alias for this verified reset
-workflow. Neither command touches `data/postgres`. See [migrations](docs/migrations.md).
+authorization, concurrency, v2 revision-lifecycle, and immutable-snapshot assertions, then runs the
+real persisted project-to-revision application flow. It destroys only those disposable databases
+and proves a second migrate/seed/test cycle. `db:reset:test` is an explicit alias for this verified
+reset workflow. Neither command touches `data/postgres`. See [migrations](docs/migrations.md).
 
 ## Manual backups
 
@@ -162,8 +170,11 @@ pnpm validate
 pnpm validate:full
 ```
 
-`test:containers` checks health, same-origin routing, LAN-style host access, published ports, and
-persistence across a normal stop/start. `test:runtime-isolation` scans runtime sources/assets,
+`test:containers` checks health, same-origin routing, LAN-style host access, published ports,
+persistence across a normal stop/start, and a read-only authentication boundary probe. Full
+credentialed Designer/Reviewer/Administrator/Viewer workflows run only against disposable
+integration databases, so normal persistent audit history is not mutated by smoke-test cleanup.
+`test:runtime-isolation` scans runtime sources/assets,
 probes egress from every image on internal networks, verifies the published-port boundary, and
 rechecks readiness. `test:backup-integration` uses a disposable PostgreSQL project and temporary
 backup directory.

@@ -99,19 +99,19 @@ calculation results, and approved revisions are append-only/immutable once refer
 
 The browser continues to use same-origin relative `/api/v1` routes. Fastify remains the boundary for
 authentication, CSRF, authorization, validation, safe error mapping, and correlation IDs. The
-application layer authorizes capabilities, not UI visibility. `revision:approve` is grantable only
-to Administrator or Checker permission holders.
-
-The current Stage 1 database calls the second role `reviewer`. Until a forward migration introduces
-or renames a role, the authorization adapter may map `reviewer` to the Checker capability set. This
-compatibility mapping is an explicit Stage 4 decision, not a domain type leaked into v1 contracts.
+application layer authorizes capabilities, not UI visibility. The current persisted roles are
+exactly Designer, Reviewer, Administrator, and Viewer. Reviewer and Administrator may Check or
+Approve an eligible revision; Designer is owner-scoped for mutable work, Administrator can mutate
+across projects and administer users/catalog lifecycle, and Viewer is read-only. These rules are
+enforced by services and PostgreSQL predicates/guards, not inferred from translated UI labels.
 
 ## Deferred work
 
 - New or changed formula versions require reviewed input data, formula-catalog updates, focused and
   property tests, reviewed golden output, and a new stable formula ID.
-- HTTP handlers, repositories, idempotency tables, audit tables, snapshot storage, and migrations
-  are specified but not implemented in Stage 3.
+- Stage 3 originally specified HTTP, repository, idempotency, audit, and snapshot boundaries;
+  project/revision implementations now exist through Stage 8. Export rendering/storage remains a
+  later-stage implementation.
 - CSV/Excel parsing and renderer implementations are deferred; their ports and validated data
   contracts are present.
 - Stage 2 `OPEN-01` through `OPEN-10` remain product/engineering decisions. Stage 3 represents them

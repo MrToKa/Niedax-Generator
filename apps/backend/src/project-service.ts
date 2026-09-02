@@ -11,9 +11,10 @@ import {
   CalculationRuleV2Schema,
   CurrentCalculationResponseV2Schema,
   EditorCatalogResponseV2Schema,
+  ProjectAccessResponseV2Schema,
   ProjectDraftInputV2Schema,
   ProjectDraftResponseV2Schema,
-  ProjectListResponseV2Schema,
+  ProjectListResponseV3Schema,
   ProjectValidationResponseV2Schema,
   type CalculateProjectDraftRequestV2,
   type CalculateProjectDraftResponseV2,
@@ -24,13 +25,15 @@ import {
   type EditorCatalogResponseV2,
   type ProjectDraftInputV2,
   type ProjectDraftResponseV2,
-  type ProjectListResponseV2,
+  type ProjectAccessResponseV2,
+  type ProjectListResponseV3,
   type ProjectValidationResponseV2,
   type ReplaceProjectDraftRequestV2,
   type ValidateProjectDraftRequestV2
 } from "@niedax/domain";
 
 import { ProjectApplicationError } from "./project-errors.js";
+import { canCreateProject, hasCapability, projectAccessFor } from "./authorization-policy.js";
 import type {
   PgProjectRepository,
   CatalogContextRecord,
@@ -49,7 +52,11 @@ interface ServiceReply<T> {
 }
 
 export interface ProjectOperations {
-  listProjects(actor: ProjectActor, correlationId: string): Promise<ProjectListResponseV2>;
+  listProjects(
+    actor: ProjectActor,
+    page: { readonly limit: number; readonly cursor: string | null },
+    correlationId: string
+  ): Promise<ProjectListResponseV3>;
   createProject(
     actor: ProjectActor,
     request: CreateProjectDraftRequestV2,
@@ -61,6 +68,11 @@ export interface ProjectOperations {
     projectId: string,
     correlationId: string
   ): Promise<ProjectDraftResponseV2>;
+  getProjectAccess(
+    actor: ProjectActor,
+    projectId: string,
+    correlationId: string
+  ): Promise<ProjectAccessResponseV2>;
   replaceProject(
     actor: ProjectActor,
     projectId: string,
@@ -1716,12 +1728,15 @@ export class ProjectApplicationService implements ProjectOperations {
 
   public async listProjects(
     actor: ProjectActor,
+    page: { readonly limit: number; readonly cursor: string | null },
     correlationId: string
-  ): Promise<ProjectListResponseV2> {
-    return ProjectListResponseV2Schema.parse({
-      schemaVersion: "project-list-response/v2",
+  ): Promise<ProjectListResponseV3> {
+    this.requireCapability(actor, "project:read");
+    const result = await this.repository.listProjects(actor, page);
+    return ProjectListResponseV3Schema.parse({
+      schemaVersion: "project-list-response/v3",
       correlationId,
-      projects: await this.repository.listProjects(actor)
+      ...result
     });
   }
 
@@ -1731,6 +1746,7 @@ export class ProjectApplicationService implements ProjectOperations {
     idempotencyKey: string,
     correlationId: string
   ): Promise<ServiceReply<ProjectDraftResponseV2>> {
+    if (!canCreateProject(actor.role)) this.forbidden();
     const result = await this.repository.createProject({
       actor,
       draft: request.draft,
@@ -1750,7 +1766,34 @@ export class ProjectApplicationService implements ProjectOperations {
     projectId: string,
     correlationId: string
   ): Promise<ProjectDraftResponseV2> {
+    this.requireCapability(actor, "project:read");
     return projectResponse(await this.repository.getProject(projectId, actor), correlationId);
+  }
+
+  public async getProjectAccess(
+    actor: ProjectActor,
+    projectId: string,
+    correlationId: string
+  ): Promise<ProjectAccessResponseV2> {
+    this.requireCapability(actor, "project:read");
+    const metadata = await this.repository.getProjectMetadataForAccess(projectId, actor);
+    const policy = projectAccessFor(actor, metadata.ownerId);
+    const access =
+      metadata.editorState === "editable"
+        ? policy
+        : {
+            ...policy,
+            canEditDraft: false,
+            canValidate: false,
+            canCalculate: false,
+            canSaveRevision: false
+          };
+    return ProjectAccessResponseV2Schema.parse({
+      schemaVersion: "project-access-response/v2",
+      correlationId,
+      projectId,
+      access
+    });
   }
 
   public async replaceProject(
@@ -1760,6 +1803,7 @@ export class ProjectApplicationService implements ProjectOperations {
     idempotencyKey: string,
     correlationId: string
   ): Promise<ServiceReply<ProjectDraftResponseV2>> {
+    this.requireCapability(actor, "project:edit");
     const result = await this.repository.replaceProject({
       projectId,
       actor,
@@ -1782,6 +1826,7 @@ export class ProjectApplicationService implements ProjectOperations {
     request: ValidateProjectDraftRequestV2,
     correlationId: string
   ): Promise<ProjectValidationResponseV2> {
+    this.requireCapability(actor, "calculation:execute");
     const context = await this.repository.getCalculationContext(projectId, actor);
     if (context.project.draftVersion !== request.expectedDraftVersion)
       conflict(request.expectedDraftVersion, context.project.draftVersion);
@@ -1797,6 +1842,7 @@ export class ProjectApplicationService implements ProjectOperations {
     idempotencyKey: string,
     correlationId: string
   ): Promise<ServiceReply<CalculateProjectDraftResponseV2>> {
+    this.requireCapability(actor, "calculation:execute");
     const requestHash = hash(request);
     const replay = await this.repository.findCalculationReplay({
       projectId,
@@ -1873,6 +1919,7 @@ export class ProjectApplicationService implements ProjectOperations {
     projectId: string,
     correlationId: string
   ): Promise<CurrentCalculationResponseV2> {
+    this.requireCapability(actor, "project:read");
     return CurrentCalculationResponseV2Schema.parse({
       schemaVersion: "current-calculation-response/v2",
       correlationId,
@@ -1885,7 +1932,18 @@ export class ProjectApplicationService implements ProjectOperations {
     actor: ProjectActor,
     correlationId: string
   ): Promise<EditorCatalogResponseV2> {
-    void actor;
+    this.requireCapability(actor, "project:read");
     return editorCatalog(await this.repository.getActiveCatalogContext(), correlationId);
+  }
+
+  private requireCapability(
+    actor: ProjectActor,
+    capability: Parameters<typeof hasCapability>[1]
+  ): void {
+    if (!hasCapability(actor.role, capability)) this.forbidden();
+  }
+
+  private forbidden(): never {
+    throw new ProjectApplicationError(403, "FORBIDDEN", "The requested action is forbidden");
   }
 }

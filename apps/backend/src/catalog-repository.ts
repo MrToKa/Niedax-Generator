@@ -17,6 +17,7 @@ import type {
   CatalogSelectionFilter,
   CatalogVersionSummary
 } from "./catalog-service.js";
+import { AppError } from "./auth-service.js";
 
 interface VersionRow {
   id: string;
@@ -51,6 +52,18 @@ async function transaction<T>(
     throw error;
   } finally {
     client.release();
+  }
+}
+
+async function requireCurrentAdministrator(client: PoolClient, actorId: string): Promise<void> {
+  const actor = await client.query(
+    `SELECT id FROM users
+      WHERE id = $1 AND role = 'administrator' AND enabled = true
+      FOR SHARE`,
+    [actorId]
+  );
+  if (actor.rowCount !== 1) {
+    throw new AppError(403, "FORBIDDEN", "Administrator role required");
   }
 }
 
@@ -448,6 +461,7 @@ export class PgCatalogAdminRepository implements CatalogAdminRepository {
   }): Promise<CatalogDraftSummary> {
     const manifest = manifestFor(input.pipeline.bundle);
     return transaction(this.pool, async (client) => {
+      await requireCurrentAdministrator(client, input.actorId);
       const existing = await client.query<{ id: string; status: string; content_hash: string }>(
         `SELECT id, status, content_hash FROM catalog_versions
           WHERE scope = $1 AND version = $2 FOR UPDATE`,
@@ -574,6 +588,7 @@ export class PgCatalogAdminRepository implements CatalogAdminRepository {
     pipeline: CatalogPipelineResult;
   }): Promise<CatalogDraftSummary> {
     return transaction(this.pool, async (client) => {
+      await requireCurrentAdministrator(client, input.actorId);
       const version = await client.query<{
         status: string;
         content_hash: string;
@@ -732,6 +747,7 @@ export class PgCatalogAdminRepository implements CatalogAdminRepository {
     contentHash: string;
   }): Promise<CatalogVersionSummary> {
     return transaction(this.pool, async (client) => {
+      await requireCurrentAdministrator(client, input.actorId);
       const state = await client.query<
         VersionRow & { validation_report_id: string | null; validated_content_hash: string | null }
       >(
@@ -812,6 +828,7 @@ export class PgCatalogAdminRepository implements CatalogAdminRepository {
     contentHash: string;
   }): Promise<CatalogVersionSummary> {
     return transaction(this.pool, async (client) => {
+      await requireCurrentAdministrator(client, input.actorId);
       const candidate = await client.query<
         VersionRow & { validation_report_id: string | null; approved_content_hash: string | null }
       >(
@@ -923,6 +940,7 @@ export class PgCatalogAdminRepository implements CatalogAdminRepository {
     reason: string;
   }): Promise<CatalogVersionSummary> {
     return transaction(this.pool, async (client) => {
+      await requireCurrentAdministrator(client, input.actorId);
       const updated = await client.query<VersionRow>(
         `UPDATE catalog_versions SET status = 'archived', archived_at = now(), updated_at = now(), updated_by = $2
           WHERE id = $1 AND status = 'active'

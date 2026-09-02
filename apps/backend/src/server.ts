@@ -7,6 +7,8 @@ import { loadRuntimeConfig } from "./config.js";
 import { PgUserStore } from "./pg-store.js";
 import { PgProjectRepository } from "./project-repository.js";
 import { ProjectApplicationService } from "./project-service.js";
+import { PgRevisionRepository } from "./revision-repository.js";
+import { RevisionApplicationService } from "./revision-service.js";
 
 const config = loadRuntimeConfig();
 const pool = new Pool({
@@ -26,7 +28,8 @@ const app = await buildApp({
   cookieSecure: config.cookieSecure,
   logger: true,
   catalogService: new CatalogAdminService(new PgCatalogAdminRepository(pool)),
-  projectService: new ProjectApplicationService(new PgProjectRepository(pool))
+  projectService: new ProjectApplicationService(new PgProjectRepository(pool)),
+  revisionService: new RevisionApplicationService(new PgRevisionRepository(pool))
 });
 
 let stopping = false;

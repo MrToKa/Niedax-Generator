@@ -4,7 +4,7 @@ import {
   EditorCatalogResponseV2Schema,
   ErrorEnvelopeV1Schema,
   ProjectDraftResponseV2Schema,
-  ProjectListResponseV2Schema,
+  ProjectListResponseV3Schema,
   ProjectValidationResponseV2Schema,
   type CalculateProjectDraftResponseV2,
   type CurrentCalculationResponseV2
@@ -75,7 +75,9 @@ function store(): UserStore {
     displayName: "Stage 7 Reviewer",
     role: "reviewer" as const,
     enabled: true,
-    passwordHash: "unused"
+    passwordHash: "unused",
+    createdAt: new Date("2026-09-01T08:00:00.000Z"),
+    updatedAt: new Date("2026-09-01T08:00:00.000Z")
   };
   return {
     ping: async () => undefined,
@@ -88,6 +90,8 @@ function store(): UserStore {
     }),
     createSession: async () => undefined,
     revokeSession: async () => undefined,
+    listUsers: async () => ({ users: [user], nextCursor: null }),
+    recordUserAdministrationRejection: async () => undefined,
     createUser: async () => user,
     setUserEnabled: async () => user,
     setUserRole: async () => user
@@ -96,11 +100,12 @@ function store(): UserStore {
 
 function service(): ProjectOperations {
   return {
-    listProjects: vi.fn(async (_actor, requestCorrelationId) =>
-      ProjectListResponseV2Schema.parse({
-        schemaVersion: "project-list-response/v2",
+    listProjects: vi.fn(async (_actor, _page, requestCorrelationId) =>
+      ProjectListResponseV3Schema.parse({
+        schemaVersion: "project-list-response/v3",
         correlationId: requestCorrelationId,
-        projects: []
+        projects: [],
+        nextCursor: null
       })
     ),
     createProject: vi.fn(async (_actor, _request, _key, requestCorrelationId) => ({
@@ -111,6 +116,18 @@ function service(): ProjectOperations {
     getProject: vi.fn(async (_actor, _projectId, requestCorrelationId) => ({
       ...projectResponse,
       correlationId: requestCorrelationId
+    })),
+    getProjectAccess: vi.fn(async (_actor, requestedProjectId, requestCorrelationId) => ({
+      schemaVersion: "project-access-response/v2",
+      correlationId: requestCorrelationId,
+      projectId: requestedProjectId,
+      access: {
+        canEditDraft: true,
+        canValidate: true,
+        canCalculate: true,
+        canSaveRevision: true,
+        canReadHistory: true
+      }
     })),
     replaceProject: vi.fn(async (_actor, _projectId, _request, _key, requestCorrelationId) => ({
       statusCode: 200,
@@ -233,8 +250,22 @@ describe("Stage 7 project HTTP routes", () => {
       projectService: operations
     });
     expect(
-      (await app.inject({ method: "GET", url: "/api/v1/projects", headers: authenticated }))
-        .statusCode
+      (
+        await app.inject({
+          method: "GET",
+          url: `/api/v1/projects?limit=2&cursor=${projectId}`,
+          headers: authenticated
+        })
+      ).statusCode
+    ).toBe(200);
+    expect(
+      (
+        await app.inject({
+          method: "GET",
+          url: `/api/v1/projects/${projectId}/access`,
+          headers: authenticated
+        })
+      ).statusCode
     ).toBe(200);
     const created = await app.inject({
       method: "POST",
@@ -297,9 +328,14 @@ describe("Stage 7 project HTTP routes", () => {
         })
       ).statusCode
     ).toBe(200);
-    expect(operations.listProjects).toHaveBeenCalledOnce();
+    expect(operations.listProjects).toHaveBeenCalledWith(
+      expect.objectContaining({ role: "reviewer" }),
+      { limit: 2, cursor: projectId },
+      expect.any(String)
+    );
     expect(operations.createProject).toHaveBeenCalledOnce();
     expect(operations.getProject).toHaveBeenCalledOnce();
+    expect(operations.getProjectAccess).toHaveBeenCalledOnce();
     expect(operations.replaceProject).toHaveBeenCalledOnce();
     expect(operations.validateProject).toHaveBeenCalledOnce();
     expect(operations.calculateProject).toHaveBeenCalledOnce();

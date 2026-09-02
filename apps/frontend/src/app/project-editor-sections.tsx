@@ -34,7 +34,7 @@ import { isManualItemValid, removeManualItem, upsertManualItem } from "@/lib/man
 import { FormField, StatusNotice } from "./shared-ui";
 
 export type EditorStep =
-  "project" | "routes" | "geometry" | "connections" | "supports" | "load" | "results";
+  "project" | "routes" | "geometry" | "connections" | "supports" | "load" | "results" | "revisions";
 
 export const editorSteps: readonly { id: EditorStep; label: TranslationKey }[] = [
   { id: "project", label: "project" },
@@ -43,8 +43,13 @@ export const editorSteps: readonly { id: EditorStep; label: TranslationKey }[] =
   { id: "connections", label: "connections" },
   { id: "supports", label: "supports" },
   { id: "load", label: "loadAndManual" },
-  { id: "results", label: "results" }
+  { id: "results", label: "results" },
+  { id: "revisions", label: "revisions" }
 ];
+
+export function isEditorStep(value: string): value is EditorStep {
+  return editorSteps.some((step) => step.id === value);
+}
 
 interface EditorSectionsProps {
   readonly activeStep: EditorStep;

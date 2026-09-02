@@ -239,6 +239,29 @@ function calculationContext(projectDraft: ProjectDraftInputV2): ProjectCalculati
 }
 
 describe("Stage 7 project application service", () => {
+  it("exposes history but no draft mutations for an authorized retained project", async () => {
+    const repository = {
+      getProjectMetadataForAccess: vi.fn(async () => ({
+        ownerId: "10000000-0000-4000-8000-000000000099",
+        editorState: "retainedReadOnly" as const
+      }))
+    } as unknown as PgProjectRepository;
+    const response = await new ProjectApplicationService(repository).getProjectAccess(
+      actor,
+      ids.project,
+      correlationId
+    );
+
+    expect(response.access).toEqual({
+      canEditDraft: false,
+      canValidate: false,
+      canCalculate: false,
+      canSaveRevision: false,
+      canReadHistory: true
+    });
+    expect(repository.getProjectMetadataForAccess).toHaveBeenCalledWith(ids.project, actor);
+  });
+
   it("hydrates the draft with its pinned catalog and rule references", async () => {
     const context = calculationContext(draft("dimension:KL:60x200"));
     const repository = {

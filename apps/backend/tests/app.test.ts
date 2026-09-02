@@ -12,6 +12,8 @@ const emptyStore: UserStore = {
   findSession: async () => null,
   createSession: async () => undefined,
   revokeSession: async () => undefined,
+  listUsers: async () => ({ users: [], nextCursor: null }),
+  recordUserAdministrationRejection: async () => undefined,
   createUser: async () => {
     throw new Error("not used");
   },

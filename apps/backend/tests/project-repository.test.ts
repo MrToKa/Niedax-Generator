@@ -98,7 +98,40 @@ function errorCode(error: unknown): string | null {
 }
 
 describe("Stage 7 PostgreSQL project repository boundaries", () => {
-  it("authorizes current ownership before early calculation replay", async () => {
+  it("reads retained-project access metadata without hydrating a Stage 7 draft", async () => {
+    const query = vi.fn(async () => ({
+      rows: [{ owner_id: ids.owner, editor_state: "retainedReadOnly" }]
+    }));
+    const repository = new PgProjectRepository({ query } as unknown as Pool);
+
+    await expect(repository.getProjectMetadataForAccess(ids.project, reviewer)).resolves.toEqual({
+      ownerId: ids.owner,
+      editorState: "retainedReadOnly"
+    });
+    expect(query).toHaveBeenCalledWith(expect.stringContaining("project_draft_documents"), [
+      ids.project,
+      true,
+      false,
+      reviewer.id
+    ]);
+    expect(query.mock.calls[0]?.[0]).not.toContain("document.payload");
+  });
+
+  it("preserves 404 non-disclosure for a Designer requesting foreign access metadata", async () => {
+    const query = vi.fn(async () => ({ rows: [] }));
+    const repository = new PgProjectRepository({ query } as unknown as Pool);
+    const designer = { ...reviewer, role: "designer" as const };
+
+    await expect(
+      repository.getProjectMetadataForAccess(ids.project, designer)
+    ).rejects.toMatchObject({
+      statusCode: 404,
+      code: "RESOURCE_NOT_FOUND"
+    });
+    expect(query).toHaveBeenCalledWith(expect.any(String), [ids.project, false, true, designer.id]);
+  });
+
+  it("hides unauthorized ownership before early calculation replay", async () => {
     const query = vi
       .fn()
       .mockResolvedValueOnce({ rows: [{ owner_id: ids.owner }] })
@@ -123,7 +156,7 @@ describe("Stage 7 PostgreSQL project repository boundaries", () => {
     } catch (error) {
       caught = error;
     }
-    expect(errorCode(caught)).toBe("FORBIDDEN");
+    expect(errorCode(caught)).toBe("RESOURCE_NOT_FOUND");
     expect(query).toHaveBeenCalledOnce();
   });
 
@@ -153,7 +186,7 @@ describe("Stage 7 PostgreSQL project repository boundaries", () => {
     );
   });
 
-  it("checks current ownership before replace replay and rolls back on denial", async () => {
+  it("hides current ownership before replace replay and rolls back on denial", async () => {
     const fake = transactionalPool(async (sql) => {
       if (sql.includes("FROM projects project") && sql.includes("FOR UPDATE")) {
         return {
@@ -177,7 +210,7 @@ describe("Stage 7 PostgreSQL project repository boundaries", () => {
     } catch (error) {
       caught = error;
     }
-    expect(errorCode(caught)).toBe("FORBIDDEN");
+    expect(errorCode(caught)).toBe("RESOURCE_NOT_FOUND");
     const statements = fake.query.mock.calls.map((call) => queryText(call[0]));
     expect(statements.some((sql) => sql.includes("FROM idempotency_records"))).toBe(false);
     expect(statements).toContain("ROLLBACK");
@@ -185,7 +218,7 @@ describe("Stage 7 PostgreSQL project repository boundaries", () => {
     expect(fake.release).toHaveBeenCalledOnce();
   });
 
-  it("checks current ownership before the final calculation replay", async () => {
+  it("hides current ownership before the final calculation replay", async () => {
     const fake = transactionalPool(async (sql) => {
       if (sql.includes("FROM projects project") && sql.includes("FOR UPDATE")) {
         return {
@@ -204,7 +237,7 @@ describe("Stage 7 PostgreSQL project repository boundaries", () => {
     } catch (error) {
       caught = error;
     }
-    expect(errorCode(caught)).toBe("FORBIDDEN");
+    expect(errorCode(caught)).toBe("RESOURCE_NOT_FOUND");
     const statements = fake.query.mock.calls.map((call) => queryText(call[0]));
     expect(statements.some((sql) => sql.includes("FROM idempotency_records"))).toBe(false);
     expect(statements).toContain("ROLLBACK");
@@ -335,13 +368,16 @@ describe("Stage 7 PostgreSQL project repository boundaries", () => {
     }));
     const listed = await new PgProjectRepository({
       query: listQuery
-    } as unknown as Pool).listProjects(owner);
-    expect(listed[0]).toMatchObject({
+    } as unknown as Pool).listProjects(owner, { limit: 50, cursor: null });
+    expect(listed.projects[0]).toMatchObject({
       id: ids.project,
       editorState: "retainedReadOnly",
       defaultReservePercent: "0"
     });
+    expect(listed.nextCursor).toBeNull();
     expect(queryText(listQuery.mock.calls[0]?.[0])).toContain("LEFT JOIN project_draft_documents");
+    expect(queryText(listQuery.mock.calls[0]?.[0])).toContain("LIMIT $5");
+    expect(listQuery.mock.calls[0]?.[1]).toEqual([true, false, owner.id, null, 51]);
 
     const fake = transactionalPool(async (sql) => {
       if (sql.includes("FROM projects project")) return { rows: [projectRow(null, 0)] };
