@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "stage10-independent-expectations/v1",
+  "reviewStatus": "pending-domain-review",
+  "basis": "Hand-derived from accepted Stage 6 formulas; synthetic compatibility/templates. BOM tuples are [literal product code or manual ID, technical, ordered]. Full quantity deltas and traces have focused assertions.",
+  "scenarios": {
+    "T01": {
+      "bom": [
+        ["KL 60.203", "102", "102"],
+        ["NX JOINT", "16", "16"],
+        ["KLTB 6", "68", "100"],
+        ["DAM 6X5", "136", "150"]
+      ],
+      "warningCounts": { "MISSING_CABLE_LOAD": 1, "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1 }
+    },
+    "T02": {
+      "bom": [
+        ["WSL 105.200", "102", "102"],
+        ["NX JOINT", "16", "16"],
+        ["NX SUPPORT", "68", "68"],
+        ["NX ANCHOR", "136", "136"],
+        ["WSTB 2", "136", "150"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1
+      }
+    },
+    "T03": {
+      "bom": [
+        ["NX STRAIGHT", "18", "18"],
+        ["NX JOINT", "2", "2"],
+        ["NX SUPPORT", "11", "11"],
+        ["NX ANCHOR", "22", "22"],
+        ["NX WSTB", "22", "22"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1
+      }
+    },
+    "T04": {
+      "bom": [
+        ["NX STRAIGHT", "12", "12"],
+        ["NX JOINT", "1", "1"],
+        ["NX SUPPORT", "9", "9"],
+        ["NX ANCHOR", "18", "18"],
+        ["NX WSTB", "18", "18"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1
+      }
+    },
+    "T05": {
+      "bom": [
+        ["NX STRAIGHT", "12", "12"],
+        ["NX CONNECTOR", "2", "2"],
+        ["NX SUPPORT", "10", "10"],
+        ["NX ANCHOR", "20", "20"],
+        ["NX WSTB", "20", "20"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 2
+      }
+    },
+    "T06": {
+      "bom": [
+        ["NX STRAIGHT", "12", "12"],
+        ["NX BEND", "1", "1"],
+        ["NX CONNECTOR", "2", "2"],
+        ["NX SUPPORT", "8", "8"],
+        ["NX ANCHOR", "16", "16"],
+        ["NX WSTB", "16", "16"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1,
+        "MANUAL_EXTRA_SUPPORT": 1
+      }
+    },
+    "T07": {
+      "bom": [
+        ["NX STRAIGHT", "18", "18"],
+        ["NX CONNECTOR", "3", "3"],
+        ["NX SUPPORT", "15", "15"],
+        ["NX ANCHOR", "30", "30"],
+        ["NX WSTB", "30", "30"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 3
+      }
+    },
+    "T08": {
+      "bom": [
+        ["NX STRAIGHT", "6", "6"],
+        ["NX SUPPORT", "5", "5"],
+        ["NX ANCHOR", "10", "10"],
+        ["NX WSTB", "10", "10"],
+        ["NX END CAP", "1", "1"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1,
+        "UNRESOLVED_ENDPOINT_MATERIAL": 1
+      }
+    },
+    "T09-DAM": {
+      "bom": [
+        ["NX STRAIGHT", "6", "6"],
+        ["NX SUPPORT", "5", "5"],
+        ["DAM 6X5", "10", "50"],
+        ["NX WSTB", "10", "10"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1
+      }
+    },
+    "T09-DAZ": {
+      "bom": [
+        ["NX STRAIGHT", "6", "6"],
+        ["NX SUPPORT", "5", "5"],
+        ["DAZ 8X10", "10", "50"],
+        ["NX WSTB", "10", "10"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1
+      }
+    },
+    "T10": {
+      "bom": [
+        ["NX STRAIGHT", "6", "6"],
+        ["NX SUPPORT", "5", "5"],
+        ["NSA 6X35/FKK-T30 V", "10", "100"],
+        ["NX WSTB", "10", "10"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1
+      }
+    },
+    "T11": {
+      "bom": [
+        ["NX STRAIGHT", "102", "120"],
+        ["NX JOINT", "16", "17"],
+        ["NX SUPPORT", "68", "72"],
+        ["NX ANCHOR", "136", "143"],
+        ["NX WSTB", "136", "143"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1
+      }
+    },
+    "T12": {
+      "bom": [
+        ["NX STRAIGHT", "6", "12"],
+        ["NX SUPPORT", "5", "6"],
+        ["NX ANCHOR", "10", "11"],
+        ["NX WSTB", "10", "11"],
+        ["NX MANUAL CATALOG", "3", "10"],
+        ["stage10-manual", "2.5", "3"]
+      ],
+      "warningCounts": {
+        "MISSING_CABLE_LOAD": 1,
+        "ANCHOR_ENGINEERING_CHECK_REQUIRED": 1,
+        "WSTB_PROJECT_RULE_UNCONFIRMED": 1,
+        "MANUAL_QUANTITY_OVERRIDE": 2,
+        "MANUAL_PACKAGE_OVERRIDE": 2
+      }
+    }
+  }
+}

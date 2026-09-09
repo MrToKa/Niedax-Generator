@@ -271,13 +271,22 @@ describe("catalog active comparison scope", () => {
     const getActiveComparison = vi.fn(async () => null);
     const repo = { ...repository(), getActiveComparison };
     const parsed = parsedCatalogForScope("scope-a");
-    parsed.sheets.manifest.push({
-      ...parsed.sheets.manifest[0]!,
-      import_scope: "scope-b",
-      source_document: "scope-b.pdf"
-    });
+    const mixed = {
+      ...parsed,
+      sheets: {
+        ...parsed.sheets,
+        manifest: [
+          ...parsed.sheets.manifest,
+          {
+            ...parsed.sheets.manifest[0]!,
+            import_scope: "scope-b",
+            source_document: "scope-b.pdf"
+          }
+        ]
+      }
+    };
 
-    const pipeline = await runCatalogPipelineForActiveScope(parsed, repo);
+    const pipeline = await runCatalogPipelineForActiveScope(mixed, repo);
 
     expect(getActiveComparison).not.toHaveBeenCalled();
     expect(pipeline.report.issues).toContainEqual(
@@ -286,7 +295,9 @@ describe("catalog active comparison scope", () => {
   });
 
   it("binds the requested scope in the active-catalog query", async () => {
-    const query = vi.fn(async () => ({ rows: [] }));
+    const query = vi.fn<(sql: string, values: readonly unknown[]) => Promise<{ rows: unknown[] }>>(
+      async () => ({ rows: [] })
+    );
     const repo = new PgCatalogAdminRepository({ query } as unknown as Pool);
 
     await repo.getActiveComparison("scope-a");

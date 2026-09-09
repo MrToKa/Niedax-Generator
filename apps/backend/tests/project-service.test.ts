@@ -666,7 +666,7 @@ describe("Stage 7 project application service", () => {
         supports: { ...route.supports, wstbProductId: ids.wstb }
       }))
     });
-    repository.getCalculationContext.mockResolvedValueOnce({
+    vi.mocked(repository.getCalculationContext).mockResolvedValueOnce({
       ...baseline,
       project: {
         ...baseline.project,

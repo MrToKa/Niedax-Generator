@@ -157,6 +157,17 @@ const validDraft = {
   ]
 } as const satisfies ProjectDraftInputV2;
 
+type Mutable<T> = T extends readonly (infer Item)[]
+  ? Mutable<Item>[]
+  : T extends object
+    ? { -readonly [Key in keyof T]: Mutable<T[Key]> }
+    : T;
+
+// Tests deliberately vary a detached input before asking the immutable schema to parse it.
+function mutableDraft(): Mutable<ProjectDraftInputV2> {
+  return JSON.parse(JSON.stringify(validDraft)) as Mutable<ProjectDraftInputV2>;
+}
+
 const now = "2026-09-01T08:00:00.000Z";
 const correlationId = "correlation-stage7-0001";
 const catalogSnapshot = {
@@ -253,7 +264,7 @@ describe("Stage 7 project transport v2", () => {
   });
 
   it("accepts incomplete support choices for autosave without inventing engineering defaults", () => {
-    const incomplete = structuredClone(validDraft);
+    const incomplete = mutableDraft();
     incomplete.routes[0]!.supports.spacing = null;
     incomplete.routes[0]!.supports.supportType = null;
     incomplete.routes[0]!.supports.wstb = null;
@@ -305,11 +316,11 @@ describe("Stage 7 project transport v2", () => {
   });
 
   it("rejects duplicate route codes and dangling or multiply connected endpoint references", () => {
-    const duplicateCode = structuredClone(validDraft);
+    const duplicateCode = mutableDraft();
     duplicateCode.routes[1]!.code = "r-a";
     expect(ProjectDraftInputV2Schema.safeParse(duplicateCode).success).toBe(false);
 
-    const dangling = structuredClone(validDraft);
+    const dangling = mutableDraft();
     dangling.connections[0]!.participants[1]!.endpointId = ids.endpointAStart;
     dangling.connections.push({
       ...structuredClone(dangling.connections[0]!),
@@ -332,11 +343,11 @@ describe("Stage 7 project transport v2", () => {
   });
 
   it("enforces connection cardinality and endpoint behavior", () => {
-    const mismatchedContinuation = structuredClone(validDraft);
+    const mismatchedContinuation = mutableDraft();
     mismatchedContinuation.routes[0]!.endEndpoint.type = "freeEnd";
     expect(ProjectDraftInputV2Schema.safeParse(mismatchedContinuation).success).toBe(false);
 
-    const shortTee = structuredClone(validDraft);
+    const shortTee = mutableDraft();
     shortTee.connections[0]!.type = "tee";
     shortTee.connections[0]!.physicalBreak = true;
     shortTee.routes[0]!.endEndpoint.type = "physicalSplice";
@@ -360,7 +371,7 @@ describe("Stage 7 project transport v2", () => {
   });
 
   it("enforces manual-item order dimensions and explicit free-text packaging", () => {
-    const wrongIncrement = structuredClone(validDraft);
+    const wrongIncrement = mutableDraft();
     wrongIncrement.manualItems[0]!.packagingPolicy = {
       mode: "incrementOverride",
       increment: { value: "1", unit: "pcs" },
@@ -368,7 +379,7 @@ describe("Stage 7 project transport v2", () => {
     };
     expect(ProjectDraftInputV2Schema.safeParse(wrongIncrement).success).toBe(false);
 
-    const catalogDefault = structuredClone(validDraft);
+    const catalogDefault = mutableDraft();
     catalogDefault.manualItems[0]!.packagingPolicy = { mode: "catalogDefault" };
     expect(ProjectDraftInputV2Schema.safeParse(catalogDefault).success).toBe(false);
   });
@@ -655,7 +666,7 @@ describe("Stage 7 v2 persisted version and packaging corrections", () => {
         ]
       }).success
     ).toBe(false);
-    const emptyEquipment = structuredClone(validDraft);
+    const emptyEquipment = mutableDraft();
     emptyEquipment.routes[0]!.startEndpoint.type = "equipment";
     emptyEquipment.routes[0]!.startEndpoint.equipmentReference = "";
     expect(ProjectDraftInputV2Schema.safeParse(emptyEquipment).success).toBe(false);

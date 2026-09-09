@@ -7,6 +7,7 @@ import {
   type ProjectRouteDraftV2,
   type ProjectV2
 } from "@niedax/domain";
+import { createBrowserUuid } from "./browser-uuid";
 
 export type ProjectDraftState = ProjectDraftInputV2 | null;
 export type ProjectDraftAction =
@@ -69,7 +70,7 @@ export function createEmptyProjectDraft(
 
 function emptyEndpoint(): ProjectEndpointDraftV2 {
   return {
-    id: crypto.randomUUID(),
+    id: createBrowserUuid(),
     type: "freeEnd",
     selectedProductId: null,
     equipmentReference: null,
@@ -83,7 +84,7 @@ export function createRouteDraft(
   description: string | null
 ): ProjectRouteDraftV2 {
   return {
-    id: crypto.randomUUID(),
+    id: createBrowserUuid(),
     code,
     name,
     description,
@@ -166,14 +167,14 @@ export function duplicateRoute(
   let suffix = 1;
   let code = `${source.code}-COPY`;
   while (!isRouteCodeUnique(draft.routes, code)) code = `${source.code}-COPY-${++suffix}`;
-  const newRouteId = crypto.randomUUID();
-  const geometryIdMap = new Map(source.geometry.map((item) => [item.id, crypto.randomUUID()]));
+  const newRouteId = createBrowserUuid();
+  const geometryIdMap = new Map(source.geometry.map((item) => [item.id, createBrowserUuid()]));
   const route: ProjectRouteDraftV2 = {
     ...source,
     id: newRouteId,
     code,
-    startEndpoint: { ...source.startEndpoint, id: crypto.randomUUID() },
-    endEndpoint: { ...source.endEndpoint, id: crypto.randomUUID() },
+    startEndpoint: { ...source.startEndpoint, id: createBrowserUuid() },
+    endEndpoint: { ...source.endEndpoint, id: createBrowserUuid() },
     geometry: source.geometry.map((item) => ({ ...item, id: geometryIdMap.get(item.id)! })),
     supports: {
       ...source.supports,
@@ -182,22 +183,22 @@ export function duplicateRoute(
             ...source.supports.anchorQuantityOverride,
             metadata: {
               ...source.supports.anchorQuantityOverride.metadata,
-              overrideId: crypto.randomUUID()
+              overrideId: createBrowserUuid()
             }
           }
         : null,
       manualAdditionalSupports: source.supports.manualAdditionalSupports.map((adjustment) => ({
         ...adjustment,
-        id: crypto.randomUUID(),
+        id: createBrowserUuid(),
         sourceEntityRef:
           adjustment.sourceEntityRef === source.id
             ? newRouteId
             : (geometryIdMap.get(adjustment.sourceEntityRef) ?? newRouteId),
-        metadata: { ...adjustment.metadata, overrideId: crypto.randomUUID() }
+        metadata: { ...adjustment.metadata, overrideId: createBrowserUuid() }
       })),
       templateManualValues: source.supports.templateManualValues.map((value) => ({
         ...value,
-        metadata: { ...value.metadata, overrideId: crypto.randomUUID() }
+        metadata: { ...value.metadata, overrideId: createBrowserUuid() }
       }))
     }
   };

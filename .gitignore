@@ -13,6 +13,10 @@ catalog-validation-*.csv
 node_modules/
 .pnpm-store/
 .artifacts/
+test-results/
+playwright-report/
+blob-report/
+storage-state*.json
 # Supplied business template stays local; tests use sanitized synthetic workbooks.
 /Template/*.xlsx
 dist/

@@ -8,6 +8,7 @@ import {
   validateBrowserConfig,
   type BrowserComposeConfig
 } from "./lib/stage9-browser-config.js";
+import { deriveStage10Config, validateStage10Config } from "./lib/stage10-browser-environment.js";
 
 const workspace = resolve(".");
 const directory = resolve(workspace, ".artifacts/stage9-browser");
@@ -211,5 +212,90 @@ describe("disposable Stage 9 browser environment containment", () => {
   it("requires the reserved project prefix and loopback test port", () => {
     expect(() => checkBrowserState({ project: "niedax-generator", port: 18089 })).toThrow();
     expect(() => checkBrowserState({ project: state.project, port: 8080 })).toThrow();
+  });
+});
+
+describe("automated Stage 10 browser environment containment", () => {
+  const project = "niedax-stage10-1234-56789";
+  const path = resolve(workspace, ".artifacts/stage10-browser", project);
+  const port = 49123;
+  it("retains hardened topology while isolating generated secrets and the loopback gateway", () => {
+    const source = productionFixture();
+    const original = structuredClone(source);
+    const config = deriveStage10Config(source, project, port, workspace, path);
+    expect(source).toEqual(original);
+    expect(config.services.gateway?.ports).toEqual([
+      { target: 8080, published: String(port), host_ip: "127.0.0.1", protocol: "tcp" }
+    ]);
+    expect(config.services["browser-seed"]?.environment).not.toHaveProperty("PGPASSWORD");
+    expect(config.services["browser-seed"]?.read_only).toBe(true);
+    expect(config.services["browser-seed"]?.cap_drop).toEqual(["ALL"]);
+    expect(config.services["browser-seed"]?.environment?.STAGE10_ACCOUNTS_JSON).toBe(
+      "${STAGE10_ACCOUNTS_JSON:?generated accounts required}"
+    );
+    expect(config.services.postgres?.volumes?.[0]?.source).toBe("disposable_database");
+    validateStage10Config(config, project, port, workspace, path);
+  });
+  it.each([
+    ["normal project", "niedax-generator", path, port],
+    ["outside directory", project, resolve(workspace, "data/postgres"), port],
+    ["invalid port", project, path, 70000],
+    ["privileged port", project, path, 80]
+  ])("refuses %s before any disposable command", (_label, name, directory, selectedPort) => {
+    expect(() =>
+      deriveStage10Config(
+        productionFixture(),
+        String(name),
+        Number(selectedPort),
+        workspace,
+        String(directory)
+      )
+    ).toThrow();
+  });
+  it.each([
+    [
+      "public gateway",
+      (config: BrowserComposeConfig) => {
+        config.services.gateway!.ports![0]!.host_ip = "0.0.0.0";
+      }
+    ],
+    [
+      "normal database bind",
+      (config: BrowserComposeConfig) => {
+        config.services.postgres!.volumes![0]!.type = "bind";
+        config.services.postgres!.volumes![0]!.source = resolve(workspace, "data/postgres");
+      }
+    ],
+    [
+      "normal container name",
+      (config: BrowserComposeConfig) => {
+        config.services.postgres!.container_name = "niedax-postgres";
+      }
+    ],
+    [
+      "external volume",
+      (config: BrowserComposeConfig) => {
+        config.volumes!.disposable_database = { external: true };
+      }
+    ],
+    [
+      "host database port",
+      (config: BrowserComposeConfig) => {
+        config.services.postgres!.ports = [{ target: 5432, published: "5432" }];
+      }
+    ],
+    [
+      "normal secret path",
+      (config: BrowserComposeConfig) => {
+        config.secrets.postgres_app_password!.file = resolve(
+          workspace,
+          "data/secrets/postgres_app_password"
+        );
+      }
+    ]
+  ])("rechecks and rejects %s before down --volumes", (_label, mutate) => {
+    const config = deriveStage10Config(productionFixture(), project, port, workspace, path);
+    mutate(config);
+    expect(() => validateStage10Config(config, project, port, workspace, path)).toThrow();
   });
 });

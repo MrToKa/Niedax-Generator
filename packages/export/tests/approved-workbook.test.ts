@@ -72,7 +72,7 @@ describe("user-approved 26-column Change Order workbook", () => {
       );
       expect([...parts.values()].join("\n")).not.toContain("#REF!");
       const roundTrip = new ExcelJS.Workbook();
-      await roundTrip.xlsx.load(Buffer.from(bytes));
+      await roundTrip.xlsx.load(Uint8Array.from(bytes).buffer);
       expect(roundTrip.worksheets.map((sheet) => sheet.name)).toEqual(expected.sheets);
       expect(roundTrip.getWorksheet("Change Order")!.getCell("B6").numFmt).toBe("0");
       expect(roundTrip.getWorksheet("Calculation details")!.getCell("C1").value).toBe(

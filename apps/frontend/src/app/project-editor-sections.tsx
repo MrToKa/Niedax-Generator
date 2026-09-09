@@ -9,6 +9,7 @@ import type {
   ProjectRouteDraftV2
 } from "@niedax/domain";
 import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
+import { createBrowserUuid } from "@/lib/browser-uuid";
 
 import {
   compatibleProducts,
@@ -706,7 +707,7 @@ function GeometrySection({ draft, catalog, fieldErrors, selectedRouteId, update 
     (product) => product.id === route.selection.straightProductId
   );
   function add(kind: "straight" | "fitting") {
-    const id = crypto.randomUUID();
+    const id = createBrowserUuid();
     change((current) => ({
       ...current,
       geometry: [
@@ -1257,7 +1258,7 @@ function ConnectionsSection({ draft, catalog, onBufferedChange, update }: Sectio
       return { routeId: endpoint.routeId, endpointId };
     });
     const connection: ProjectConnectionDraftV2 = {
-      id: form.id ?? crypto.randomUUID(),
+      id: form.id ?? createBrowserUuid(),
       type: form.type,
       participants,
       physicalBreak: form.type === "logicalContinuation" ? false : form.physicalBreak,
@@ -1653,7 +1654,7 @@ function SupportsSection({
   const anchorComponents =
     selectedTemplate?.components.filter((component) => component.role === "anchor") ?? [];
   function metadata(reason: string) {
-    return { overrideId: crypto.randomUUID(), reason, note: null };
+    return { overrideId: createBrowserUuid(), reason, note: null };
   }
   function changeWithCatalog(nextSupports: ProjectRouteDraftV2["supports"]) {
     if (!catalog) {
@@ -1700,7 +1701,7 @@ function SupportsSection({
       manualAdditionalSupports: [
         ...route!.supports.manualAdditionalSupports,
         {
-          id: crypto.randomUUID(),
+          id: createBrowserUuid(),
           additionalQuantity: { value: extraQuantity, unit: "pcs" },
           sourceEntityRef: route!.id,
           metadata: metadata(extraReason)
@@ -2324,9 +2325,9 @@ function LoadAndManualSection({
     (form.packagingMode !== "incrementOverride" || Number(form.packageIncrement) > 0) &&
     (!form.quantityOverride || Number(form.adjustedQuantity) > 0);
   function buildItem(): ProjectManualItemDraftV2 {
-    const itemId = form.id ?? crypto.randomUUID();
+    const itemId = form.id ?? createBrowserUuid();
     const metadata = () => ({
-      overrideId: crypto.randomUUID(),
+      overrideId: createBrowserUuid(),
       reason: form.reason,
       note: form.note || null
     });

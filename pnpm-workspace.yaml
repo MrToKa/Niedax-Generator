@@ -9,6 +9,11 @@ preferWorkspacePackages: true
 saveExact: true
 strictPeerDependencies: true
 
+# ExcelJS only calls the CommonJS v4() API. Keep this security replacement scoped
+# to that consumer; Stage 10 verifies v4 compatibility and independent OOXML goldens.
+overrides:
+  exceljs@4.4.0>uuid: 11.1.1
+
 syncInjectedDepsAfterScripts:
   - build
 

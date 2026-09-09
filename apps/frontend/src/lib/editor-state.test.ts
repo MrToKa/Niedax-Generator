@@ -1,5 +1,5 @@
 import type { EditorCatalogResponseV2, ProjectDraftInputV2 } from "@niedax/domain";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   canCalculateLocally,
@@ -16,6 +16,28 @@ import {
 } from "./editor-state";
 
 describe("project editor state", () => {
+  it("creates and duplicates route identities on insecure LAN HTTP without randomUUID", () => {
+    const randomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
+    vi.stubGlobal("crypto", { getRandomValues: randomValues });
+    try {
+      const route = createRouteDraft("LAN", "Insecure LAN route", null);
+      const draft = { ...createEmptyProjectDraft("LAN-PROJECT", "LAN project"), routes: [route] };
+      const copied = duplicateRoute(draft, route.id)!;
+      const identities = copied.draft.routes.flatMap((item) => [
+        item.id,
+        item.startEndpoint.id,
+        item.endEndpoint.id
+      ]);
+      expect(new Set(identities).size).toBe(6);
+      for (const id of identities)
+        expect(id).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u
+        );
+      expect(validateDraftLocally(copied.draft).validForSave).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
   it("maps connection cardinality and endpoint graph types", () => {
     expect(connectionParticipantCount("tee")).toBe(3);
     expect(connectionParticipantCount("custom")).toBe(2);

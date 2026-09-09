@@ -23,6 +23,11 @@ The current role and revision design is documented in
 See [Stage 9 Excel export](docs/exports/stage9-usage.md) for saved-revision export availability,
 the authorized template mapping and verification status.
 
+Stage 10 adds controlled T01–T15 regressions, varied-input properties, real PostgreSQL rollback
+and concurrency tests, Playwright workflows, dependency/security gates and measured performance.
+See the [test plan](docs/testing/stage10-test-plan.md), [current evidence](docs/testing/stage10-evidence.md)
+and [domain review package](docs/testing/stage10-regression-review.md) for acceptance status.
+
 ## Architecture and access
 
 Open `http://localhost:8080`. A colleague on the same private LAN can use an address printed by
@@ -57,7 +62,7 @@ installation this may require an elevated terminal because Corepack writes the s
 Files. Without that shim, every documented `pnpm ...` command has an equivalent
 `corepack pnpm ...` form and uses the same pinned release.
 
-The repository pins Next.js `16.3.0`, Fastify `5.11.3`, TypeScript `6.0.3`, Vitest `4.1.10`, `pg`
+The repository pins Next.js `16.3.3`, Fastify `5.12.1`, TypeScript `6.0.3`, Vitest `4.1.11`, `pg`
 `8.23.0`, Caddy `2.11.4`, and PostgreSQL `18.4`. Image tags also include immutable multi-platform
 digests. See [versioning](docs/versioning.md) for the reviewed update process.
 
@@ -171,6 +176,11 @@ pnpm test:containers
 pnpm test:runtime-isolation
 pnpm validate
 pnpm validate:full
+pnpm test:e2e
+pnpm test:security
+pnpm test:performance
+pnpm test:fixtures
+pnpm validate:stage10
 ```
 
 `test:containers` checks health, same-origin routing, LAN-style host access, published ports,
@@ -181,6 +191,16 @@ integration databases, so normal persistent audit history is not mutated by smok
 probes egress from every image on internal networks, verifies the published-port boundary, and
 rechecks readiness. `test:backup-integration` uses a disposable PostgreSQL project and temporary
 backup directory.
+
+`validate:stage10` includes `validate:full` once, then real browser workflows, source/build scans
+and both dependency audits, typical/large benchmarks, and fixture/execution integrity. Install the
+pinned browser first with `corepack pnpm exec playwright install chromium`. Browser/performance
+commands create and clean guarded disposable stacks publishing only a loopback Caddy port.
+`test:security` requires current built assets; `test:fixtures` requires the other sanitized reports.
+On Windows, after a successful `corepack pnpm install --frozen-lockfile`, the documented
+`$env:npm_config_verify_deps_before_run='false'` setting avoids the unavailable pnpm auto-install
+shim. It omits no checks. [CI instructions](docs/testing/stage10-ci.md) require a dedicated Docker
+host because the retained normal-project persistence checks use fixed names and port 8080.
 
 ## Safe updates
 

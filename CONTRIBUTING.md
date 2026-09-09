@@ -13,3 +13,12 @@ applied migration, keep fixtures synthetic/non-authoritative, and run `pnpm db:c
 database. Before local review run `pnpm validate`; infrastructure changes also require
 `pnpm validate:full`. Reviews should check scope, security, migration safety, offline runtime
 behavior, and README accuracy.
+
+Stage 10 changes use `pnpm validate:stage10`, which includes the full infrastructure gate and
+the browser, security/audit, performance and fixture-integrity checks. Install the pinned Chromium
+with `corepack pnpm exec playwright install chromium`. New helpers/specs must stay in lint and
+TypeScript coverage; Playwright specs must not enter Vitest discovery. Never accept new golden
+expectations by rerunning a generator: review exact T01–T15 input/result hashes and independent
+derivations in `docs/testing/stage10-regression-review.md`. Formula/catalog changes require their
+own version and domain approval. Commit only explicit sanitized evidence, never raw traces,
+browser state, credentials, generated downloads or `.artifacts/`.

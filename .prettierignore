@@ -3,6 +3,10 @@ coverage
 data
 dist
 node_modules
+.artifacts
+test-results
+playwright-report
+blob-report
 pnpm-lock.yaml
 Codex_Prompt_Local_Docker_Modular_Initialization_EN.md
 Stage_4_Data_Model_and_Migrations_Codex_Prompt.md

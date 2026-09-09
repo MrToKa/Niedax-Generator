@@ -19,7 +19,7 @@ CMD ["pnpm", "--filter", "@niedax/backend", "dev"]
 
 FROM deps AS acceptance
 COPY . .
-CMD ["pnpm", "exec", "vitest", "run", "--config", "vitest.integration.config.ts", "apps/backend/tests/project-flow.integration.test.ts"]
+CMD ["pnpm", "exec", "vitest", "run", "--config", "vitest.integration.config.ts", "--no-file-parallelism", "apps/backend/tests/project-flow.integration.test.ts", "apps/backend/tests/stage10-postgres.integration.test.ts"]
 
 FROM deps AS build
 COPY . .

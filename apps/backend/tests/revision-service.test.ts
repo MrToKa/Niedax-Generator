@@ -5,7 +5,6 @@ import type {
   CheckProjectRevisionRequestV2,
   SaveProjectRevisionRequestV2
 } from "@niedax/domain";
-import type { ProjectApplicationError } from "../src/project-errors.js";
 import type {
   RevisionActor,
   StoredRevisionDetail,
@@ -140,7 +139,7 @@ describe("Stage 8 revision application authorization", () => {
             "corr-approve"
           )
       ]) {
-        await expect(operation()).rejects.toMatchObject<ProjectApplicationError>({
+        await expect(operation()).rejects.toMatchObject({
           statusCode: 403,
           code: "FORBIDDEN"
         });

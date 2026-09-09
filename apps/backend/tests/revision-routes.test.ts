@@ -55,7 +55,7 @@ const mutationBody = {
 function operations(): RevisionOperations {
   return {
     listRevisions: vi.fn(async (_actor, requestedProjectId, requestCorrelationId) => ({
-      schemaVersion: "project-revision-list-response/v2",
+      schemaVersion: "project-revision-list-response/v2" as const,
       correlationId: requestCorrelationId,
       projectId: requestedProjectId,
       revisions: [],
@@ -63,7 +63,7 @@ function operations(): RevisionOperations {
     })),
     getRevision: vi.fn(async () => mutationBody),
     listAuditEvents: vi.fn(async (_actor, requestedProjectId, requestCorrelationId) => ({
-      schemaVersion: "project-revision-audit-list-response/v2",
+      schemaVersion: "project-revision-audit-list-response/v2" as const,
       correlationId: requestCorrelationId,
       projectId: requestedProjectId,
       events: [],

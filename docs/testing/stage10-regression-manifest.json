@@ -1,0 +1,621 @@
+{
+  "schemaVersion": "stage10-regression-manifest/v1",
+  "hashAlgorithm": "sha256-normalized-lf",
+  "canonicalHashAlgorithm": "sha256-of-engine-canonical-json",
+  "startingCommit": "52fac048aed95b982c39cec8d26e7f23b2795055",
+  "engineVersion": "0.1.0",
+  "formulaCatalogVersion": "1.0.0",
+  "reviewStatus": "pending-domain-review",
+  "baselines": [
+    {
+      "id": "all-major-rules-combined",
+      "scenarioIds": ["T03", "T04", "T06", "T09", "T11", "T12"],
+      "fixturePath": "packages/calculation-engine/tests/golden/fixtures/all-major-rules-combined.json",
+      "fixtureSha256": "fc880e447a8371f8019be14b8cdd9ca50b2bc179b53e6b27a6aeff9fce5811f6",
+      "expectedPath": "packages/calculation-engine/tests/golden/expected/all-major-rules-combined.json",
+      "expectedSha256": "bb14292eaf65c79007315173df420442619898350fbdef53fe2f53381ce86f16",
+      "canonicalResultSha256": "d9f3bbacec630b99c68231dc744fbc3064e6af98b9e796b07a8d3a558cdabd20",
+      "catalogVersion": "2.0.0",
+      "ruleVersion": "2.0.0",
+      "catalogHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "ruleHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "engineVersion": "0.1.0",
+      "testFile": "packages/calculation-engine/tests/golden.test.ts",
+      "testNames": [
+        "matches every committed expected JSON document",
+        "replays every scenario byte-for-byte and records stable canonical hashes"
+      ],
+      "reviewStatus": "retained-stage6-baseline-domain-reapproval-pending",
+      "changeReason": "No input or expected bytes changed in Stage 10"
+    },
+    {
+      "id": "assembly-anchors-wstb-and-manual-supports",
+      "scenarioIds": ["T02", "T06", "T09"],
+      "fixturePath": "packages/calculation-engine/tests/golden/fixtures/assembly-anchors-wstb-and-manual-supports.json",
+      "fixtureSha256": "ae039b1dbb8aaa237d4b8c85ab19aa36843841669c57b8e4469b5b8c7170e98b",
+      "expectedPath": "packages/calculation-engine/tests/golden/expected/assembly-anchors-wstb-and-manual-supports.json",
+      "expectedSha256": "20c093d903aaeed92b11475adc7f5c02d46be04a8c33315381d899492aada8e6",
+      "canonicalResultSha256": "cf58ccb29ce8642d70f0f19c005c98b8c7e9f6c8281a3d4a62f7e43bde09a390",
+      "catalogVersion": "2.0.0",
+      "ruleVersion": "2.0.0",
+      "catalogHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "ruleHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "engineVersion": "0.1.0",
+      "testFile": "packages/calculation-engine/tests/golden.test.ts",
+      "testNames": [
+        "matches every committed expected JSON document",
+        "replays every scenario byte-for-byte and records stable canonical hashes"
+      ],
+      "reviewStatus": "retained-stage6-baseline-domain-reapproval-pending",
+      "changeReason": "No input or expected bytes changed in Stage 10"
+    },
+    {
+      "id": "connected-routes-6m-support-continuation",
+      "scenarioIds": ["T04"],
+      "fixturePath": "packages/calculation-engine/tests/golden/fixtures/connected-routes-6m-support-continuation.json",
+      "fixtureSha256": "ef34b1df3d4194c2406745e7ddbacdc9e4107e88d7e4643ec2cba31305f12ef1",
+      "expectedPath": "packages/calculation-engine/tests/golden/expected/connected-routes-6m-support-continuation.json",
+      "expectedSha256": "fb03dca4590c1c0a1dcaf8181617019caf2247f0e2e856bc91421c5e9ad614ec",
+      "canonicalResultSha256": "8758e66118bea0fe47085031b1c1601202e23369d48285ac593ea251ca14c841",
+      "catalogVersion": "2.0.0",
+      "ruleVersion": "2.0.0",
+      "catalogHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "ruleHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "engineVersion": "0.1.0",
+      "testFile": "packages/calculation-engine/tests/golden.test.ts",
+      "testNames": [
+        "matches every committed expected JSON document",
+        "replays every scenario byte-for-byte and records stable canonical hashes"
+      ],
+      "reviewStatus": "retained-stage6-baseline-domain-reapproval-pending",
+      "changeReason": "No input or expected bytes changed in Stage 10"
+    },
+    {
+      "id": "fittings-joints-and-included-fasteners",
+      "scenarioIds": ["T05", "T06"],
+      "fixturePath": "packages/calculation-engine/tests/golden/fixtures/fittings-joints-and-included-fasteners.json",
+      "fixtureSha256": "e139712c88a896419f77fda07e03c7dd7606763f23c6c989e58237960a6dbe9c",
+      "expectedPath": "packages/calculation-engine/tests/golden/expected/fittings-joints-and-included-fasteners.json",
+      "expectedSha256": "9e77b205d138cc40c18b7a319089169eddad8d5ee665780b442ceb034561c3a8",
+      "canonicalResultSha256": "5495625a573f98fca09fac66e07a7ff47327f252479eb87d8dc13aff0aa6ba18",
+      "catalogVersion": "2.0.0",
+      "ruleVersion": "2.0.0",
+      "catalogHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "ruleHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "engineVersion": "0.1.0",
+      "testFile": "packages/calculation-engine/tests/golden.test.ts",
+      "testNames": [
+        "matches every committed expected JSON document",
+        "replays every scenario byte-for-byte and records stable canonical hashes"
+      ],
+      "reviewStatus": "retained-stage6-baseline-domain-reapproval-pending",
+      "changeReason": "No input or expected bytes changed in Stage 10"
+    },
+    {
+      "id": "per-segment-rounding-and-3m-6m-separation",
+      "scenarioIds": ["T03"],
+      "fixturePath": "packages/calculation-engine/tests/golden/fixtures/per-segment-rounding-and-3m-6m-separation.json",
+      "fixtureSha256": "967c65afc6a28489688c9516928dca896642e2371d4a559eb648b84bdd6d7d12",
+      "expectedPath": "packages/calculation-engine/tests/golden/expected/per-segment-rounding-and-3m-6m-separation.json",
+      "expectedSha256": "0eb14a1a530d9a51267a18bbe903678af611cc0df452708556b6dd9918632c2d",
+      "canonicalResultSha256": "12f8caab551b719e6603e28471031520d48c16ce1e83000e6b6c54971cb61b9b",
+      "catalogVersion": "2.0.0",
+      "ruleVersion": "2.0.0",
+      "catalogHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "ruleHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "engineVersion": "0.1.0",
+      "testFile": "packages/calculation-engine/tests/golden.test.ts",
+      "testNames": [
+        "matches every committed expected JSON document",
+        "replays every scenario byte-for-byte and records stable canonical hashes"
+      ],
+      "reviewStatus": "retained-stage6-baseline-domain-reapproval-pending",
+      "changeReason": "No input or expected bytes changed in Stage 10"
+    },
+    {
+      "id": "route-ends-and-manual-items",
+      "scenarioIds": ["T08", "T12"],
+      "fixturePath": "packages/calculation-engine/tests/golden/fixtures/route-ends-and-manual-items.json",
+      "fixtureSha256": "82b89ac72474f7112f6306a680a8153df9cbefcd94cfaf748cea4162184ec79c",
+      "expectedPath": "packages/calculation-engine/tests/golden/expected/route-ends-and-manual-items.json",
+      "expectedSha256": "930ce472cdfdfc74a847e11ee7aa3dd212c85448b7e6981b19e83690646d0222",
+      "canonicalResultSha256": "f83632742d6d868b6eccd201d110fa5aa18bcee0ca6c198b3df0be6f42694117",
+      "catalogVersion": "2.0.0",
+      "ruleVersion": "2.0.0",
+      "catalogHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "ruleHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "engineVersion": "0.1.0",
+      "testFile": "packages/calculation-engine/tests/golden.test.ts",
+      "testNames": [
+        "matches every committed expected JSON document",
+        "replays every scenario byte-for-byte and records stable canonical hashes"
+      ],
+      "reviewStatus": "retained-stage6-baseline-domain-reapproval-pending",
+      "changeReason": "No input or expected bytes changed in Stage 10"
+    },
+    {
+      "id": "unresolved-data-warning-matrix",
+      "scenarioIds": ["T08", "T10"],
+      "fixturePath": "packages/calculation-engine/tests/golden/fixtures/unresolved-data-warning-matrix.json",
+      "fixtureSha256": "9fe2d3869aecae1ad9be1e59f5ea03bec59f0af94c9af11f1dcccadbd83b8f69",
+      "expectedPath": "packages/calculation-engine/tests/golden/expected/unresolved-data-warning-matrix.json",
+      "expectedSha256": "1ce226f763c16b91ba7e05c7c7129c0afec4cffec3ecbb8753a4077824b02d48",
+      "canonicalResultSha256": "3f2b83523d5107d93145ea47840d2668c9f473a1d959d22442829fe7070c9a54",
+      "catalogVersion": "2.0.0",
+      "ruleVersion": "2.0.0",
+      "catalogHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "ruleHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "engineVersion": "0.1.0",
+      "testFile": "packages/calculation-engine/tests/golden.test.ts",
+      "testNames": [
+        "matches every committed expected JSON document",
+        "replays every scenario byte-for-byte and records stable canonical hashes"
+      ],
+      "reviewStatus": "retained-stage6-baseline-domain-reapproval-pending",
+      "changeReason": "No input or expected bytes changed in Stage 10"
+    },
+    {
+      "id": "stage10-focused-independent-references",
+      "scenarioIds": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12"
+      ],
+      "fixturePath": "packages/calculation-engine/tests/helpers/stage10-scenarios.ts",
+      "fixtureSha256": "4227d489bce40fe34c837a8feab70dc19637c67bc663a0743890a5cc21768990",
+      "expectedPath": "packages/calculation-engine/tests/fixtures/stage10-expected.json",
+      "expectedSha256": "6dc32e080a18bd2d4c8b41c1e25b07b2e600a303fdf85b8d30b0824a35c90a93",
+      "catalogVersion": "stage10-synthetic-v1",
+      "ruleVersion": "stage10-synthetic-v1",
+      "catalogHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "ruleHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "engineVersion": "0.1.0",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": [
+        "T01 matches the independently derived complete BOM and warning multiset",
+        "T02 matches the independently derived complete BOM and warning multiset",
+        "T03 matches the independently derived complete BOM and warning multiset",
+        "T04 matches the independently derived complete BOM and warning multiset",
+        "T05 matches the independently derived complete BOM and warning multiset",
+        "T06 matches the independently derived complete BOM and warning multiset",
+        "T07 matches the independently derived complete BOM and warning multiset",
+        "T08 matches the independently derived complete BOM and warning multiset",
+        "T09-DAM matches the independently derived complete BOM and warning multiset",
+        "T09-DAZ matches the independently derived complete BOM and warning multiset",
+        "T10 matches the independently derived complete BOM and warning multiset",
+        "T11 matches the independently derived complete BOM and warning multiset",
+        "T12 matches the independently derived complete BOM and warning multiset",
+        "T01 retains 17 sections and 2 m unused capacity in the actual metre order unit",
+        "T01 omits an unresolved joint mapping without inventing a Niedax connector",
+        "T02 keeps the dedicated two-per-support WSTB demand a project rule",
+        "T03 rounds exact and immediately adjacent 3 m and 6 m boundaries independently",
+        "T04 separates incompatible support groups and honors the reject mismatch policy",
+        "T05 and T07 own physical connector events once and keep included fasteners informational",
+        "T06 retains manual support reason and original plus additional quantities",
+        "T07 rejects duplicated or nonexistent participants and missing compatible connection mappings",
+        "T08 defers a connected endpoint to its physical owner",
+        "T09 and T10 retain exact anchor identities packages and engineering approval effects",
+        "T10 omits NSA for missing unknown or denied context and blocks approval",
+        "T11 keeps technical reserve reserved packaging overage order and spare distinct",
+        "T12 preserves manual identity while adding editing removing and changing independent policies",
+        "uses explicit manual template quantities once and omits unresolved parameters",
+        "keeps identical manual descriptions separate by manual identity and unit",
+        "rejects invalid decimals units zero quantities and precision without rejecting permitted zero adjustments",
+        "preserves exact large valid quantities beyond binary integer precision",
+        "pins valid typical and large benchmark counts and literal correctness",
+        "pins transport benchmark sizes and accepted unresolved fitting expectations"
+      ],
+      "reviewStatus": "pending-domain-review",
+      "changeReason": "New coverage at unchanged accepted formula semantics; selected P0 product facts with explicitly synthetic compatibility/template data"
+    },
+    {
+      "id": "stage10-persisted-activation",
+      "scenarioIds": ["T13"],
+      "fixturePath": "apps/backend/tests/persisted-project-fixture.ts",
+      "expectedPath": "apps/backend/tests/stage10-postgres.integration.test.ts",
+      "testFile": "apps/backend/tests/stage10-postgres.integration.test.ts",
+      "testNames": [
+        "S10-DB07 keeps snapshot and exact BOM/warning/trace projections unchanged after later draft calculation",
+        "S10-DB10 rolls catalog approval and active-version replacement back with their audit evidence"
+      ],
+      "catalogVersion": "acceptance-v2; stage10-active-before-rollback; stage10-candidate-rollback",
+      "ruleVersion": "acceptance-v2; stage10-active-before-rollback; stage10-candidate-rollback",
+      "fixtureSha256": "7b6305dbd316d067122ab62bb3b6a6a46fdf0c013df61df80874f05ad01d82df",
+      "expectedSha256": "3d4a4b646a6c39912eb3d726624112222b62ba9a718a91fb3a1cc62e5a44a250",
+      "engineVersion": "0.1.0",
+      "reviewStatus": "pending-domain-review",
+      "changeReason": "Stage10 additional executable coverage; retained quantities unchanged"
+    },
+    {
+      "id": "stage10-persisted-roles",
+      "scenarioIds": ["T14"],
+      "fixturePath": "apps/backend/tests/persisted-project-fixture.ts",
+      "expectedPath": "apps/backend/tests/project-flow.integration.test.ts",
+      "testFile": "apps/backend/tests/project-flow.integration.test.ts",
+      "testNames": [
+        "persists draft changes, reloads and calculates two connected routes without a revision",
+        "runs Stage 9 export authorization, binary integrity, idempotency, lifecycle capture and recovery using the application database role"
+      ],
+      "catalogVersion": "acceptance-v2",
+      "ruleVersion": "acceptance-v2",
+      "fixtureSha256": "7b6305dbd316d067122ab62bb3b6a6a46fdf0c013df61df80874f05ad01d82df",
+      "expectedSha256": "e2cd3ca5ebd329d29baec2ebb50cbc27cf0f2f0eca6ea2085e210b3b8879b741",
+      "engineVersion": "0.1.0",
+      "reviewStatus": "pending-domain-review",
+      "changeReason": "Stage10 additional executable coverage; retained quantities unchanged"
+    },
+    {
+      "id": "approved-change-order-26",
+      "scenarioIds": ["T15"],
+      "fixturePath": "packages/export/tests/fixtures/change-order-control.xlsx",
+      "expectedPath": "packages/export/tests/fixtures/change-order-control.expected.json",
+      "testFile": "packages/export/tests/approved-workbook.test.ts",
+      "testNames": [
+        "matches the source inventory and independently reviewed saved control quantities without importing customer sample data"
+      ],
+      "catalogVersion": "2.0.0 synthetic retained Stage6",
+      "ruleVersion": "2.0.0 synthetic retained Stage6",
+      "fixtureSha256": "351b6dcf642ffebf53b6c5c7e57898ae8d4a7f1839183bbdc1eac66085ddc337",
+      "expectedSha256": "216bcbe158765941ae1faaf60321cca4dc92f787eaa7ed136085a133ea67300c",
+      "engineVersion": "0.1.0",
+      "reviewStatus": "pending-domain-review",
+      "changeReason": "Stage10 additional executable coverage; retained quantities unchanged"
+    },
+    {
+      "id": "stage10-varied-properties",
+      "scenarioIds": ["T03", "T04", "T05", "T09", "T11", "T12"],
+      "fixturePath": "packages/calculation-engine/tests/property.test.ts",
+      "fixtureSha256": "a11ed00910004bd3e40c1576e699e1aedc3a2f2263cd5c393068555ba3e3a6c2",
+      "expectedPath": "packages/calculation-engine/tests/property.test.ts",
+      "expectedSha256": "a11ed00910004bd3e40c1576e699e1aedc3a2f2263cd5c393068555ba3e3a6c2",
+      "catalogVersion": "stage10-synthetic-v1",
+      "ruleVersion": "stage10-synthetic-v1",
+      "engineVersion": "0.1.0",
+      "testFile": "packages/calculation-engine/tests/property.test.ts",
+      "testNames": [
+        "varies per-segment geometry and supply choices against integer capacity references",
+        "varies manual units reserve and packaging with independent exact expected deltas",
+        "varies shared and physical topology lengths and support spacings",
+        "varies template scopes anchor counts and dedicated WSTB policies without double counting",
+        "replays varied inputs and unordered permutations with complete reconciliation"
+      ],
+      "reviewStatus": "pending-domain-review",
+      "changeReason": "New varied generated inputs with independent integer references, fixed replay seeds and public-result reconciliation; no accepted golden was regenerated"
+    }
+  ],
+  "fixtureDependencies": [
+    {
+      "path": "packages/calculation-engine/tests/helpers/stage10-fixtures.ts",
+      "sha256": "aadf5c485bcef130bddc3c5a75e7c52847b0e2986aba24c568c8058d02d640c5"
+    },
+    {
+      "path": "packages/calculation-engine/tests/helpers/fixture-v2.ts",
+      "sha256": "b114246af42f46e7b521dd4b9bebee8d7779066257b8bcdd206fe64ff61843aa"
+    },
+    {
+      "path": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "sha256": "0d55e841522b76f59e819bca36ce44f3352f6e78e0162317c1dad2c0a66912ed"
+    },
+    {
+      "path": "packages/calculation-engine/tests/property.test.ts",
+      "sha256": "a11ed00910004bd3e40c1576e699e1aedc3a2f2263cd5c393068555ba3e3a6c2"
+    },
+    {
+      "path": "catalogue/imports/niedax-p0-2022/products.csv",
+      "sha256": "0c8adc1a4730da494fb33406a92cdd1f69eb2600df8fc5cf346712b8ec80ad06"
+    },
+    {
+      "path": "catalogue/imports/niedax-p0-2022/compatibility_rules.csv",
+      "sha256": "657cdc08d2812eef7170908caf82450d4f10ff1c9c0c1df7ee43a6b63cd070cb"
+    },
+    {
+      "path": "catalogue/imports/niedax-p0-2022/template_components.csv",
+      "sha256": "0a936840817f5214ae36e6b411f8c620b7dc33abf2c5fcc83c1bdf5acc80023a"
+    },
+    {
+      "path": "packages/calculation-engine/tests/helpers/stage10-api-performance.ts",
+      "sha256": "fe5f4d590076795dfd003d73f75c568acde276048b155e6af5c02eb677829240"
+    },
+    {
+      "path": "packages/export/tests/fixtures/synthetic-control.expected.json",
+      "sha256": "76b7503f6557e8967f09bc84938eff8607000559d254d4d7ffa46e117990e784"
+    },
+    {
+      "path": "apps/backend/tests/export-acceptance.ts",
+      "sha256": "e2493024217d23e95d7b0f4f2123021f4835c18642a71e742a7edd9da5543b1d"
+    },
+    {
+      "path": "packages/export/tests/helpers/ooxml.ts",
+      "sha256": "004cd5f750b1065cf95494a1fd4ffc21170b7116a04362734c6823dc84e7fe1c"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "T01",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T01 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": ["stage10-focused-independent-references"],
+      "inputs": [
+        {
+          "key": "T01",
+          "canonicalInputSha256": "6bc65d21fb50e43303fcb48da5ab41f421ae9a2052cb24079422ad800567263b",
+          "canonicalExpectedSha256": "6926157cf00e4e29221f53732ba63156a13b105a73c911cb0c2139cfe75a895c"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T02",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T02 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": [
+        "stage10-focused-independent-references",
+        "assembly-anchors-wstb-and-manual-supports"
+      ],
+      "inputs": [
+        {
+          "key": "T02",
+          "canonicalInputSha256": "904644ee866d87bd3bf43476cfcf2ac01e54178a3bb8b51416dfc6e37da5a8b6",
+          "canonicalExpectedSha256": "af5ab3983260b51e169b4f47519cfdc2a2970b17f18b6fd5f981107f7edefea1"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T03",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T03 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": [
+        "stage10-focused-independent-references",
+        "all-major-rules-combined",
+        "per-segment-rounding-and-3m-6m-separation",
+        "stage10-varied-properties"
+      ],
+      "inputs": [
+        {
+          "key": "T03",
+          "canonicalInputSha256": "508f355aa8c9fc2f61953231a0f84347f0a8abfcd0b6ed954014c545026c3798",
+          "canonicalExpectedSha256": "7e31afd1896c0c1aac17b12963da53fae542fac78513ca23a64fc87d6b15f3cf"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T04",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T04 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": [
+        "stage10-focused-independent-references",
+        "all-major-rules-combined",
+        "connected-routes-6m-support-continuation",
+        "stage10-varied-properties"
+      ],
+      "inputs": [
+        {
+          "key": "T04",
+          "canonicalInputSha256": "152c4c809e9d570f457259b25e79e8bae560ca6b6b2aeddada28d77c9bd54dda",
+          "canonicalExpectedSha256": "17e5a1cff359b8ac1160fdd08a863b0dab14c907d5417192215e8a0f80dce335"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T05",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T05 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": [
+        "stage10-focused-independent-references",
+        "fittings-joints-and-included-fasteners",
+        "stage10-varied-properties"
+      ],
+      "inputs": [
+        {
+          "key": "T05",
+          "canonicalInputSha256": "8621d8f4ca13977a5ac9b49455bfc9b25f6a2de902d0a5cf13a83d672535513c",
+          "canonicalExpectedSha256": "2c8602c3a7b7b15339c518670025bbbf7945dd31a847a11afe1e2cac340b6edd"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T06",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T06 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": [
+        "stage10-focused-independent-references",
+        "all-major-rules-combined",
+        "assembly-anchors-wstb-and-manual-supports",
+        "fittings-joints-and-included-fasteners"
+      ],
+      "inputs": [
+        {
+          "key": "T06",
+          "canonicalInputSha256": "0e586fb08b7fb7b40288394836af3278e8978989654f6c74f3df5a80ed90ff02",
+          "canonicalExpectedSha256": "c1265fb7f0141307588d1d3146381352755744b5324f85f8fa957806685677b3"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T07",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T07 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": ["stage10-focused-independent-references"],
+      "inputs": [
+        {
+          "key": "T07",
+          "canonicalInputSha256": "2dba6069b01f38f1fae841d1afd7e45a4ed0916282f3e82f677ca51a5f0e7091",
+          "canonicalExpectedSha256": "1b8718ba7380084ea0d71e660ff9910e93191131354e9b5828cf504c379827f2"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T08",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T08 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": [
+        "stage10-focused-independent-references",
+        "route-ends-and-manual-items",
+        "unresolved-data-warning-matrix"
+      ],
+      "inputs": [
+        {
+          "key": "T08",
+          "canonicalInputSha256": "c04e85954a969ddc2537f13383ccd9daaf935678c180228ae1beee28adef91ab",
+          "canonicalExpectedSha256": "8b53aaf1c33167a381513e6649377110c78e90fd2b08815d09980ca93bc0ca2f"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T09",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": [
+        "T09-DAM matches the independently derived complete BOM and warning multiset",
+        "T09-DAZ matches the independently derived complete BOM and warning multiset"
+      ],
+      "fixtureRefs": [
+        "stage10-focused-independent-references",
+        "all-major-rules-combined",
+        "assembly-anchors-wstb-and-manual-supports",
+        "stage10-varied-properties"
+      ],
+      "inputs": [
+        {
+          "key": "T09-DAM",
+          "canonicalInputSha256": "11d6de37cb06f7222702726608279d1cbaa0d21316d3aa4fa0a4e0e7f2be473a",
+          "canonicalExpectedSha256": "3e3b9684af0b6ee16516b8c04850f891ac180514173b8cf154d45a1f465d1e5f"
+        },
+        {
+          "key": "T09-DAZ",
+          "canonicalInputSha256": "f00074a88d27ee3ebf9692116700046eef8530d3dc965cb032f90be1c28bf1f6",
+          "canonicalExpectedSha256": "1cc7976e22321007aefa57d52d6a88bdfca6efcec75d0ff2f60b99b041216660"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T10",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T10 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": ["stage10-focused-independent-references", "unresolved-data-warning-matrix"],
+      "inputs": [
+        {
+          "key": "T10",
+          "canonicalInputSha256": "d2b0aaa46db1265fa9f13d75e276043b7d8a40c6520adbaffa8b78023e9173c9",
+          "canonicalExpectedSha256": "9623562c2d9c19b493dd749d06b115c547f2110a95a66e9b207d9176316a1fed"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T11",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T11 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": [
+        "stage10-focused-independent-references",
+        "all-major-rules-combined",
+        "stage10-varied-properties"
+      ],
+      "inputs": [
+        {
+          "key": "T11",
+          "canonicalInputSha256": "768807c69885b19ce9f0de90f30590fa94f7aa94415b5e9d3240ff2c54ad1c24",
+          "canonicalExpectedSha256": "91e88476cc2f698ef45277a698af009ec8bbe5e62291061aa3c7d76227df7f26"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T12",
+      "critical": true,
+      "runner": "vitest-unit",
+      "testFile": "packages/calculation-engine/tests/stage10-regression.test.ts",
+      "testNames": ["T12 matches the independently derived complete BOM and warning multiset"],
+      "fixtureRefs": [
+        "stage10-focused-independent-references",
+        "all-major-rules-combined",
+        "route-ends-and-manual-items",
+        "stage10-varied-properties"
+      ],
+      "inputs": [
+        {
+          "key": "T12",
+          "canonicalInputSha256": "3648cd91ab9bca9ee823ed9520ae560b0b89decc810f676e3c6cb00f1e46804a",
+          "canonicalExpectedSha256": "0808eede7a74dbaaa4eaf1b004d408c7e71e0f008420e3c4bd7d0fe4d759268f"
+        }
+      ],
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T13",
+      "runner": "postgres",
+      "testFile": "apps/backend/tests/stage10-postgres.integration.test.ts",
+      "testNames": [
+        "S10-DB07 keeps snapshot and exact BOM/warning/trace projections unchanged after later draft calculation",
+        "S10-DB10 rolls catalog approval and active-version replacement back with their audit evidence"
+      ],
+      "fixtureRefs": ["stage10-persisted-activation"],
+      "critical": true,
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T14",
+      "runner": "postgres",
+      "testFile": "apps/backend/tests/project-flow.integration.test.ts",
+      "testNames": [
+        "persists draft changes, reloads and calculates two connected routes without a revision",
+        "runs Stage 9 export authorization, binary integrity, idempotency, lifecycle capture and recovery using the application database role"
+      ],
+      "fixtureRefs": ["stage10-persisted-roles"],
+      "critical": true,
+      "reviewStatus": "pending-domain-review"
+    },
+    {
+      "id": "T15",
+      "runner": "playwright",
+      "testFile": "tests/e2e/critical-workflows.spec.ts",
+      "testNames": [
+        "T04 T11 T12 T14 T15 critical UI journey, independent download and immutable history — fresh cycle 1",
+        "T04 T11 T12 T14 T15 critical UI journey, independent download and immutable history — fresh cycle 2",
+        "T04 T11 T12 T14 T15 critical UI journey, independent download and immutable history — fresh cycle 3",
+        "T09 T14 T15 blocked approval, later revision and recoverable calculate/export requests"
+      ],
+      "fixtureRefs": ["approved-change-order-26"],
+      "critical": true,
+      "reviewStatus": "pending-domain-review"
+    }
+  ]
+}

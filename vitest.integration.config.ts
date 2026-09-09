@@ -16,6 +16,7 @@ export default defineConfig({
     }
   },
   test: {
+    reporters: ["default", ["./scripts/stage10-vitest-reporter.ts", { mode: "integration" }]],
     include: ["{apps,packages,database,scripts}/**/*.integration.test.ts"],
     testTimeout: 30_000
   }

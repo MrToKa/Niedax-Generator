@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import { fileURLToPath } from "node:url";
 
 export default defineConfig({
@@ -15,6 +15,8 @@ export default defineConfig({
     }
   },
   test: {
+    reporters: ["default", ["./scripts/stage10-vitest-reporter.ts", { mode: "unit" }]],
+    exclude: [...configDefaults.exclude, "**/*.integration.test.ts", "**/*.spec.ts"],
     coverage: {
       reporter: ["text", "html"]
     },

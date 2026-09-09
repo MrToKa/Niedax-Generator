@@ -17,7 +17,7 @@ type Mutable<T> = T extends readonly (infer Item)[]
     : T;
 
 function mutableInput(): Mutable<CalculationInputV2> {
-  return structuredClone(allMajorRulesInputV2) as Mutable<CalculationInputV2>;
+  return CalculationInputV2Schema.parse(allMajorRulesInputV2);
 }
 
 function route(input: Mutable<CalculationInputV2>, id: string) {

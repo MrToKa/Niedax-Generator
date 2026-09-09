@@ -99,7 +99,9 @@ function errorCode(error: unknown): string | null {
 
 describe("Stage 7 PostgreSQL project repository boundaries", () => {
   it("reads retained-project access metadata without hydrating a Stage 7 draft", async () => {
-    const query = vi.fn(async () => ({
+    const query = vi.fn<
+      (sql: unknown, values?: readonly unknown[]) => Promise<{ rows: unknown[] }>
+    >(async () => ({
       rows: [{ owner_id: ids.owner, editor_state: "retainedReadOnly" }]
     }));
     const repository = new PgProjectRepository({ query } as unknown as Pool);
@@ -118,7 +120,9 @@ describe("Stage 7 PostgreSQL project repository boundaries", () => {
   });
 
   it("preserves 404 non-disclosure for a Designer requesting foreign access metadata", async () => {
-    const query = vi.fn(async () => ({ rows: [] }));
+    const query = vi.fn<
+      (sql: unknown, values?: readonly unknown[]) => Promise<{ rows: unknown[] }>
+    >(async () => ({ rows: [] }));
     const repository = new PgProjectRepository({ query } as unknown as Pool);
     const designer = { ...reviewer, role: "designer" as const };
 
@@ -347,7 +351,9 @@ describe("Stage 7 PostgreSQL project repository boundaries", () => {
   });
 
   it("lists retained projects but rejects direct legacy draft hydration", async () => {
-    const listQuery = vi.fn(async () => ({
+    const listQuery = vi.fn<
+      (sql: unknown, values?: readonly unknown[]) => Promise<{ rows: unknown[] }>
+    >(async () => ({
       rows: [
         {
           id: ids.project,

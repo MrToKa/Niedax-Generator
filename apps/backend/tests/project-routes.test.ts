@@ -118,7 +118,7 @@ function service(): ProjectOperations {
       correlationId: requestCorrelationId
     })),
     getProjectAccess: vi.fn(async (_actor, requestedProjectId, requestCorrelationId) => ({
-      schemaVersion: "project-access-response/v2",
+      schemaVersion: "project-access-response/v2" as const,
       correlationId: requestCorrelationId,
       projectId: requestedProjectId,
       access: {

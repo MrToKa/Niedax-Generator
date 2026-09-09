@@ -1,0 +1,99 @@
+name: Stage 10 validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# This label must designate a dedicated Windows Docker Desktop host with no user
+# stack. Normal-project persistence checks use fixed names and TCP 8080.
+concurrency:
+  group: niedax-stage10-dedicated-host
+  cancel-in-progress: false
+
+jobs:
+  stage10:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, niedax-stage10-dedicated]
+    timeout-minutes: 120
+    env:
+      CI: "true"
+      npm_config_verify_deps_before_run: "false"
+      NEXT_TELEMETRY_DISABLED: "1"
+    defaults:
+      run:
+        shell: powershell
+        working-directory: stage10-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: stage10-${{ github.run_id }}-${{ github.run_attempt }}
+          clean: false
+          persist-credentials: false
+      - name: Refuse a shared or occupied runtime
+        run: |
+          if ($env:NIEDAX_STAGE10_DEDICATED_RUNNER -ne '1') { throw 'Dedicated runner opt-in is missing' }
+          $nodeVersion = node --version
+          if ($nodeVersion -ne 'v24.19.0') { throw 'Runner must provide Node 24.19.0' }
+          $existing = docker ps -a --format '{{.Names}}'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($existing | Where-Object { $_ -match '^niedax-(frontend|backend|postgres|gateway|migrations|backup)$' }) {
+            throw 'Refusing to interrupt an existing normal-project stack'
+          }
+          docker compose version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          New-Item -ItemType Directory -Force .artifacts/stage10 | Out-Null
+          Set-Content -LiteralPath .artifacts/stage10/ci-owns-runtime -Value $env:GITHUB_RUN_ID
+      - name: Install exact tooling and pinned Chromium
+        run: |
+          corepack pnpm install --frozen-lockfile
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          corepack pnpm exec playwright install chromium
+          exit $LASTEXITCODE
+      - name: Full validation, browsers, security, performance and fixture integrity
+        run: |
+          corepack pnpm validate:stage10
+          exit $LASTEXITCODE
+      - name: Stop only the job-owned normal topology; preserve its data
+        if: always()
+        run: |
+          $ownership = '.artifacts/stage10/ci-owns-runtime'
+          if (Test-Path -LiteralPath $ownership) {
+            if ((Get-Content -Raw -LiteralPath $ownership).Trim() -ne $env:GITHUB_RUN_ID) { throw 'Ownership mismatch' }
+            docker compose down --remove-orphans
+            exit $LASTEXITCODE
+          }
+      - name: Retain explicit sanitized evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: stage10-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/unit.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/integration.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/postgres.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/browser.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/browser-cleanup.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/download-cycle-1.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/download-viewer-1.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/download-cycle-2.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/download-viewer-2.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/download-cycle-3.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/download-viewer-3.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/download-recovery-before.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/download-recovery-after.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/performance.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/performance-cleanup.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/security.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/audit-prod.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/audit-all.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/fixtures.json
+            stage10-${{ github.run_id }}-${{ github.run_attempt }}/.artifacts/stage10/safe/stage10-run.json

@@ -220,9 +220,14 @@ export async function verifyExportAcceptance(
   async function post(
     name: AppRole | "otherDesigner",
     key = "stage9-export-1",
-    payload: unknown = requestBody
+    payload: Record<string, unknown> = requestBody
   ) {
-    return app.inject({ method: "POST", url, headers: headers(name, key), payload });
+    return app.inject({
+      method: "POST",
+      url,
+      headers: headers(name, key),
+      payload
+    });
   }
   async function get(
     exportId: string,

@@ -22,7 +22,7 @@ describe("synthetic workbook framework (separate from the approved 26-column map
     expect(() =>
       validateWorkbookMapping({ ...syntheticMapping, columns: syntheticMapping.columns.slice(1) })
     ).toThrow();
-    const columns = structuredClone(syntheticMapping.columns);
+    const columns = [...structuredClone(syntheticMapping.columns)];
     columns[16] = { ...columns[16]!, source: { kind: "text", field: "descriptionEn" } };
     expect(() => validateWorkbookMapping({ ...syntheticMapping, columns })).toThrow();
     expect(() => validateWorkbookMapping({ ...syntheticMapping, unknown: true })).toThrow();
@@ -234,7 +234,8 @@ describe("synthetic workbook framework (separate from the approved 26-column map
       expect(cells.get(`B${row}`)).toMatchObject({ type: "s", formula: null });
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(
-      Buffer.from((await renderExcelWorkbook(syntheticContext(), syntheticMapping)).bytes)
+      Uint8Array.from((await renderExcelWorkbook(syntheticContext(), syntheticMapping)).bytes)
+        .buffer
     );
     expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual(expected.sheets);
   });

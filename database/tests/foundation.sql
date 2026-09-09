@@ -12,7 +12,7 @@ BEGIN
   IF to_regclass('public.revision_lifecycle_events') IS NULL THEN RAISE EXCEPTION 'revision lifecycle audit table missing'; END IF;
   IF to_regclass('public.user_administration_audit_events') IS NULL THEN RAISE EXCEPTION 'user administration audit table missing'; END IF;
   IF to_regclass('public.schema_migrations') IS NULL THEN RAISE EXCEPTION 'migration metadata missing'; END IF;
-  IF (SELECT count(*) FROM schema_migrations) <> 11 THEN RAISE EXCEPTION 'unexpected migration count'; END IF;
+  IF (SELECT count(*) FROM schema_migrations) <> 12 THEN RAISE EXCEPTION 'unexpected migration count'; END IF;
   IF to_regclass('public.export_artifacts') IS NULL THEN RAISE EXCEPTION 'export artifact table missing'; END IF;
   IF has_table_privilege('niedax_generator_app','public.export_artifacts','UPDATE')
     OR has_table_privilege('niedax_generator_app','public.export_artifacts','DELETE')
