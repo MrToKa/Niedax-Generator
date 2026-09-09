@@ -17,6 +17,8 @@ export const CAPABILITIES_BY_ROLE = {
     "project:edit",
     "calculation:execute",
     "revision:save",
+    "export:create",
+    "export:read",
     "audit:read"
   ],
   reviewer: [
@@ -27,6 +29,8 @@ export const CAPABILITIES_BY_ROLE = {
     "revision:save",
     "revision:check",
     "revision:approve",
+    "export:create",
+    "export:read",
     "audit:read"
   ],
   administrator: [
@@ -37,11 +41,13 @@ export const CAPABILITIES_BY_ROLE = {
     "revision:save",
     "revision:check",
     "revision:approve",
+    "export:create",
+    "export:read",
     "users:administer",
     "catalog:administer",
     "audit:read"
   ],
-  viewer: ["project:read", "audit:read"]
+  viewer: ["project:read", "audit:read", "export:read"]
 } as const satisfies Readonly<Record<AppRole, readonly AppCapability[]>>;
 
 export function capabilitiesForRole(role: AppRole): readonly AppCapability[] {

@@ -9,7 +9,9 @@ Media type: `application/json` except upload and download operations
 > `/api/v1` boundary. Stage 8 implements cursor pagination with `project-list-response/v3`, plus
 > identity/capabilities, four-role user administration, project access, explicit v2 revision
 > save/list/detail/audit, Check, and Approve. Retained v1 revisions remain readable without
-> reinterpretation. Export operations remain future contracts.
+> reinterpretation. Stage 9 export request/list/status/download handlers use the retained v1
+> command and new v2 artifact read models. The user-authorized 26-column Change Order template
+> supersedes the initial 29-column requirement. See `docs/exports/stage9-evidence.md`.
 
 ## Boundary choice
 
@@ -57,18 +59,20 @@ changes; the repository application/package version records them.
 
 ## Authorization capabilities
 
-| Capability            | Meaning                                                     |
-| --------------------- | ----------------------------------------------------------- |
-| `project:create`      | Create a project owned by the authenticated actor           |
-| `project:read`        | Read projects and their current/historical representations  |
-| `project:edit`        | Materially edit a permitted draft                           |
-| `calculation:execute` | Validate and calculate a permitted draft                    |
-| `revision:save`       | Save an explicit immutable revision                         |
-| `revision:check`      | Transition the latest exact Calculated revision to Checked  |
-| `revision:approve`    | Transition the latest eligible Checked revision to Approved |
-| `users:administer`    | Create/enable/disable users and assign canonical roles      |
-| `catalog:administer`  | Operate the protected catalog lifecycle                     |
-| `audit:read`          | Read permitted bounded revision/audit history               |
+| Capability            | Meaning                                                      |
+| --------------------- | ------------------------------------------------------------ |
+| `project:create`      | Create a project owned by the authenticated actor            |
+| `project:read`        | Read projects and their current/historical representations   |
+| `project:edit`        | Materially edit a permitted draft                            |
+| `calculation:execute` | Validate and calculate a permitted draft                     |
+| `revision:save`       | Save an explicit immutable revision                          |
+| `revision:check`      | Transition the latest exact Calculated revision to Checked   |
+| `revision:approve`    | Transition the latest eligible Checked revision to Approved  |
+| `users:administer`    | Create/enable/disable users and assign canonical roles       |
+| `catalog:administer`  | Operate the protected catalog lifecycle                      |
+| `audit:read`          | Read permitted bounded revision/audit history                |
+| `export:create`       | Request an English workbook for a readable saved revision    |
+| `export:read`         | Discover, inspect and download exports of readable revisions |
 
 The exact roles are `designer`, `reviewer`, `administrator`, and `viewer`. Designer reads and
 mutates owned projects. Reviewer reads all projects, mutates owned projects, and may Check/Approve
@@ -198,7 +202,7 @@ File name, media type, size, and SHA-256 are logged as bounded metadata. File bo
 row contents are never logged. CSV/Excel parsing adapters must convert rows to
 `CatalogSourceRowV1`; activation is forbidden until validation is successful.
 
-### Exports
+### Retained export v1 contract family
 
 | Operation         | Method and route                              | Request / response schema                          | Authorization                    | Idempotency and transaction                                                                                   | Success behavior                                                                      | Domain errors                                                                                                    |
 | ----------------- | --------------------------------------------- | -------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -225,3 +229,30 @@ recalculate engineering or packaging quantities.
 All JSON errors validate against `ErrorEnvelopeV1Schema`. Validation issues expose safe field paths,
 stable issue codes, and curated messages. Unexpected errors become `INTERNAL_ERROR` with a generic
 message; diagnostic exceptions and stack traces remain only in protected structured logs.
+
+### Implemented Stage 9 Excel operations
+
+The retained command still uses `export-request/v1`. Its strict HTTP body omits
+`correlationId` and `idempotencyKey`, supplied from validated headers, and must match the path
+revision ID. Only format `xlsx` and language `en` execute. Retained v1 saved revisions return
+`422 UNSUPPORTED_SCHEMA_VERSION`; no lossy adaptation is attempted.
+
+| Operation | Route                                         | Response and behavior                                                                                            |
+| --------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Request   | `POST /api/v1/revisions/{revisionId}/exports` | `ExportArtifactV2Schema`, 202 pending or 200 ready cache hit; session, CSRF, Origin and idempotency required     |
+| Discover  | `GET /api/v1/revisions/{revisionId}/exports`  | `ExportListResponseV2Schema`, latest 20 artifacts and server availability; no query parameters                   |
+| Status    | `GET /api/v1/exports/{exportId}`              | `ExportArtifactV2Schema`; authorized source revision required                                                    |
+| Download  | `GET /api/v1/exports/{exportId}/download`     | XLSX attachment with length, ETag, `X-Content-SHA256`, `nosniff`, private/no-store; 409 pending, safe 500 failed |
+
+`export:create` applies to owned readable revisions for Designer and every readable revision
+for Reviewer/Administrator. Viewer has `export:read` for permitted discovery/status/download.
+Current enabled roles/source ownership are checked for all access, replay and cache hits.
+
+Artifact v2 adds revision identity, creation time, safe file name, byte length and safe failure
+code. Ready requires all byte metadata; pending/failed cannot disclose a download path or
+partial content. `expiresAt` is always null. Idempotency returns the original response even
+after completion; status polling observes the transition. Unknown fields and unsupported
+schema literals are rejected. Request bodies are at most 4096 bytes and limited to 20/minute.
+
+See `docs/exports/stage9-column-mapping.md` for the user-authorized 26-column Change Order
+layout that replaces the originally requested 29-column List1.

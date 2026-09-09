@@ -21,6 +21,8 @@ export const APP_CAPABILITIES = [
   "revision:save",
   "revision:check",
   "revision:approve",
+  "export:create",
+  "export:read",
   "users:administer",
   "catalog:administer",
   "audit:read"

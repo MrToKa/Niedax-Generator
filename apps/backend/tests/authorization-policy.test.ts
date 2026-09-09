@@ -17,6 +17,8 @@ const capabilityMatrix: Readonly<Record<AppRole, readonly AppCapability[]>> = {
     "project:edit",
     "calculation:execute",
     "revision:save",
+    "export:create",
+    "export:read",
     "audit:read"
   ],
   reviewer: [
@@ -27,10 +29,12 @@ const capabilityMatrix: Readonly<Record<AppRole, readonly AppCapability[]>> = {
     "revision:save",
     "revision:check",
     "revision:approve",
+    "export:create",
+    "export:read",
     "audit:read"
   ],
   administrator: [...APP_CAPABILITIES],
-  viewer: ["project:read", "audit:read"]
+  viewer: ["project:read", "audit:read", "export:read"]
 };
 
 describe("Stage 8 centralized authorization policy", () => {

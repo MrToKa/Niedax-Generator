@@ -43,6 +43,12 @@ BEGIN
     EXECUTE 'GRANT SELECT, INSERT ON TABLE public.idempotency_records TO niedax_generator_app';
   END IF;
 
+  IF to_regclass('public.export_artifacts') IS NOT NULL THEN
+    EXECUTE 'REVOKE ALL PRIVILEGES ON TABLE public.export_artifacts FROM niedax_generator_app';
+    EXECUTE 'GRANT SELECT, INSERT ON TABLE public.export_artifacts TO niedax_generator_app';
+    EXECUTE 'GRANT UPDATE (status, attempts, claim_token, lease_until, completed_at, failure_code, file_name, media_type, content_bytes, content_length, content_hash) ON TABLE public.export_artifacts TO niedax_generator_app';
+  END IF;
+
   IF to_regclass('public.warnings') IS NOT NULL THEN
     EXECUTE 'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.warnings TO niedax_generator_app';
   END IF;

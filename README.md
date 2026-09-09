@@ -4,7 +4,8 @@ Niedax Generator is currently a local-only modular application foundation. It pr
 Next.js shell, a Fastify API, a pure calculation-engine package, PostgreSQL 18 authentication data,
 forward-only migrations, a Caddy same-origin gateway, and manual backup tools. It contains the
 verified Stage 5 P0 catalog and pure Stage 6 calculation/BOM engine; pricing, ERP integration,
-structural approval, and final binary export renderers remain out of scope.
+and structural approval remain out of scope. Stage 9 adds local English Excel export from saved
+revisions using the user-authorized 26-column Change Order layout and synthetic workbook checks.
 
 Stage 3 adds versioned domain/runtime contracts and clean application, calculation, catalog-import,
 and export boundaries. Stage 4 adds the versioned catalog/rule/project data model, mutable
@@ -19,6 +20,8 @@ Approved lifecycle, and read-only historical review. Start with the
 [Stage 4 ER model](docs/database/stage4-er-model.md), and [catalog import operations](docs/catalogs/catalog-import.md).
 The current role and revision design is documented in
 [Stage 8 users, roles, approval, and revisions](docs/stage8-users-roles-revisions.md).
+See [Stage 9 Excel export](docs/exports/stage9-usage.md) for saved-revision export availability,
+the authorized template mapping and verification status.
 
 ## Architecture and access
 

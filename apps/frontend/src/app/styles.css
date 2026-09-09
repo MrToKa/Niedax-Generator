@@ -2480,6 +2480,52 @@ input[aria-invalid="true"] {
 .revision-audit {
   min-width: 0;
 }
+.revision-export-panel {
+  min-width: 0;
+}
+.export-actions,
+.export-revision-identity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.export-actions {
+  margin: 14px 0;
+}
+.export-artifact-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+}
+.export-artifact-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.export-artifact-list li > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.export-artifact-list small {
+  color: var(--muted);
+}
+.revision-export-panel p,
+.export-artifact-list strong,
+.export-artifact-list span {
+  overflow-wrap: anywhere;
+}
+.revision-export-panel button:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 3px;
+}
 .revision-save-form {
   display: grid;
   grid-template-columns: minmax(220px, 0.8fr) minmax(280px, 1.2fr) auto;

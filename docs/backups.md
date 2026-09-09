@@ -19,3 +19,12 @@ Never rename a dump without regenerating and reviewing its checksum.
 
 Backups are deliberately unencrypted. They can contain password hashes and application data, so
 protect the directory with local filesystem access control and do not email, sync, or upload it.
+
+Stage 9 stores captured export contexts and complete XLSX bytes in PostgreSQL `export_artifacts`.
+The existing dump therefore includes them without another storage path. Ready bytes and their
+SHA-256/length metadata are immutable. Pending jobs resume through bounded backend recovery
+after restore/startup. Retention is indefinite (`expiresAt=null`); include workbook/context
+growth in database and backup capacity planning. Restore privilege reconciliation restores
+only export SELECT/INSERT and worker finalization-column UPDATE privileges, never deletion or
+captured-context updates. The backup integration test compares exact stored bytea/hash evidence
+before and after restore and checks those protections.

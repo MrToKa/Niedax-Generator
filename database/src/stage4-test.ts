@@ -147,7 +147,7 @@ try {
   );
   assert.equal(
     migrationCount.rows[0]?.count,
-    10,
+    11,
     "all migrations must apply to the empty database"
   );
 

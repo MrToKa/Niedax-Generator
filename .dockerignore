@@ -13,3 +13,6 @@ data
 .env.*
 docs
 Codex_Prompt_Local_Docker_Modular_Initialization_EN.md
+.pnpm-store
+Template
+.artifacts

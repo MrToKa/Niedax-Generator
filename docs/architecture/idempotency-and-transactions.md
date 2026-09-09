@@ -122,7 +122,7 @@ successful staged validation, then atomically updates the pointer and writes aud
 Snapshot contents are immutable, so old calculations do not change.
 
 Export request creation verifies the immutable revision/fingerprint in a short transaction and
-stores an export job plus idempotency record. Rendering and filesystem I/O happen outside the
+stores an export job plus idempotency record. Rendering happens outside the
 transaction. Completion updates only the export artifact record; it never updates the revision or
 recomputes quantities.
 

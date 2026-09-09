@@ -42,3 +42,18 @@ manifest-list digests. To update, consult official release/compatibility notes, 
 digest with `docker buildx imagetools inspect <image:tag>`, update every Dockerfile/Compose reference,
 recreate the lockfile intentionally, and run `pnpm validate:full`. A digest update is a reviewed
 supply-chain change, not an automatic runtime check.
+
+## Stage 9 export contract extension
+
+Stage 9 retains `ExportRequestV1Schema` and `ExportArtifactV1Schema`. The strict HTTP request
+omits trusted header fields from the v1 command; unsupported formats remain rejected at the
+implemented XLSX service. `export-artifact/v2` adds explicit revision, safe filename, length,
+creation time and terminal failure metadata. `export-list-response/v2` supplies bounded
+authorized discovery and server availability. `english-export-context/v3` captures complete
+saved v2 evidence and request-time lifecycle independently of retained mapper v1/v2.
+
+Renderer identity is `stage9-exceljs-2`; the supplied template uses identity
+`change-order-clients-scope-26` and mapping `change-order-clients-scope-26-1`. The user
+explicitly replaced the requested 29-column `List1` with this 26-column `Change Order` layout.
+Changing a reviewed mapping or renderer must change its identity and cache key. The separate
+synthetic 29-column test mapping is not a published Change Order contract.

@@ -1,0 +1,40 @@
+{
+  "identity": "SYNTHETIC TEST ONLY - NOT AN APPROVED CHANGE ORDER",
+  "sheets": ["List1", "Calculation details", "Warnings"],
+  "list1Columns": 29,
+  "headerRow": 4,
+  "firstDataRow": 5,
+  "lastDataRow": 16,
+  "rows": [
+    ["NX STRAIGHT", "m", 24, 6, 30, 6, 6, 5],
+    ["NX BEND", "pcs", 1, 1, 2, 1, 1, 2],
+    ["NX CONNECTOR", "pcs", 2, 2, 4, 2, 1, 2],
+    ["NX JOINT", "pcs", 2, 2, 4, 2, 1, 2],
+    ["NX SUPPORT", "pcs", 11, 1, 13, 2, 2, 13],
+    ["NX STRUCTURE", "pcs", 4, 1, 5, 1, 1, 5],
+    ["NX ANCHOR", "pcs", 33, 10, 40, 7, 4, 4],
+    ["NX WSTB", "pcs", 22, 10, 30, 8, 3, 3],
+    ["NX END CAP", "pcs", 1, 1, 2, 1, 1, 2],
+    ["NX ACCESSORY", "pcs", 1, 1, 2, 1, 1, 2],
+    ["NX MANUAL CATALOG", "pcs", 3, 10, 10, 7, 0, 1],
+    [null, "m", 2, 3, 3, 1, 0.2, 1]
+  ],
+  "rowFields": [
+    "productCode",
+    "unit",
+    "technicalQuantity",
+    "packageIncrement",
+    "orderedQuantity",
+    "totalSpareQuantity",
+    "reserveQuantity",
+    "packageCount"
+  ],
+  "referenceFormulaColumn": "G",
+  "referenceTargetColumn": "F",
+  "blankColumns": ["P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC"],
+  "orderFilter": "A4:AC16",
+  "orderFreezeRows": 4,
+  "orderMerges": ["A1:AC1", "A2:AC2", "A3:AC3"],
+  "orderPrintArea": "'List1'!$A1:$AC16",
+  "orderRepeatRows": "'List1'!$4:$4"
+}

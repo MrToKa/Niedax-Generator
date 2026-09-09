@@ -40,6 +40,7 @@ import { workflowErrorKey } from "@/lib/workflow-error";
 
 import { CalculationResults } from "./calculation-results";
 import { ConfirmationDialog } from "./confirmation-dialog";
+import { RevisionExportPanel } from "./revision-export-panel";
 import { useSession } from "./session-provider";
 import { AuthenticationRequired, FormField, LoadingPanel, StatusNotice } from "./shared-ui";
 
@@ -566,6 +567,13 @@ export function RevisionPanel({
         ) : (
           <RetainedRevisionDetail detail={detail} language={language} />
         )
+      ) : null}
+
+      {detail ? (
+        <RevisionExportPanel
+          key={`${detail.summary.id}:${detail.summary.status}`}
+          revision={detail.summary}
+        />
       ) : null}
 
       {audit?.events.length ? (

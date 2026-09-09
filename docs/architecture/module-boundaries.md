@@ -37,3 +37,15 @@ HTTP adapters are public process boundaries. They validate and map v1 transport 
 application command. Application services call the calculation engine, catalog import, export, and
 repositories through TypeScript interfaces. Internal service calls do not bypass authorization,
 idempotency, audit, or transaction policy merely because they do not cross HTTP.
+
+## Stage 9 export implementation
+
+`packages/export` now owns immutable `english-export-context/v3`, the approved sanitized
+26-column Change Order mapping, precision/text safety and ExcelJS rendering. Its runtime
+dependencies are explicit; it receives saved evidence and performs no repository or live
+catalog lookup. The retained v1/v2 mapper contracts remain unchanged.
+
+Backend export routes/service/repository own identity, resource access, short capture
+transactions, append-only replay, PostgreSQL byte storage, leases and downloads. Frontend owns
+only saved-revision selection, request/retry/poll UI and validated binary download. No layer
+outside the calculation engine introduces product quantity formulas.

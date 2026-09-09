@@ -22,6 +22,7 @@ import { PgProjectRepository, type ProjectActor } from "../src/project-repositor
 import { ProjectApplicationService } from "../src/project-service.js";
 import { PgRevisionRepository, type RevisionActor } from "../src/revision-repository.js";
 import { RevisionApplicationService } from "../src/revision-service.js";
+import { verifyExportAcceptance } from "./export-acceptance.js";
 
 const enabled = process.env.STAGE7_ACCEPTANCE === "1";
 
@@ -1706,5 +1707,9 @@ describe.skipIf(!enabled)("Stage 7 persisted two-route application flow", () => 
       `revision.approved:${scopedRevision2Id}:${administrator.id}`,
       `revision.checked:${scopedRevision2Id}:${administrator.id}`
     ]);
+  });
+
+  it("runs Stage 9 export authorization, binary integrity, idempotency, lifecycle capture and recovery using the application database role", async () => {
+    await verifyExportAcceptance(pool, isolatedApprovalReadyDraft());
   });
 });

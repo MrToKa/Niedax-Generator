@@ -25,7 +25,8 @@ const stage8Ids = {
   saveIdempotency: "30000000-0000-4000-8000-000000000961",
   checkIdempotency: "30000000-0000-4000-8000-000000000962",
   approveIdempotency: "30000000-0000-4000-8000-000000000963",
-  calculationRun: "30000000-0000-4000-8000-000000000970"
+  calculationRun: "30000000-0000-4000-8000-000000000970",
+  exportArtifact: "30000000-0000-4000-8000-000000000980"
 } as const;
 
 const stage8CreatedAt = "2026-09-02T08:00:00.000Z";
@@ -406,6 +407,20 @@ INSERT INTO idempotency_records (
   '${stage8Ids.revision}',200,'backup-stage8-idempotency/v1',
   ${jsonSql({ ...idempotencyResponse, status: "approved" })},'${stage8ApprovedAt}'
 );
+-- Opaque synthetic storage probe; these bytes are not claimed to be an Excel workbook.
+INSERT INTO export_artifacts (id,revision_id,requested_by,correlation_id,cache_identity,context_payload)
+SELECT '${stage8Ids.exportArtifact}',id,'${stage8Ids.designer}','backup-stage9-storage',
+  'sha256:${"c".repeat(64)}',jsonb_build_object(
+    'schemaVersion','english-export-context/v3',
+    'revision',jsonb_build_object('id',id,'status',status),
+    'checksums',jsonb_build_object('revisionChecksum',revision_checksum),
+    'snapshot',jsonb_build_object('project',project_snapshot,'calculationInput',input_snapshot,
+      'calculationResult',calculation_result_snapshot))
+FROM revisions WHERE id='${stage8Ids.revision}';
+UPDATE export_artifacts SET status='ready',completed_at=now(),content_bytes=decode('504b0304','hex'),
+  content_length=4,content_hash='sha256:' || encode(sha256(decode('504b0304','hex')),'hex'),
+  media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',file_name='synthetic-storage-probe.xlsx'
+WHERE id='${stage8Ids.exportArtifact}';
 COMMIT;
 `;
 }
@@ -429,9 +444,10 @@ SELECT concat_ws('|',
   (SELECT count(*) FROM idempotency_records WHERE id IN (
     '${stage8Ids.saveIdempotency}','${stage8Ids.checkIdempotency}',
     '${stage8Ids.approveIdempotency}'
-  ))
+  )),
+  (SELECT count(*) FROM export_artifacts WHERE id='${stage8Ids.exportArtifact}')
 )`;
-const expectedStage8FixtureCounts = "3|1|1|1|1|1|1|3|1|3|3";
+const expectedStage8FixtureCounts = "3|1|1|1|1|1|1|3|1|3|3|1";
 
 const stage8FixtureSnapshotSql = `
 SELECT jsonb_build_object(
@@ -486,12 +502,38 @@ SELECT jsonb_build_object(
         '${stage8Ids.saveIdempotency}','${stage8Ids.checkIdempotency}',
         '${stage8Ids.approveIdempotency}'
       )) selected
+  ),
+  'exportArtifacts',(
+    SELECT jsonb_agg(to_jsonb(selected) ORDER BY selected.id)
+      FROM (SELECT * FROM export_artifacts WHERE id='${stage8Ids.exportArtifact}') selected
   )
 )::text`;
 
 const stage8AppendOnlyAssertionsSql = String.raw`
 DO $stage8_backup_protection$
 BEGIN
+  IF NOT EXISTS (SELECT FROM export_artifacts WHERE id='${stage8Ids.exportArtifact}'
+    AND content_bytes=decode('504b0304','hex') AND content_length=4
+    AND content_hash='sha256:' || encode(sha256(decode('504b0304','hex')),'hex')) THEN
+    RAISE EXCEPTION 'Export bytes and hash were not restored';
+  END IF;
+  IF has_table_privilege('niedax_generator_app','public.export_artifacts','UPDATE')
+    OR has_table_privilege('niedax_generator_app','public.export_artifacts','DELETE')
+    OR has_table_privilege('niedax_generator_app','public.export_artifacts','TRUNCATE')
+    OR has_column_privilege('niedax_generator_app','public.export_artifacts','context_payload','UPDATE')
+    OR NOT has_column_privilege('niedax_generator_app','public.export_artifacts','content_bytes','UPDATE') THEN
+    RAISE EXCEPTION 'Export application privileges were not reconciled';
+  END IF;
+  BEGIN
+    UPDATE export_artifacts SET content_bytes=decode('00','hex') WHERE id='${stage8Ids.exportArtifact}';
+    RAISE EXCEPTION 'Ready export mutation was accepted' USING ERRCODE='XX000';
+  EXCEPTION WHEN SQLSTATE '55000' THEN NULL;
+  END;
+  BEGIN
+    DELETE FROM export_artifacts WHERE id='${stage8Ids.exportArtifact}';
+    RAISE EXCEPTION 'Ready export deletion was accepted' USING ERRCODE='XX000';
+  EXCEPTION WHEN SQLSTATE '55000' THEN NULL;
+  END;
   BEGIN
     UPDATE revisions SET name='tampered' WHERE id='${stage8Ids.revision}';
     RAISE EXCEPTION 'revision payload mutation was accepted' USING ERRCODE='XX000';

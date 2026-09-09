@@ -1,12 +1,29 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { requestJson, requestNoContent } from "./api-client";
+import { newRequestKey, requestJson, requestNoContent } from "./api-client";
 
 const passthroughSchema = { parse: (value: unknown) => value as { readonly ok: boolean } };
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("JSON API adapter", () => {
+  it("uses native UUID generation where the browser exposes it", () => {
+    const randomUUID = vi.fn().mockReturnValue("77a5f96b-1fd7-4fd6-b8be-364a661b50f8");
+    vi.stubGlobal("crypto", { randomUUID });
+    expect(newRequestKey()).toBe("77a5f96b-1fd7-4fd6-b8be-364a661b50f8");
+    expect(randomUUID).toHaveBeenCalledOnce();
+  });
+
+  it("generates UUIDv4 keys from secure random bytes on LAN HTTP without randomUUID", () => {
+    const getRandomValues = vi.fn((bytes: Uint8Array) => {
+      bytes.fill(0xff);
+      return bytes;
+    });
+    vi.stubGlobal("crypto", { getRandomValues });
+    expect(newRequestKey()).toBe("ffffffff-ffff-4fff-bfff-ffffffffffff");
+    expect(getRandomValues).toHaveBeenCalledExactlyOnceWith(expect.any(Uint8Array));
+  });
+
   it("adds same-origin mutation safety and request identity headers", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), {

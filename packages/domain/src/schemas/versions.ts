@@ -34,3 +34,5 @@ export const PROJECT_REVISION_AUDIT_LIST_RESPONSE_V2 =
   "project-revision-audit-list-response/v2" as const;
 export const PROJECT_REVISION_SNAPSHOT_V2 = "project-revision-snapshot/v2" as const;
 export const REVISION_LIFECYCLE_EVENT_V2 = "revision-lifecycle-event/v2" as const;
+export const EXPORT_ARTIFACT_V2 = "export-artifact/v2" as const;
+export const EXPORT_LIST_RESPONSE_V2 = "export-list-response/v2" as const;

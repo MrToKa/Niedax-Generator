@@ -36,6 +36,7 @@ export class ProjectApplicationError extends AppError {
       | "UNSUPPORTED_SCHEMA_VERSION"
       | "IDEMPOTENCY_KEY_CONFLICT"
       | "CALCULATION_FAILED"
+      | "EXPORT_FAILED"
       | "INTERNAL_ERROR",
     message: string,
     public readonly details: ProjectErrorDetails = null

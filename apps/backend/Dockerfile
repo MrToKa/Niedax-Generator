@@ -26,6 +26,7 @@ COPY . .
 RUN pnpm --filter @niedax/domain build \
     && pnpm --filter @niedax/calculation-engine build \
     && pnpm --filter @niedax/catalog-import build \
+    && pnpm --filter @niedax/export build \
     && pnpm --filter @niedax/backend build
 RUN pnpm --filter @niedax/backend deploy --prod /runtime
 

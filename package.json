@@ -29,6 +29,7 @@
     "test:containers": "tsx scripts/test-containers.ts",
     "test:runtime-isolation": "tsx scripts/verify-runtime-isolation.ts",
     "test:backup-integration": "tsx scripts/test-backup-integration.ts",
+    "stage9:browser": "tsx scripts/stage9-browser-environment.ts",
     "db:migrate": "tsx scripts/database-command.ts up",
     "db:status": "tsx scripts/database-command.ts status",
     "db:seed": "tsx scripts/database-command.ts seed",

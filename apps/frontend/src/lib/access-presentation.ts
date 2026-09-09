@@ -43,6 +43,10 @@ export function capabilityTranslationKey(capability: AppCapability): Translation
       return "capabilityRevisionCheck";
     case "revision:approve":
       return "capabilityRevisionApprove";
+    case "export:create":
+      return "capabilityExportCreate";
+    case "export:read":
+      return "capabilityExportRead";
     case "users:administer":
       return "capabilityUsersAdminister";
     case "catalog:administer":

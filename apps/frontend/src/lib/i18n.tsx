@@ -375,6 +375,40 @@ const en = {
     "This retained v1 revision is immutable and readable, but Stage 8 lifecycle actions are unavailable.",
   retainedHistoryHint:
     "This retained project has no editable Stage 7 draft. Its saved revisions remain available as immutable history.",
+  exportExcel: "Export Excel",
+  capabilityExportCreate: "Create saved revision exports",
+  capabilityExportRead: "Read and download saved revision exports",
+  exportSavedRevisionHint:
+    "Export this selected immutable saved revision. Draft edits remain separate.",
+  exportEnglishHint: "The Excel workbook is in English for both interface languages.",
+  exportNotApproved: "This saved revision is not approved. Its export retains the captured status.",
+  exportNewRequest: "Request a new export",
+  exportRetryRequest: "Retry the same request",
+  exportRequesting: "Requesting export…",
+  exportPending: "Preparing the saved revision's Excel export…",
+  exportReady: "Excel export ready",
+  exportFailed: "The Excel export failed. Review availability before requesting a new export.",
+  exportRequestFailed:
+    "The export request could not be completed. Retry the same request or refresh its status.",
+  exportTemplateUnavailable:
+    "A verified Change Order template with an approved column mapping is not configured. Excel export becomes available after its layout and quantity mapping are approved.",
+  exportUnsupportedVersion:
+    "This retained revision remains readable, but does not have the saved evidence required for Excel export.",
+  exportCreateForbidden: "Your current access permits viewing existing exports only.",
+  exportNoAccess: "This export is no longer available to your current account.",
+  exportInvalidDownload: "The server did not return a verified Excel file. No file was saved.",
+  exportRefresh: "Refresh exports",
+  exportsLoading: "Loading saved revision exports…",
+  exportPollingPaused:
+    "The export is still pending. Automatic checks have paused; check status to continue.",
+  exportExisting: "Existing exports",
+  exportHistoryHint:
+    "The latest 20 exports of this revision are shown. Existing files retain the status captured when requested.",
+  exportsEmpty: "There are no saved exports for this revision.",
+  exportDownload: "Download Excel",
+  exportDownloading: "Downloading and verifying the Excel file…",
+  exportDownloaded: "The verified Excel download has started.",
+  exportCheckStatus: "Check export status",
   previous: "Previous",
   next: "Next"
 } as const;
@@ -745,6 +779,42 @@ const bg: Record<TranslationKey, string> = {
     "Тази запазена v1 ревизия е неизменяема и достъпна за преглед, но действията от Stage 8 не са налични.",
   retainedHistoryHint:
     "Този запазен стар проект няма редактируема чернова от Stage 7. Запазените му ревизии остават достъпни като неизменяема история.",
+  exportExcel: "Експорт в Excel",
+  capabilityExportCreate: "Създаване на експорти от запазени ревизии",
+  capabilityExportRead: "Преглед и изтегляне на експорти от запазени ревизии",
+  exportSavedRevisionHint:
+    "Експортирайте избраната неизменяема запазена ревизия. Промените в черновата остават отделни.",
+  exportEnglishHint: "Файлът Excel е на английски и при двата езика на интерфейса.",
+  exportNotApproved:
+    "Тази запазена ревизия не е одобрена. Експортът запазва състоянието към заявката.",
+  exportNewRequest: "Заявете нов експорт",
+  exportRetryRequest: "Повторете същата заявка",
+  exportRequesting: "Заявяване на експорт…",
+  exportPending: "Подготовка на Excel от запазената ревизия…",
+  exportReady: "Експортът в Excel е готов",
+  exportFailed:
+    "Експортът в Excel е неуспешен. Проверете наличността, преди да заявите нов експорт.",
+  exportRequestFailed:
+    "Заявката за експорт не беше завършена. Повторете същата заявка или обновете състоянието ѝ.",
+  exportTemplateUnavailable:
+    "Не е настроен проверен шаблон Change Order с одобрено съответствие на колоните. Експортът в Excel ще бъде достъпен след одобрение на структурата и съответствието на количествата.",
+  exportUnsupportedVersion:
+    "Тази стара ревизия остава достъпна за преглед, но няма запазените данни, необходими за експорт в Excel.",
+  exportCreateForbidden: "Текущите Ви права позволяват само преглед на съществуващи експорти.",
+  exportNoAccess: "Този експорт вече не е достъпен за текущия Ви профил.",
+  exportInvalidDownload: "Сървърът не върна проверен файл Excel. Не беше запазен файл.",
+  exportRefresh: "Обновете експортите",
+  exportsLoading: "Зареждане на експорти от запазената ревизия…",
+  exportPollingPaused:
+    "Експортът още се подготвя. Автоматичните проверки спряха; проверете състоянието, за да продължите.",
+  exportExisting: "Съществуващи експорти",
+  exportHistoryHint:
+    "Показват се последните 20 експорта на тази ревизия. Съществуващите файлове запазват състоянието към заявяването им.",
+  exportsEmpty: "Няма запазени експорти за тази ревизия.",
+  exportDownload: "Изтеглете Excel",
+  exportDownloading: "Изтегляне и проверка на файла Excel…",
+  exportDownloaded: "Изтеглянето на проверения файл Excel започна.",
+  exportCheckStatus: "Проверете състоянието на експорта",
   previous: "Назад",
   next: "Напред"
 };

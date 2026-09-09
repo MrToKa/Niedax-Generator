@@ -35,6 +35,8 @@ import { registerProjectRoutes } from "./project-routes.js";
 import type { ProjectOperations } from "./project-service.js";
 import { registerRevisionRoutes } from "./revision-routes.js";
 import type { RevisionOperations } from "./revision-service.js";
+import { registerExportRoutes } from "./export-routes.js";
+import type { ExportOperations } from "./export-service.js";
 
 const SESSION_COOKIE = "niedax_session";
 
@@ -46,6 +48,7 @@ interface BuildAppOptions {
   readonly catalogService?: CatalogAdminService;
   readonly projectService?: ProjectOperations;
   readonly revisionService?: RevisionOperations;
+  readonly exportService?: ExportOperations;
 }
 
 export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
@@ -564,6 +567,10 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
       service: options.revisionService,
       correlationId
     });
+  }
+
+  if (options.exportService) {
+    registerExportRoutes(app, { auth, service: options.exportService, correlationId });
   }
 
   return app;

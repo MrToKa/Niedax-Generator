@@ -15,6 +15,11 @@ The centralized backend policy grants these resource scopes:
   and the catalog lifecycle.
 - Viewer can read projects and non-sensitive revision history but cannot mutate or administer.
 
+Stage 9 adds `export:create` to Designer, Reviewer and Administrator, scoped to readable saved
+revisions (owned only for Designer). All four roles have `export:read` within their existing
+project read scope. Viewer can discover and download existing exports but cannot request new
+ones. Every request, replay, status and download rechecks the current enabled user and resource.
+
 User administration is bounded and Administrator-only. `GET /api/v1/admin/users` accepts a limit of
 1 through 100 and an optional opaque UUID cursor. Creating an account, changing a role, and changing
 enabled state use strict versioned request/response contracts. The current Administrator cannot

@@ -8,3 +8,4 @@ export * from "./schemas/v2/access-control.js";
 export * from "./schemas/v2/project-transport.js";
 export * from "./schemas/v2/revision-transport.js";
 export * from "./schemas/v3/project-list.js";
+export * from "./schemas/v2/export-transport.js";

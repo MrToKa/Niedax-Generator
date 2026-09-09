@@ -9,6 +9,8 @@ import { PgProjectRepository } from "./project-repository.js";
 import { ProjectApplicationService } from "./project-service.js";
 import { PgRevisionRepository } from "./revision-repository.js";
 import { RevisionApplicationService } from "./revision-service.js";
+import { PgExportRepository } from "./export-repository.js";
+import { ExportApplicationService } from "./export-service.js";
 
 const config = loadRuntimeConfig();
 const pool = new Pool({
@@ -22,6 +24,7 @@ const pool = new Pool({
   idleTimeoutMillis: 30_000,
   ssl: false
 });
+const exportService = new ExportApplicationService(new PgExportRepository(pool));
 const app = await buildApp({
   store: new PgUserStore(pool),
   sessionPepper: config.sessionPepper,
@@ -29,8 +32,12 @@ const app = await buildApp({
   logger: true,
   catalogService: new CatalogAdminService(new PgCatalogAdminRepository(pool)),
   projectService: new ProjectApplicationService(new PgProjectRepository(pool)),
-  revisionService: new RevisionApplicationService(new PgRevisionRepository(pool))
+  revisionService: new RevisionApplicationService(new PgRevisionRepository(pool)),
+  exportService
 });
+exportService.startWorker(() =>
+  app.log.error({ code: "EXPORT_WORKER_UNAVAILABLE" }, "Export recovery will retry")
+);
 
 let stopping = false;
 async function shutdown(signal: string): Promise<void> {
@@ -38,6 +45,7 @@ async function shutdown(signal: string): Promise<void> {
   stopping = true;
   app.log.info({ signal }, "graceful shutdown started");
   await app.close();
+  await exportService.stopWorker();
   await pool.end();
 }
 
@@ -48,6 +56,7 @@ try {
   await app.listen({ host: config.host, port: config.port });
 } catch (error) {
   app.log.error({ err: error }, "backend startup failed");
+  await exportService.stopWorker();
   await pool.end();
   process.exitCode = 1;
 }

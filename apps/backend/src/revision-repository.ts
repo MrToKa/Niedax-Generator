@@ -572,7 +572,7 @@ async function loadLifecycleEvents(
   );
 }
 
-async function loadStoredDetail(
+export async function loadStoredDetail(
   client: PoolClient,
   revisionId: string
 ): Promise<StoredRevisionV2Detail> {

@@ -11,6 +11,10 @@ catalog-validation-*.csv
 
 # Dependencies and build output
 node_modules/
+.pnpm-store/
+.artifacts/
+# Supplied business template stays local; tests use sanitized synthetic workbooks.
+/Template/*.xlsx
 dist/
 .next/
 coverage/

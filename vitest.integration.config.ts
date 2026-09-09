@@ -5,6 +5,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@niedax/export": fileURLToPath(new URL("./packages/export/src/index.ts", import.meta.url)),
       "@niedax/calculation-engine": fileURLToPath(
         new URL("./packages/calculation-engine/src/index.ts", import.meta.url)
       ),
