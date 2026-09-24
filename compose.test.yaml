@@ -1,0 +1,64 @@
+# Always used with compose.yaml by scripts/test-environment.ts. Never run alone.
+name: niedax-test
+
+services:
+  postgres:
+    container_name: niedax-test-postgres
+    volumes:
+      - type: bind
+        source: ./data/test/postgres
+        target: /var/lib/postgresql/18/docker
+  migrations:
+    container_name: niedax-test-migrations
+    image: niedax-test/migrations:${NIEDAX_TEST_BUILD:-local}
+  backend:
+    container_name: niedax-test-backend
+    image: niedax-test/backend:${NIEDAX_TEST_BUILD:-local}
+    build:
+      args:
+        NIEDAX_GIT_COMMIT: ${NIEDAX_GIT_COMMIT:-}
+        NIEDAX_BUILD_TIMESTAMP: ${NIEDAX_BUILD_TIMESTAMP:-}
+    environment:
+      NIEDAX_ENV: test
+      NIEDAX_TEST_PROJECT: niedax-test
+      NIEDAX_FEATURE_FLAGS: ${NIEDAX_FEATURE_FLAGS:-{}}
+  frontend:
+    container_name: niedax-test-frontend
+    image: niedax-test/frontend:${NIEDAX_TEST_BUILD:-local}
+    environment:
+      NIEDAX_ENV: test
+  gateway:
+    container_name: niedax-test-gateway
+    image: niedax-test/gateway:${NIEDAX_TEST_BUILD:-local}
+    ports: !override
+      - target: 8080
+        published: "${NIEDAX_TEST_PORT:-8080}"
+        host_ip: ${NIEDAX_TEST_BIND:-0.0.0.0}
+        protocol: tcp
+  backup:
+    container_name: niedax-test-backup
+    image: niedax-test/backup:${NIEDAX_TEST_BUILD:-local}
+    volumes:
+      - type: bind
+        source: ./data/test/backups
+        target: /backups
+
+networks:
+  ingress:
+    name: niedax-test-ingress
+  edge:
+    name: niedax-test-edge
+  backend:
+    name: niedax-test-backend
+
+secrets:
+  postgres_admin_password:
+    file: ./data/test/secrets/postgres_admin_password
+  postgres_app_password:
+    file: ./data/test/secrets/postgres_app_password
+  postgres_migrator_password:
+    file: ./data/test/secrets/postgres_migrator_password
+  postgres_backup_password:
+    file: ./data/test/secrets/postgres_backup_password
+  session_pepper:
+    file: ./data/test/secrets/session_pepper

@@ -1,0 +1,425 @@
+{
+  "name": "niedax-test",
+  "networks": {
+    "backend": {
+      "name": "niedax-test-backend",
+      "ipam": {},
+      "internal": true
+    },
+    "edge": {
+      "name": "niedax-test-edge",
+      "ipam": {},
+      "internal": true
+    },
+    "ingress": {
+      "name": "niedax-test-ingress",
+      "ipam": {}
+    }
+  },
+  "secrets": {
+    "postgres_admin_password": {
+      "name": "niedax-test_postgres_admin_password",
+      "file": "<workspace>/data/test/secrets/postgres_admin_password"
+    },
+    "postgres_app_password": {
+      "name": "niedax-test_postgres_app_password",
+      "file": "<workspace>/data/test/secrets/postgres_app_password"
+    },
+    "postgres_backup_password": {
+      "name": "niedax-test_postgres_backup_password",
+      "file": "<workspace>/data/test/secrets/postgres_backup_password"
+    },
+    "postgres_migrator_password": {
+      "name": "niedax-test_postgres_migrator_password",
+      "file": "<workspace>/data/test/secrets/postgres_migrator_password"
+    },
+    "session_pepper": {
+      "name": "niedax-test_session_pepper",
+      "file": "<workspace>/data/test/secrets/session_pepper"
+    }
+  },
+  "services": {
+    "backend": {
+      "build": {
+        "context": "<workspace>",
+        "dockerfile": "apps/backend/Dockerfile",
+        "args": {
+          "NIEDAX_BUILD_TIMESTAMP": "2026-09-24T12:00:00.000Z",
+          "NIEDAX_GIT_COMMIT": "1111111111111111111111111111111111111111"
+        },
+        "target": "runtime"
+      },
+      "cap_drop": ["ALL"],
+      "command": null,
+      "container_name": "niedax-test-backend",
+      "depends_on": {
+        "migrations": {
+          "condition": "service_completed_successfully",
+          "required": true
+        },
+        "postgres": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "COOKIE_SECURE": "false",
+        "HOST": "0.0.0.0",
+        "NIEDAX_ENV": "test",
+        "NIEDAX_FEATURE_FLAGS": "{}",
+        "NIEDAX_TEST_PROJECT": "niedax-test",
+        "NODE_ENV": "production",
+        "PGDATABASE": "niedax_generator",
+        "PGHOST": "postgres",
+        "PGPASSWORD_FILE": "/run/secrets/postgres_app_password",
+        "PGPOOL_MAX": "10",
+        "PGPORT": "5432",
+        "PGSSLMODE": "disable",
+        "PGUSER": "niedax_generator_app",
+        "PORT": "3001",
+        "SESSION_PEPPER_FILE": "/run/secrets/session_pepper",
+        "TZ": "Europe/Sofia"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/api/v1/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+        ],
+        "timeout": "3s",
+        "interval": "5s",
+        "retries": 20,
+        "start_period": "10s"
+      },
+      "image": "niedax-test/backend:1111111111111111111111111111111111111111",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-file": "5",
+          "max-size": "10m"
+        }
+      },
+      "networks": {
+        "backend": null
+      },
+      "read_only": true,
+      "restart": "unless-stopped",
+      "secrets": [
+        {
+          "source": "postgres_app_password",
+          "target": "/run/secrets/postgres_app_password"
+        },
+        {
+          "source": "session_pepper",
+          "target": "/run/secrets/session_pepper"
+        }
+      ],
+      "security_opt": ["no-new-privileges:true"],
+      "tmpfs": ["/tmp:rw,noexec,nosuid,size=64m"]
+    },
+    "backup": {
+      "profiles": ["tools"],
+      "build": {
+        "context": "<workspace>",
+        "dockerfile": "database/Dockerfile.backup"
+      },
+      "cap_drop": ["ALL"],
+      "command": null,
+      "container_name": "niedax-test-backup",
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "PGDATABASE": "niedax_generator",
+        "PGHOST": "postgres",
+        "PGPORT": "5432",
+        "PGSSLMODE": "disable",
+        "TZ": "Europe/Sofia"
+      },
+      "image": "niedax-test/backup:1111111111111111111111111111111111111111",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-file": "5",
+          "max-size": "10m"
+        }
+      },
+      "networks": {
+        "backend": null
+      },
+      "read_only": true,
+      "restart": "no",
+      "secrets": [
+        {
+          "source": "postgres_backup_password",
+          "target": "/run/secrets/postgres_backup_password"
+        },
+        {
+          "source": "postgres_migrator_password",
+          "target": "/run/secrets/postgres_migrator_password"
+        }
+      ],
+      "security_opt": ["no-new-privileges:true"],
+      "tmpfs": ["/tmp:rw,noexec,nosuid,size=64m"],
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "<workspace>/data/test/backups",
+          "target": "/backups"
+        }
+      ]
+    },
+    "frontend": {
+      "build": {
+        "context": "<workspace>",
+        "dockerfile": "apps/frontend/Dockerfile",
+        "target": "runtime"
+      },
+      "cap_drop": ["ALL"],
+      "command": null,
+      "container_name": "niedax-test-frontend",
+      "entrypoint": null,
+      "environment": {
+        "HOSTNAME": "0.0.0.0",
+        "NEXT_TELEMETRY_DISABLED": "1",
+        "NIEDAX_ENV": "test",
+        "NODE_ENV": "production",
+        "PORT": "3000",
+        "TZ": "Europe/Sofia"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+        ],
+        "timeout": "3s",
+        "interval": "5s",
+        "retries": 20,
+        "start_period": "15s"
+      },
+      "image": "niedax-test/frontend:1111111111111111111111111111111111111111",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-file": "5",
+          "max-size": "10m"
+        }
+      },
+      "networks": {
+        "edge": null
+      },
+      "read_only": true,
+      "restart": "unless-stopped",
+      "security_opt": ["no-new-privileges:true"],
+      "tmpfs": ["/tmp:rw,noexec,nosuid,size=64m"]
+    },
+    "gateway": {
+      "build": {
+        "context": "<workspace>",
+        "dockerfile": "gateway/Dockerfile"
+      },
+      "cap_drop": ["ALL"],
+      "command": null,
+      "container_name": "niedax-test-gateway",
+      "depends_on": {
+        "backend": {
+          "condition": "service_healthy",
+          "required": true
+        },
+        "frontend": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:8080/api/v1/health/live"
+        ],
+        "timeout": "3s",
+        "interval": "5s",
+        "retries": 20,
+        "start_period": "10s"
+      },
+      "image": "niedax-test/gateway:1111111111111111111111111111111111111111",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-file": "5",
+          "max-size": "10m"
+        }
+      },
+      "networks": {
+        "backend": null,
+        "edge": null,
+        "ingress": null
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "host_ip": "0.0.0.0",
+          "target": 8080,
+          "published": "8080",
+          "protocol": "tcp"
+        }
+      ],
+      "read_only": true,
+      "restart": "unless-stopped",
+      "security_opt": ["no-new-privileges:true"],
+      "tmpfs": [
+        "/config:rw,noexec,nosuid,size=16m",
+        "/data:rw,noexec,nosuid,size=16m",
+        "/tmp:rw,noexec,nosuid,size=16m"
+      ],
+      "user": "1000:1000",
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "<workspace>/gateway/Caddyfile",
+          "target": "/etc/caddy/Caddyfile",
+          "read_only": true
+        }
+      ]
+    },
+    "migrations": {
+      "build": {
+        "context": "<workspace>",
+        "dockerfile": "database/Dockerfile.migrations"
+      },
+      "cap_drop": ["ALL"],
+      "command": null,
+      "container_name": "niedax-test-migrations",
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy",
+          "required": true
+        }
+      },
+      "entrypoint": null,
+      "environment": {
+        "PGDATABASE": "niedax_generator",
+        "PGHOST": "postgres",
+        "PGPASSWORD_FILE": "/run/secrets/postgres_migrator_password",
+        "PGPORT": "5432",
+        "PGSSLMODE": "disable",
+        "PGUSER": "niedax_generator_migrator",
+        "TZ": "Europe/Sofia"
+      },
+      "image": "niedax-test/migrations:1111111111111111111111111111111111111111",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-file": "5",
+          "max-size": "10m"
+        }
+      },
+      "networks": {
+        "backend": null
+      },
+      "read_only": true,
+      "restart": "no",
+      "secrets": [
+        {
+          "source": "postgres_migrator_password",
+          "target": "/run/secrets/postgres_migrator_password"
+        }
+      ],
+      "security_opt": ["no-new-privileges:true"],
+      "tmpfs": ["/tmp:rw,noexec,nosuid,size=32m"]
+    },
+    "postgres": {
+      "cap_add": ["CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID"],
+      "cap_drop": ["ALL"],
+      "command": null,
+      "container_name": "niedax-test-postgres",
+      "entrypoint": null,
+      "environment": {
+        "PGDATA": "/var/lib/postgresql/18/docker",
+        "PGTZ": "Europe/Sofia",
+        "POSTGRES_DB": "niedax_generator",
+        "POSTGRES_INITDB_ARGS": "--encoding=UTF8",
+        "POSTGRES_PASSWORD_FILE": "/run/secrets/postgres_admin_password",
+        "POSTGRES_USER": "postgres",
+        "TZ": "Europe/Sofia"
+      },
+      "healthcheck": {
+        "test": ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d niedax_generator"],
+        "timeout": "3s",
+        "interval": "5s",
+        "retries": 20,
+        "start_period": "15s"
+      },
+      "image": "postgres:18.4-alpine3.23@sha256:996d0920e4ff9df1fc19dacb904492f3c1ec0ec1cc338f0ad7123be7731c5f5e",
+      "logging": {
+        "driver": "json-file",
+        "options": {
+          "max-file": "5",
+          "max-size": "10m"
+        }
+      },
+      "networks": {
+        "backend": null
+      },
+      "read_only": true,
+      "restart": "unless-stopped",
+      "secrets": [
+        {
+          "source": "postgres_admin_password",
+          "target": "/run/secrets/postgres_admin_password"
+        },
+        {
+          "source": "postgres_app_password",
+          "target": "/run/secrets/postgres_app_password"
+        },
+        {
+          "source": "postgres_migrator_password",
+          "target": "/run/secrets/postgres_migrator_password"
+        },
+        {
+          "source": "postgres_backup_password",
+          "target": "/run/secrets/postgres_backup_password"
+        }
+      ],
+      "security_opt": ["no-new-privileges:true"],
+      "tmpfs": ["/tmp:rw,noexec,nosuid,size=64m", "/run/postgresql:rw,nosuid,size=16m"],
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "<workspace>/data/test/postgres",
+          "target": "/var/lib/postgresql/18/docker"
+        },
+        {
+          "type": "bind",
+          "source": "<workspace>/database/scripts/initialize.sh",
+          "target": "/docker-entrypoint-initdb.d/010-niedax-roles.sh",
+          "read_only": true
+        }
+      ]
+    }
+  },
+  "x-hardened": {
+    "cap_drop": ["ALL"],
+    "read_only": true,
+    "security_opt": ["no-new-privileges:true"]
+  },
+  "x-logging": {
+    "driver": "json-file",
+    "options": {
+      "max-file": "5",
+      "max-size": "10m"
+    }
+  }
+}

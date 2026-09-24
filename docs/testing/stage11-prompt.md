@@ -30,11 +30,11 @@ Implement **Stage 11 — Test Environment and Operational Readiness**.
 
 The goal is a:
 
-* reproducible;
-* isolated;
-* observable;
-* versioned;
-* internally deployable
+- reproducible;
+- isolated;
+- observable;
+- versioned;
+- internally deployable
 
 TEST environment for the Niedax Generator.
 
@@ -42,10 +42,10 @@ It must build on the infrastructure already implemented in Stages 1–10 instead
 
 The final TEST environment must support internal testing by:
 
-* Designer;
-* Reviewer;
-* Administrator;
-* Viewer.
+- Designer;
+- Reviewer;
+- Administrator;
+- Viewer.
 
 It must remain consistent with the project's local-first, Docker-based, PostgreSQL-backed and LAN-accessible architecture.
 
@@ -116,23 +116,23 @@ Do not recreate these mechanisms from scratch.
 
 `compose.yaml` already contains:
 
-* PostgreSQL;
-* migrations service;
-* backend;
-* frontend;
-* Caddy gateway;
-* backup tools service.
+- PostgreSQL;
+- migrations service;
+- backend;
+- frontend;
+- Caddy gateway;
+- backup tools service.
 
 It already includes:
 
-* health checks;
-* internal Docker networks;
-* hardened containers;
-* bounded Docker JSON logging;
-* PostgreSQL secrets;
-* migration dependency ordering;
-* port 8080 gateway exposure;
-* runtime telemetry disabled where applicable.
+- health checks;
+- internal Docker networks;
+- hardened containers;
+- bounded Docker JSON logging;
+- PostgreSQL secrets;
+- migration dependency ordering;
+- port 8080 gateway exposure;
+- runtime telemetry disabled where applicable.
 
 Preserve this architecture.
 
@@ -169,9 +169,9 @@ GET /api/v1/version
 
 and currently reports:
 
-* application version;
-* catalogue manifest version;
-* rules manifest version.
+- application version;
+- catalogue manifest version;
+- rules manifest version.
 
 Frontend version sources already exist as well.
 
@@ -242,15 +242,15 @@ pnpm test:backup-integration
 
 Current implementation already provides:
 
-* PostgreSQL custom-format backups;
-* SHA-256 sidecars;
-* archive validation;
-* 28-day retention;
-* manual destructive restore confirmation;
-* safety backup before restore;
-* migration verification after restore;
-* privilege reconciliation;
-* integration testing.
+- PostgreSQL custom-format backups;
+- SHA-256 sidecars;
+- archive validation;
+- 28-day retention;
+- manual destructive restore confirmation;
+- safety backup before restore;
+- migration verification after restore;
+- privilege reconciliation;
+- integration testing.
 
 Do not replace this system.
 
@@ -279,17 +279,17 @@ Do not create a new role model.
 
 Stage 10 already implements a disposable production-topology browser environment with:
 
-* isolated PostgreSQL;
-* generated credentials;
-* production frontend/backend topology;
-* synthetic catalog/rules;
-* Designer;
-* Reviewer;
-* Administrator;
-* Viewer;
-* additional Designer account;
-* Playwright workflows;
-* deterministic cleanup.
+- isolated PostgreSQL;
+- generated credentials;
+- production frontend/backend topology;
+- synthetic catalog/rules;
+- Designer;
+- Reviewer;
+- Administrator;
+- Viewer;
+- additional Designer account;
+- Playwright workflows;
+- deterministic cleanup.
 
 Important:
 
@@ -297,13 +297,13 @@ This is **not** the persistent Stage 11 internal TEST environment.
 
 Reuse its:
 
-* topology validation;
-* secret handling;
-* generated-account patterns;
-* synthetic-data safety rules;
-* environment guards;
-* cleanup safety;
-* Playwright fixtures
+- topology validation;
+- secret handling;
+- generated-account patterns;
+- synthetic-data safety rules;
+- environment guards;
+- cleanup safety;
+- Playwright fixtures
 
 where appropriate.
 
@@ -430,15 +430,15 @@ Before starting TEST, validate the fully resolved Compose configuration.
 
 At minimum verify:
 
-* environment is TEST;
-* PostgreSQL storage points only to TEST-owned paths/volumes;
-* TEST secrets are used;
-* TEST backup directory is used;
-* no production/normal data directory is mounted;
-* no unexpected externally published PostgreSQL port exists;
-* only the intended gateway port is published;
-* database networking remains internal;
-* expected image/build definitions are being used.
+- environment is TEST;
+- PostgreSQL storage points only to TEST-owned paths/volumes;
+- TEST secrets are used;
+- TEST backup directory is used;
+- no production/normal data directory is mounted;
+- no unexpected externally published PostgreSQL port exists;
+- only the intended gateway port is published;
+- database networking remains internal;
+- expected image/build definitions are being used.
 
 Fail closed.
 
@@ -477,10 +477,10 @@ Names may differ if repository conventions strongly suggest another naming schem
 
 It must:
 
-* operate only on an explicitly recognized TEST environment;
-* never target the normal persistent database;
-* never target a Stage 10 disposable project accidentally;
-* require appropriate validation before removing TEST data.
+- operate only on an explicitly recognized TEST environment;
+- never target the normal persistent database;
+- never target a Stage 10 disposable project accidentally;
+- require appropriate validation before removing TEST data.
 
 Do not implement a generic unsafe `docker compose down -v`.
 
@@ -508,9 +508,9 @@ Do not hide migration errors.
 
 Record enough deployment information to identify:
 
-* migration success/failure;
-* database schema/migration state;
-* build identity.
+- migration success/failure;
+- database schema/migration state;
+- build identity.
 
 Where practical include the migration state in the TEST system-information view.
 
@@ -535,9 +535,9 @@ For the TEST environment:
 
 If the repository does not yet contain sufficient authoritative active catalog data for a realistic TEST seed:
 
-* do not invent Niedax product facts;
-* keep clearly marked synthetic fixtures;
-* report the limitation.
+- do not invent Niedax product facts;
+- keep clearly marked synthetic fixtures;
+- report the limitation.
 
 Never present synthetic fixture data as catalog-confirmed Niedax engineering data.
 
@@ -553,20 +553,20 @@ Prefer using the actual project application/repository APIs and domain contracts
 
 At minimum cover representative workflows corresponding to the existing accepted Stage 10 scenario model:
 
-* simple KL route;
-* simple WSL route;
-* logical continuation;
-* physical joint;
-* bend;
-* T connection;
-* route end/cap/equipment case;
-* support configuration;
-* anchor scenario;
-* reserve and package rounding;
-* manual catalog item;
-* free-text manual item;
-* saved revision;
-* reviewable/approved revision where valid.
+- simple KL route;
+- simple WSL route;
+- logical continuation;
+- physical joint;
+- bend;
+- T connection;
+- route end/cap/equipment case;
+- support configuration;
+- anchor scenario;
+- reserve and package rounding;
+- manual catalog item;
+- free-text manual item;
+- saved revision;
+- reviewable/approved revision where valid.
 
 Do not duplicate formulas inside the seed code.
 
@@ -610,12 +610,12 @@ Generate or provision credentials through TEST-only secret/config storage.
 
 Do not include passwords in:
 
-* Git;
-* Docker image layers;
-* `.env.example`;
-* documentation;
-* CI artifacts;
-* logs.
+- Git;
+- Docker image layers;
+- `.env.example`;
+- documentation;
+- CI artifacts;
+- logs.
 
 Provisioning must be idempotent.
 
@@ -764,11 +764,11 @@ If additional Stage 11 status is required, expose it separately rather than bloa
 
 Never expose:
 
-* passwords;
-* secret paths with sensitive values;
-* tokens;
-* cookies;
-* connection-string credentials.
+- passwords;
+- secret paths with sensitive values;
+- tokens;
+- cookies;
+- connection-string credentials.
 
 ---
 
@@ -886,10 +886,10 @@ Create a typed feature registry.
 
 Feature flags are:
 
-* environment configuration;
-* not permissions;
-* not authorization;
-* not calculation rules.
+- environment configuration;
+- not permissions;
+- not authorization;
+- not calculation rules.
 
 Server-side functionality must enforce a disabled flag even if an HTTP request bypasses the UI.
 
@@ -915,11 +915,11 @@ Do not create a second dump format.
 
 A TEST backup must:
 
-* use the TEST database;
-* write only to TEST backup storage;
-* retain checksum validation;
-* retain PostgreSQL custom format;
-* remain clearly distinguishable from normal persistent backups.
+- use the TEST database;
+- write only to TEST backup storage;
+- retain checksum validation;
+- retain PostgreSQL custom format;
+- remain clearly distinguishable from normal persistent backups.
 
 Do not let `test-env:backup` operate on the normal persistent database.
 
@@ -1070,9 +1070,9 @@ Do not hardcode those requirements as `true`.
 
 If there is no existing machine-readable sign-off mechanism:
 
-* document the human acceptance precondition;
-* add a safe preflight/reporting mechanism if useful;
-* do not manufacture approval data.
+- document the human acceptance precondition;
+- add a safe preflight/reporting mechanism if useful;
+- do not manufacture approval data.
 
 The final Stage 11 report must state any remaining external activation blockers.
 
@@ -1125,9 +1125,9 @@ Use TEST secrets or generated credential files excluded from Git.
 
 Smoke tests may receive credentials through:
 
-* generated secret files;
-* runner secrets;
-* tightly scoped environment injection.
+- generated secret files;
+- runner secrets;
+- tightly scoped environment injection.
 
 Sanitize CI logs.
 
@@ -1240,26 +1240,26 @@ Use:
 
 Examples:
 
-* data corruption/loss;
-* unauthorized access;
-* unusable critical workflow.
+- data corruption/loss;
+- unauthorized access;
+- unusable critical workflow.
 
 ### Severity 2
 
 Examples:
 
-* incorrect material/order quantities;
-* broken immutability;
-* broken approval;
-* critical workflow failure without safe workaround.
+- incorrect material/order quantities;
+- broken immutability;
+- broken approval;
+- critical workflow failure without safe workaround.
 
 ### Severity 3
 
 Examples:
 
-* limited functional defect;
-* bounded workaround;
-* incorrect non-critical warning/validation.
+- limited functional defect;
+- bounded workaround;
+- incorrect non-critical warning/validation.
 
 ### Severity 4
 
@@ -1376,14 +1376,14 @@ Do not invalidate Docker cache unnecessarily through unrelated dynamic values in
 
 Add automated tests for:
 
-* health liveness;
-* health readiness;
-* system/build information;
-* TEST environment indicator;
-* active catalog/rule version resolution;
-* metrics endpoint authorization/safety;
-* error correlation ID;
-* log redaction where testable.
+- health liveness;
+- health readiness;
+- system/build information;
+- TEST environment indicator;
+- active catalog/rule version resolution;
+- metrics endpoint authorization/safety;
+- error correlation ID;
+- log redaction where testable.
 
 Existing health/version tests must continue to pass.
 
@@ -1393,11 +1393,11 @@ Existing health/version tests must continue to pass.
 
 Test:
 
-* defined flags have typed/default values;
-* unknown flags fail safely;
-* disabled UI functionality is hidden/disabled;
-* corresponding backend functionality is also unavailable when disabled;
-* feature flags cannot override authorization.
+- defined flags have typed/default values;
+- unknown flags fail safely;
+- disabled UI functionality is hidden/disabled;
+- corresponding backend functionality is also unavailable when disabled;
+- feature flags cannot override authorization.
 
 Do not change the role matrix.
 
@@ -1518,12 +1518,12 @@ GitHub Actions may orchestrate CI/deployment, but the running Niedax application
 
 Do not create a second:
 
-* Playwright framework;
-* regression suite;
-* database-check framework;
-* security scanner wrapper;
-* performance framework;
-* backup integration harness.
+- Playwright framework;
+- regression suite;
+- database-check framework;
+- security scanner wrapper;
+- performance framework;
+- backup integration harness.
 
 Stage 11 may call these existing tools when appropriate.
 
@@ -1647,23 +1647,23 @@ Existing forward-only migrations execute successfully during deployment.
 
 The TEST environment has:
 
-* active catalog/rules appropriate for testing;
-* deterministic demo projects;
-* Designer;
-* Reviewer;
-* Administrator;
-* Viewer.
+- active catalog/rules appropriate for testing;
+- deterministic demo projects;
+- Designer;
+- Reviewer;
+- Administrator;
+- Viewer.
 
 ## Build identity
 
 The application exposes:
 
-* application version;
-* Git commit;
-* build timestamp;
-* TEST environment;
-* active catalog version;
-* active calculation-rule version.
+- application version;
+- Git commit;
+- build timestamp;
+- TEST environment;
+- active catalog version;
+- active calculation-rule version.
 
 ## Observability
 
@@ -1697,11 +1697,11 @@ Post-deployment smoke testing passes.
 
 A tester can independently:
 
-* access the environment;
-* log in;
-* identify versions;
-* execute the basic workflow;
-* report a defect with useful diagnostic information.
+- access the environment;
+- log in;
+- identify versions;
+- execute the basic workflow;
+- report a defect with useful diagnostic information.
 
 ---
 

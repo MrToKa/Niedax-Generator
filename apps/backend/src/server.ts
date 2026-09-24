@@ -11,6 +11,8 @@ import { PgRevisionRepository } from "./revision-repository.js";
 import { RevisionApplicationService } from "./revision-service.js";
 import { PgExportRepository } from "./export-repository.js";
 import { ExportApplicationService } from "./export-service.js";
+import { OperationalMetrics, PgSystemDiagnosticsStore } from "./system-diagnostics.js";
+import { safeErrorDetails } from "./safe-logging.js";
 
 const config = loadRuntimeConfig();
 const pool = new Pool({
@@ -25,7 +27,11 @@ const pool = new Pool({
   ssl: false
 });
 const exportService = new ExportApplicationService(new PgExportRepository(pool));
+const metrics = new OperationalMetrics();
 const app = await buildApp({
+  identity: config.identity,
+  diagnosticsStore: new PgSystemDiagnosticsStore(pool),
+  metrics,
   store: new PgUserStore(pool),
   sessionPepper: config.sessionPepper,
   cookieSecure: config.cookieSecure,
@@ -35,9 +41,10 @@ const app = await buildApp({
   revisionService: new RevisionApplicationService(new PgRevisionRepository(pool)),
   exportService
 });
-exportService.startWorker(() =>
-  app.log.error({ code: "EXPORT_WORKER_UNAVAILABLE" }, "Export recovery will retry")
-);
+exportService.startWorker(() => {
+  metrics.exportWorkerFailure();
+  app.log.error({ errorCode: "EXPORT_WORKER_UNAVAILABLE" }, "Export recovery will retry");
+});
 
 let stopping = false;
 async function shutdown(signal: string): Promise<void> {
@@ -55,7 +62,10 @@ process.once("SIGINT", () => void shutdown("SIGINT"));
 try {
   await app.listen({ host: config.host, port: config.port });
 } catch (error) {
-  app.log.error({ err: error }, "backend startup failed");
+  app.log.error(
+    { error: safeErrorDetails(error), errorCode: "BACKEND_STARTUP_FAILED" },
+    "backend startup failed"
+  );
   await exportService.stopWorker();
   await pool.end();
   process.exitCode = 1;

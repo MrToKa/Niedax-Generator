@@ -11,6 +11,7 @@ import type { ExportOperations } from "./export-service.js";
 import { XLSX_MEDIA_TYPE } from "./export-service.js";
 import { ProjectApplicationError } from "./project-errors.js";
 import type { RevisionActor } from "./revision-repository.js";
+import { recordRequestIdentity } from "./safe-logging.js";
 
 export function registerExportRoutes(
   app: FastifyInstance,
@@ -25,6 +26,7 @@ export function registerExportRoutes(
     if (!identity)
       throw new ProjectApplicationError(401, "AUTHENTICATION_REQUIRED", "Authentication required");
     const { id, role, username, displayName } = identity.user;
+    recordRequestIdentity(request, identity);
     return { id, role, username, displayName };
   }
   function resourceId(value: string): string {

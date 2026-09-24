@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import cookie from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
-import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
+import Fastify, { LogController, type FastifyInstance, type FastifyRequest } from "fastify";
 
 import { getCalculationEngineReadiness } from "@niedax/calculation-engine";
 import {
@@ -17,6 +17,7 @@ import {
   UpdateAdminUserRoleRequestV2Schema,
   UpdateAdminUserStatusRequestV2Schema
 } from "@niedax/domain";
+import { featureEnabled, SystemInfoSchema, type RuntimeIdentity } from "@niedax/domain";
 import {
   CatalogImportError,
   createXlsxTemplate,
@@ -37,6 +38,17 @@ import { registerRevisionRoutes } from "./revision-routes.js";
 import type { RevisionOperations } from "./revision-service.js";
 import { registerExportRoutes } from "./export-routes.js";
 import type { ExportOperations } from "./export-service.js";
+import {
+  loadRuntimeIdentity,
+  OperationalMetrics,
+  type SystemDiagnosticsStore
+} from "./system-diagnostics.js";
+import {
+  recordRequestIdentity,
+  safeErrorDetails,
+  safeRequestContext,
+  SAFE_LOG_REDACTION
+} from "./safe-logging.js";
 
 const SESSION_COOKIE = "niedax_session";
 
@@ -45,6 +57,10 @@ interface BuildAppOptions {
   readonly sessionPepper: string;
   readonly cookieSecure?: boolean;
   readonly logger?: boolean;
+  readonly loggerStream?: { write(message: string): void };
+  readonly identity?: RuntimeIdentity;
+  readonly diagnosticsStore?: SystemDiagnosticsStore;
+  readonly metrics?: OperationalMetrics;
   readonly catalogService?: CatalogAdminService;
   readonly projectService?: ProjectOperations;
   readonly revisionService?: RevisionOperations;
@@ -52,8 +68,28 @@ interface BuildAppOptions {
 }
 
 export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
+  const identity = options.identity ?? loadRuntimeIdentity({});
+  const metrics = options.metrics ?? new OperationalMetrics();
   const app = Fastify({
-    logger: options.logger ?? false,
+    // Our completion hook uses route templates and correlation IDs. Default 404
+    // request logging includes raw URLs, which can contain sensitive query data.
+    logController: new LogController({ disableRequestLogging: true }),
+    logger: options.logger
+      ? {
+          base: {
+            NIEDAX_ENV: identity.build.environment,
+            buildVersion: identity.build.application,
+            gitCommit: identity.build.gitCommit
+          },
+          redact: SAFE_LOG_REDACTION,
+          serializers: {
+            req: (request) => ({ method: request.method }),
+            res: (reply) => ({ statusCode: reply.statusCode }),
+            err: safeErrorDetails
+          },
+          ...(options.loggerStream ? { stream: options.loggerStream } : {})
+        }
+      : false,
     trustProxy: true,
     bodyLimit: 35 * 1024 * 1024
   });
@@ -61,6 +97,18 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
 
   await app.register(cookie);
   await app.register(rateLimit, { global: false });
+
+  app.addHook("onResponse", async (request, reply) => {
+    metrics.requestFinished(reply.statusCode);
+    request.log.info(
+      {
+        ...safeRequestContext(request),
+        correlationId: correlationId(request),
+        statusCode: reply.statusCode
+      },
+      "request completed"
+    );
+  });
 
   app.addHook("onSend", async (request, reply) => {
     reply.header("x-correlation-id", correlationId(request));
@@ -83,6 +131,26 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   });
 
   app.setErrorHandler((error, request, reply) => {
+    if (
+      !(error instanceof CatalogImportError) &&
+      !publicClientError(error) &&
+      (!(error instanceof AppError || error instanceof ProjectApplicationError) ||
+        error.statusCode >= 500)
+    ) {
+      metrics.criticalError();
+      request.log.error(
+        {
+          ...safeRequestContext(request),
+          correlationId: correlationId(request),
+          errorCode:
+            error instanceof AppError || error instanceof ProjectApplicationError
+              ? normalizedErrorCode(error.statusCode, error.code)
+              : "INTERNAL_ERROR",
+          error: safeErrorDetails(error)
+        },
+        "request failed"
+      );
+    }
     if (error instanceof ProjectApplicationError) {
       return reply
         .status(error.statusCode)
@@ -119,7 +187,6 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
         )
       );
     }
-    request.log.error({ err: error }, "request failed");
     return reply
       .status(500)
       .send(errorEnvelope(request, "INTERNAL_ERROR", "The request could not be completed"));
@@ -140,8 +207,10 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   app.get("/api/v1/health/ready", async (_request, reply) => {
     try {
       await options.store.ping();
+      metrics.databaseReady(true);
       return { status: "ready" as const, database: "connected" as const };
     } catch {
+      metrics.databaseReady(false);
       return reply.status(503).send({ status: "not-ready", database: "unavailable" });
     }
   });
@@ -150,8 +219,38 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     application: applicationPackage.version,
     catalogue: catalogueManifest.version,
     rules: rulesManifest.version,
-    calculationEngine: getCalculationEngineReadiness()
+    calculationEngine: getCalculationEngineReadiness(),
+    ...identity
   }));
+
+  app.get("/api/v1/system/info", async (request, reply) => {
+    await requireIdentity(request, auth);
+    reply.header("cache-control", "no-store");
+    if (!options.diagnosticsStore)
+      throw new AppError(503, "INTERNAL_ERROR", "System information is unavailable");
+    return SystemInfoSchema.parse({
+      schemaVersion: "system-info/v1",
+      ...identity,
+      repository: { catalogue: catalogueManifest.version, rules: rulesManifest.version },
+      active: await options.diagnosticsStore.activeVersions(),
+      migrationState: "not-exposed"
+    });
+  });
+
+  app.get("/api/v1/system/metrics", async (request, reply) => {
+    await requireAdministrator(request, auth);
+    if (!featureEnabled(identity.featureFlags, "operationalMetrics")) {
+      throw new AppError(404, "RESOURCE_NOT_FOUND", "Resource not found");
+    }
+    reply.header("cache-control", "no-store");
+    try {
+      await options.store.ping();
+      metrics.databaseReady(true);
+    } catch {
+      metrics.databaseReady(false);
+    }
+    return metrics.snapshot(identity.build);
+  });
 
   app.post<{ Body: { username: string; password: string } }>(
     "/api/v1/auth/login",
@@ -787,6 +886,7 @@ async function requireIdentity(
 ): Promise<SessionIdentity> {
   const identity = await auth.resolveSession(request.cookies[SESSION_COOKIE]);
   if (!identity) throw new AppError(401, "AUTHENTICATION_REQUIRED", "Authentication required");
+  recordRequestIdentity(request, identity);
   return identity;
 }
 

@@ -7,6 +7,7 @@ import { hasCapability, roleTranslationKey } from "@/lib/access-presentation";
 import { useI18n } from "@/lib/i18n";
 
 import { useSession } from "./session-provider";
+import { SystemInformation } from "./system-information";
 
 export function AppHeader() {
   const { language, setLanguage, t } = useI18n();
@@ -23,6 +24,7 @@ export function AppHeader() {
         <span aria-hidden="true">N</span>
         <strong>{t("appName")}</strong>
       </Link>
+      <SystemInformation />
       <nav aria-label={t("projects")} className="app-navigation">
         <Link href="/">{t("projects")}</Link>
         {canAdminister || status !== "authenticated" ? (

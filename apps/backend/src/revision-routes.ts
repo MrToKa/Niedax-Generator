@@ -15,6 +15,7 @@ import type { SessionIdentity } from "./domain.js";
 import { ProjectApplicationError } from "./project-errors.js";
 import type { RevisionActor } from "./revision-repository.js";
 import type { RevisionOperations } from "./revision-service.js";
+import { recordRequestIdentity } from "./safe-logging.js";
 
 const SESSION_COOKIE = "niedax_session";
 
@@ -47,6 +48,7 @@ async function requireIdentity(
   if (!identity) {
     throw new ProjectApplicationError(401, "AUTHENTICATION_REQUIRED", "Authentication required");
   }
+  recordRequestIdentity(request, identity);
   return identity;
 }
 

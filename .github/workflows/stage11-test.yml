@@ -1,0 +1,77 @@
+name: Stage 11 TEST deployment
+
+on:
+  workflow_run:
+    workflows: ["Stage 10 validation"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: niedax-persistent-test-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy-test:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
+    runs-on: [self-hosted, Windows, X64, niedax-test-deploy]
+    environment: internal-test
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: powershell
+        working-directory: stage11-test
+    env:
+      CI: "true"
+      npm_config_verify_deps_before_run: "false"
+      NEXT_TELEMETRY_DISABLED: "1"
+      NIEDAX_STAGE10_RUN_ID: ${{ github.event.workflow_run.id }}
+    steps:
+      - name: Initialize this run's sanitized evidence
+        working-directory: ${{ github.workspace }}
+        run: |
+          New-Item -ItemType Directory -Force stage11-test/.artifacts/stage11/safe | Out-Null
+          $record = @{ schemaVersion = 'stage11-deployment/v1'; environment = 'test'; deploymentResult = 'not-started'; operationallyAccepted = $false }
+          $record | ConvertTo-Json | Set-Content -Encoding utf8 -LiteralPath "stage11-test/.artifacts/stage11/safe/deployment-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT.json"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          path: stage11-test
+          clean: false
+          persist-credentials: false
+      - name: Check dedicated internal host
+        run: |
+          if ($env:NIEDAX_TEST_DEPLOY_RUNNER -ne '1') { throw 'Dedicated TEST deployment runner opt-in missing' }
+          if ((node --version) -ne 'v24.19.0') { throw 'Node 24.19.0 required' }
+          docker version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Install pinned tooling
+        run: |
+          corepack pnpm install --frozen-lockfile
+          exit $LASTEXITCODE
+      - name: Prepare isolated persistent TEST storage
+        run: |
+          corepack pnpm test-env:setup
+          exit $LASTEXITCODE
+      - name: Verify Stage 10 acceptance and deploy exact successful SHA
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          corepack pnpm test-env:deploy
+          exit $LASTEXITCODE
+      - name: Retain sanitized deployment result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: stage11-deployment-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: ignore
+          include-hidden-files: true
+          path: stage11-test/.artifacts/stage11/safe/deployment-${{ github.run_id }}-${{ github.run_attempt }}.json

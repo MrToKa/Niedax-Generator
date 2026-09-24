@@ -41,5 +41,8 @@ COPY --from=build --chown=node:node /workspace/package.json /workspace/package.j
 COPY --from=build --chown=node:node /workspace/catalogue /workspace/catalogue
 COPY --from=build --chown=node:node /workspace/rules/manifest.json /workspace/rules/manifest.json
 USER node
+ARG NIEDAX_GIT_COMMIT=""
+ARG NIEDAX_BUILD_TIMESTAMP=""
+ENV NIEDAX_GIT_COMMIT=$NIEDAX_GIT_COMMIT NIEDAX_BUILD_TIMESTAMP=$NIEDAX_BUILD_TIMESTAMP
 EXPOSE 3001
 CMD ["node", "dist/server.js"]

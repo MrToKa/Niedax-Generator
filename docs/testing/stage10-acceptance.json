@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "stage10-acceptance/v1",
+  "reviewedCommit": null,
+  "runtimeImageSecurity": { "status": "pending", "reviewer": null, "evidence": null },
+  "domainApproval": { "status": "pending", "reviewer": null, "evidence": null }
+}

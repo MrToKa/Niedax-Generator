@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
+import type { RuntimeIdentity } from "@niedax/domain";
+import { loadRuntimeIdentity } from "./system-diagnostics.js";
 
 export interface RuntimeConfig {
+  readonly identity: RuntimeIdentity;
   readonly host: string;
   readonly port: number;
   readonly cookieSecure: boolean;
@@ -30,6 +33,7 @@ function readSecretFile(name: string): string {
 
 export function loadRuntimeConfig(): RuntimeConfig {
   return {
+    identity: loadRuntimeIdentity(),
     host: process.env.HOST ?? "0.0.0.0",
     port: Number(process.env.PORT ?? "3001"),
     cookieSecure: process.env.COOKIE_SECURE === "true",

@@ -1741,6 +1741,65 @@ input[aria-invalid="true"] {
     grid-template-columns: 1fr;
   }
 }
+.system-information {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  position: relative;
+  font-size: 0.8rem;
+}
+.test-environment-badge {
+  background: #fff0ba;
+  color: #624200;
+  border: 1px solid #b98700;
+  border-radius: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  letter-spacing: 0.05em;
+}
+.system-information summary {
+  cursor: pointer;
+}
+.system-information-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 30;
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: 75vh;
+  overflow: auto;
+  padding: 1rem;
+  background: white;
+  color: #182539;
+  border: 1px solid #aab5c4;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px #18253926;
+}
+.system-information-panel textarea {
+  display: block;
+  width: 100%;
+  margin: 0.6rem 0;
+  font-size: 0.8rem;
+  resize: vertical;
+}
+.operational-metrics {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.4rem;
+}
+.operational-metrics dd {
+  margin: 0;
+}
+@media (max-width: 1100px) {
+  .app-header {
+    flex-wrap: wrap;
+  }
+  .system-information {
+    position: static;
+  }
+  .system-information-panel {
+    left: 16px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .spinner,
   .skeleton-card span {
