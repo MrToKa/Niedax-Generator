@@ -50,6 +50,7 @@ import {
 import { workflowErrorKey } from "@/lib/workflow-error";
 
 import { CalculationResults } from "./calculation-results";
+import { CalculationBuildProvenance } from "./calculation-build-provenance";
 import {
   EditorSections,
   editorSteps,
@@ -68,7 +69,7 @@ interface FailedSave {
 }
 
 export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { markAnonymous, status: sessionStatus, user } = useSession();
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [project, setProject] = useState<ProjectV2 | null>(null);
@@ -954,7 +955,15 @@ export function ProjectEditor({ projectId }: Readonly<{ projectId: string }>) {
               projectId={projectId}
             />
           ) : activeStep === "results" ? (
-            <CalculationResults result={calculation?.result ?? null} stale={resultStale} />
+            <>
+              <CalculationResults result={calculation?.result ?? null} stale={resultStale} />
+              {calculation ? (
+                <CalculationBuildProvenance
+                  build={calculation.run.applicationBuild}
+                  language={language}
+                />
+              ) : null}
+            </>
           ) : access.canEditDraft ? (
             <EditorSections
               activeStep={activeStep}

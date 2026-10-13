@@ -72,7 +72,7 @@ SELECT jsonb_build_object(
   'revisions', (SELECT count(*) FROM demo_revisions),
   'fingerprint', encode(sha256(convert_to(coalesce((SELECT string_agg(identity || ':' || encode(sha256(convert_to(payload,'UTF8')),'hex'), ',' ORDER BY identity) FROM protected_rows),''),'UTF8')),'hex'),
   'migrationFingerprint', (SELECT encode(sha256(convert_to(coalesce(string_agg(filename || ':' || checksum, ',' ORDER BY filename),''),'UTF8')),'hex') FROM schema_migrations)
-)::text`;
+)::text AS evidence`;
 
 const HASH = /^[0-9a-f]{64}$/u;
 const TEMP_PROJECT = /^niedax-test-restore-[0-9]+-[0-9a-f]{12}$/u;
@@ -147,7 +147,7 @@ export function assertMatchingRestore(
     );
 }
 
-function queryArguments(sql: string): string[] {
+export function testDatabaseQueryArguments(sql: string): string[] {
   return [
     "exec",
     "-T",
@@ -168,7 +168,7 @@ function queryArguments(sql: string): string[] {
 
 async function snapshot(runCompose: TestBackupContext["runCompose"]): Promise<TestRestoreSnapshot> {
   return parseRestoreSnapshot(
-    JSON.parse(await runCompose(queryArguments(TEST_RESTORE_SNAPSHOT_SQL)))
+    JSON.parse(await runCompose(testDatabaseQueryArguments(TEST_RESTORE_SNAPSHOT_SQL)))
   );
 }
 
@@ -465,7 +465,7 @@ export async function verifyTestRestore(
     const restored = await snapshot(isolated);
     assertMatchingRestore(expected, restored);
     const exportPolicy = await isolated(
-      queryArguments(`SELECT
+      testDatabaseQueryArguments(`SELECT
       has_table_privilege('niedax_generator_app','public.export_artifacts','SELECT') AND
       has_table_privilege('niedax_generator_app','public.export_artifacts','INSERT') AND
       NOT has_table_privilege('niedax_generator_app','public.export_artifacts','UPDATE') AND

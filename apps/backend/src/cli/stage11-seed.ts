@@ -28,7 +28,8 @@ try {
     pool,
     config.sessionPepper,
     accounts,
-    resolve("../../catalogue/imports/niedax-p0-2022")
+    resolve("../../catalogue/imports/niedax-p0-2022"),
+    config.identity.build
   );
   process.stdout.write(`${JSON.stringify(report)}\n`);
 } catch (error) {

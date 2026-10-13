@@ -15,6 +15,7 @@ export async function runStage11Smoke(options: {
   baseUrl: string;
   accounts: Stage11Accounts;
   expectedGitCommit?: string;
+  expectedBuildTimestamp?: string;
   fetch?: typeof fetch;
 }) {
   const accounts = parseStage11Accounts(options.accounts);
@@ -109,6 +110,8 @@ export async function runStage11Smoke(options: {
       !Number.isFinite(Date.parse(info.build.buildTimestamp)) ||
       (options.expectedGitCommit !== undefined &&
         info.build.gitCommit !== options.expectedGitCommit) ||
+      (options.expectedBuildTimestamp !== undefined &&
+        info.build.buildTimestamp !== options.expectedBuildTimestamp) ||
       !info.active.catalogues.length ||
       !info.active.ruleSets.length ||
       !info.active.ruleSets.every((rule) =>
@@ -171,6 +174,9 @@ export async function runStage11Smoke(options: {
       passed: true,
       applicationVersion: info.build.application,
       gitCommit: info.build.gitCommit,
+      buildTimestamp: info.build.buildTimestamp,
+      activeVersions: info.active,
+      featureFlags: info.featureFlags,
       catalogVersions: info.active.catalogues.map((item) => item.version),
       ruleVersions: info.active.ruleSets.map((item) => item.version),
       authentication: "administrator-and-designer-passed",

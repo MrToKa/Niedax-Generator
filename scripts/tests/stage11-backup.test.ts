@@ -34,7 +34,7 @@ function topology() {
     name: project,
     services: {
       postgres: {
-        image: `postgres:18.4-alpine3.23@sha256:${"a".repeat(64)}`,
+        image: `postgres:18.6-alpine3.23@sha256:${"a".repeat(64)}`,
         networks: { database: null },
         volumes: [
           {

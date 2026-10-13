@@ -6,6 +6,7 @@ import {
   type CalculationResultV2
 } from "@niedax/domain";
 import { calculateV2, canonicalJson } from "../src/index.js";
+import type { JsonValue } from "../src/stable/canonical-json.js";
 import {
   connectRoutes,
   line,
@@ -248,11 +249,13 @@ describe("Stage 10 varied public-engine properties", () => {
           input.project.defaultReservePercent = String(reserve);
           input.options.includePackaging = packaging;
           product(input, "product-anchor").packageIncrement = { value: "50", unit: "pcs" };
-          fingerprints.add(canonicalJson(input));
-          const before = canonicalJson(input),
+          // The fixture is plain JSON; optional source metadata adds a type-level
+          // undefined possibility without changing the canonical replay assertion.
+          fingerprints.add(canonicalJson(input as unknown as JsonValue));
+          const before = canonicalJson(input as unknown as JsonValue),
             result = calculateV2(input);
           expect(canonicalJson(calculateV2(input))).toBe(canonicalJson(result));
-          expect(canonicalJson(input)).toBe(before);
+          expect(canonicalJson(input as unknown as JsonValue)).toBe(before);
           input.project.routes.reverse();
           input.project.connections.reverse();
           input.products.reverse();

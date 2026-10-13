@@ -1,0 +1,318 @@
+{
+  "schemaVersion": "excel-workbook-mapping/v1",
+  "approval": "approved",
+  "templateId": "change-order-clients-scope-26",
+  "templateSha256": "sha256:0f1dde6a901cd319870bec8995b37021ab0c38ad887eac846825805deba8a261",
+  "mappingVersion": "change-order-clients-scope-26-1",
+  "rendererVersion": "stage9-exceljs-2",
+  "sheetName": "Change Order",
+  "headerRow": 5,
+  "dataStartRow": 6,
+  "columns": [
+    {
+      "position": 1,
+      "header": "Item No.",
+      "meaning": "Stable sequential output row number, one per saved BOM line.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "text",
+        "field": "itemNumber"
+      },
+      "width": 10.06640625,
+      "numberFormat": "@"
+    },
+    {
+      "position": 2,
+      "header": "Design Qty",
+      "meaning": "Saved technical quantity in the line order unit.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "quantity",
+        "field": "technicalQuantity",
+        "overflow": "exactText"
+      },
+      "width": 12.19921875,
+      "numberFormat": "0.##################"
+    },
+    {
+      "position": 3,
+      "header": "Order Qty",
+      "meaning": "Saved final ordered quantity; replaces template G*I engineering arithmetic.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "quantity",
+        "field": "orderedQuantity",
+        "overflow": "exactText"
+      },
+      "width": 11.19921875,
+      "numberFormat": "0.##################"
+    },
+    {
+      "position": 4,
+      "header": "Spare Qty",
+      "meaning": "Saved total spare; replaces template C-B arithmetic.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "quantity",
+        "field": "totalSpareQuantity",
+        "overflow": "exactText"
+      },
+      "width": 11.33203125,
+      "numberFormat": "0.##################"
+    },
+    {
+      "position": 5,
+      "header": "Unit",
+      "meaning": "Saved order unit.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "text",
+        "field": "unit"
+      },
+      "width": 6.796875,
+      "numberFormat": "@"
+    },
+    {
+      "position": 6,
+      "header": "Packaging ",
+      "meaning": "Blank: physical packaging kind is absent from immutable evidence.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 11.86328125,
+      "numberFormat": "@"
+    },
+    {
+      "position": 7,
+      "header": "Packaging Qty",
+      "meaning": "Saved package increment (package size), not package count.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "quantity",
+        "field": "packageIncrement",
+        "overflow": "exactText"
+      },
+      "width": 14.9296875,
+      "numberFormat": "0.##################"
+    },
+    {
+      "position": 8,
+      "header": "Unit2",
+      "meaning": "Saved package increment unit.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "text",
+        "field": "unit"
+      },
+      "width": 7.6640625,
+      "numberFormat": "@"
+    },
+    {
+      "position": 9,
+      "header": "Ordered Qty",
+      "meaning": "Saved package count, nullable; source template C=G*I establishes this meaning.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "quantity",
+        "field": "packageCount",
+        "overflow": "exactText"
+      },
+      "width": 13.06640625,
+      "numberFormat": "0.##################"
+    },
+    {
+      "position": 10,
+      "header": "Unit3",
+      "meaning": "Saved package count unit when present.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "text",
+        "field": "packageUnit"
+      },
+      "width": 7.73046875,
+      "numberFormat": "@"
+    },
+    {
+      "position": 11,
+      "header": "Description (EN)",
+      "meaning": "Saved English description.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "text",
+        "field": "descriptionEn"
+      },
+      "width": 47.19921875,
+      "numberFormat": "@"
+    },
+    {
+      "position": 12,
+      "header": "Dimension [mm]",
+      "meaning": "Blank: no unambiguous saved product dimensions.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 16.46484375,
+      "numberFormat": "@"
+    },
+    {
+      "position": 13,
+      "header": "Material",
+      "meaning": "Blank: no saved standalone product material.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 20.46484375,
+      "numberFormat": "@"
+    },
+    {
+      "position": 14,
+      "header": "Weight [kg]",
+      "meaning": "Blank: no saved product weight.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 13.59765625,
+      "numberFormat": "@"
+    },
+    {
+      "position": 15,
+      "header": "Clear description of content of a set and type designation",
+      "meaning": "Saved included items and quantity per parent; informational only.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "text",
+        "field": "includedItems"
+      },
+      "width": 55.73046875,
+      "numberFormat": "@"
+    },
+    {
+      "position": 16,
+      "header": "Price/pcs",
+      "meaning": "Blank: prices are out of scope.",
+      "compatibility": "price",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 11.86328125,
+      "numberFormat": "@"
+    },
+    {
+      "position": 17,
+      "header": "Total Price",
+      "meaning": "Blank: total prices are out of scope.",
+      "compatibility": "totalPrice",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 13.1328125,
+      "numberFormat": "@"
+    },
+    {
+      "position": 18,
+      "header": "Country of origin",
+      "meaning": "Blank: country of origin absent from saved evidence.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 12.73046875,
+      "numberFormat": "@"
+    },
+    {
+      "position": 19,
+      "header": "Pos./TAG-No",
+      "meaning": "Blank: no single authoritative saved position/tag for an aggregated BOM line.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 15,
+      "numberFormat": "@"
+    },
+    {
+      "position": 20,
+      "header": "Drawing No.",
+      "meaning": "Blank: drawing reference absent from saved evidence.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 22.1328125,
+      "numberFormat": "@"
+    },
+    {
+      "position": 21,
+      "header": "Revision number",
+      "meaning": "Captured selected revision number.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "text",
+        "field": "revisionNumber"
+      },
+      "width": 12.59765625,
+      "numberFormat": "@"
+    },
+    {
+      "position": 22,
+      "header": "Certificates",
+      "meaning": "Blank: certificates absent from saved evidence.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 11.1328125,
+      "numberFormat": "@"
+    },
+    {
+      "position": 23,
+      "header": "Original Equipment Manufacturer ",
+      "meaning": "Blank: manufacturer name absent from saved evidence.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 15.265625,
+      "numberFormat": "@"
+    },
+    {
+      "position": 24,
+      "header": "Manufacturer Part No.",
+      "meaning": "Saved product code as literal text; blank for free-text manual items.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "text",
+        "field": "productCode"
+      },
+      "width": 22.265625,
+      "numberFormat": "@"
+    },
+    {
+      "position": 25,
+      "header": "ACS barcode",
+      "meaning": "Blank: barcode absent from saved evidence.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "blank"
+      },
+      "width": 13.86328125,
+      "numberFormat": "@"
+    },
+    {
+      "position": 26,
+      "header": "Remarks",
+      "meaning": "Saved status, manual identity, included relations, warning references and evidence navigation.",
+      "compatibility": "ordinary",
+      "source": {
+        "kind": "text",
+        "field": "remarks"
+      },
+      "width": 47.86328125,
+      "numberFormat": "@"
+    }
+  ]
+}

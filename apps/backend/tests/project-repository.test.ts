@@ -399,49 +399,65 @@ describe("Stage 7 PostgreSQL project repository boundaries", () => {
     expect(fake.query.mock.calls.map((call) => queryText(call[0]))).toContain("ROLLBACK");
   });
 
-  it("reads project version and current v2 calculation in one repeatable-read transaction", async () => {
-    const fake = transactionalPool(async (sql) => {
-      if (sql.includes("FROM projects project")) {
-        return {
-          rows: [projectRow({ schemaVersion: "project-draft-document/v2", draft: emptyDraft }, 2)]
-        };
-      }
-      if (sql.includes("FROM calculation_drafts draft")) {
-        return {
-          rows: [
-            {
-              id: ids.run,
-              calculated_draft_version: 1,
-              input_fingerprint: requestHash,
-              engine_version: "0.1.0",
-              catalog_version_id: ids.catalog,
-              rule_set_id: ids.rules,
-              started_at: new Date("2026-09-01T08:00:00.000Z"),
-              completed_at: new Date("2026-09-01T08:00:01.000Z"),
-              result_payload: { schemaVersion: "calculation-result/v2" },
-              catalog_version: "2022-p0",
-              catalog_content_hash: requestHash,
-              rule_set_version: "2022-p0",
-              rule_set_content_hash: requestHash
-            }
-          ]
-        };
-      }
-      return { rows: [] };
-    });
-    const calculation = await new PgProjectRepository(fake.pool).getCurrentCalculation(
-      ids.project,
-      owner
-    );
-    expect(calculation).toMatchObject({ draftVersion: 1, stale: true });
-    const statements = fake.query.mock.calls.map((call) => queryText(call[0]));
-    expect(statements[0]).toBe("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
-    expect(statements.at(-1)).toBe("COMMIT");
-    expect(
-      statements.some((sql) => sql.includes("calculation_schema_version = 'calculation-input/v2'"))
-    ).toBe(true);
-    expect(statements.some((sql) => sql.includes("calculated_draft_version IS NOT NULL"))).toBe(
-      true
-    );
-  });
+  it.each([false, true])(
+    "reads current calculation provenance from its stored input in one repeatable-read transaction (%s)",
+    async (hasBuild) => {
+      const storedBuild = {
+        application: "0.1.0",
+        gitCommit: "abc12345".repeat(5),
+        buildTimestamp: "2026-09-01T07:00:00.000Z",
+        environment: "test"
+      };
+      const fake = transactionalPool(async (sql) => {
+        if (sql.includes("FROM projects project")) {
+          return {
+            rows: [projectRow({ schemaVersion: "project-draft-document/v2", draft: emptyDraft }, 2)]
+          };
+        }
+        if (sql.includes("FROM calculation_drafts draft")) {
+          return {
+            rows: [
+              {
+                id: ids.run,
+                calculated_draft_version: 1,
+                input_fingerprint: requestHash,
+                engine_version: "0.1.0",
+                catalog_version_id: ids.catalog,
+                rule_set_id: ids.rules,
+                started_at: new Date("2026-09-01T08:00:00.000Z"),
+                completed_at: new Date("2026-09-01T08:00:01.000Z"),
+                result_payload: { schemaVersion: "calculation-result/v2" },
+                application_build: hasBuild ? storedBuild : null,
+                catalog_version: "2022-p0",
+                catalog_content_hash: requestHash,
+                rule_set_version: "2022-p0",
+                rule_set_content_hash: requestHash
+              }
+            ]
+          };
+        }
+        return { rows: [] };
+      });
+      const calculation = await new PgProjectRepository(fake.pool).getCurrentCalculation(
+        ids.project,
+        owner
+      );
+      expect(calculation).toMatchObject({ draftVersion: 1, stale: true });
+      expect(calculation?.run.applicationBuild).toEqual(hasBuild ? storedBuild : undefined);
+      const statements = fake.query.mock.calls.map((call) => queryText(call[0]));
+      expect(statements[0]).toBe("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
+      expect(statements.at(-1)).toBe("COMMIT");
+      expect(
+        statements.some((sql) => sql.includes("input_payload #> '{invocation,applicationBuild}'"))
+      ).toBe(true);
+      expect(
+        statements.some((sql) =>
+          sql.includes("calculation_schema_version = 'calculation-input/v2'")
+        )
+      ).toBe(true);
+      expect(statements.some((sql) => sql.includes("calculated_draft_version IS NOT NULL"))).toBe(
+        true
+      );
+    }
+  );
 });

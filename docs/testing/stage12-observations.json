@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "stage12-observations/v1",
+  "inspected": {
+    "observedAt": "2026-09-30T15:41:20.187Z",
+    "authoringCommit": "3883afddabae42d5a637faea71167e682982f591",
+    "sourceHash": "sha256:762ec416bf4cbc520edec1b20a5e753c4679851d6012b5a332a3bac60c8b37d3",
+    "operatorAcceptance": {
+      "exists": true,
+      "modifiedAt": "2026-09-24T08:23:38.557Z",
+      "reviewedCommit": null,
+      "runtimeImageSecurityStatus": "pending",
+      "domainApprovalStatus": "pending",
+      "exactCommitAccepted": false
+    }
+  },
+  "historicalStage10": {
+    "schemaVersion": "stage10-run/v1",
+    "startedAt": "2026-09-24T08:48:21.070Z",
+    "commit": "81036b81a0e32193b0cc609afeaf0f14a6b13420",
+    "lockfileHash": "sha256:0ea90062871d16be184861b59e8ed9266f7b9a3fa8172809cea62029aa33ce9d",
+    "sourceHash": "sha256:762ec416bf4cbc520edec1b20a5e753c4679851d6012b5a332a3bac60c8b37d3",
+    "ci": null,
+    "results": [
+      {
+        "command": "validate:full",
+        "startedAt": "2026-09-24T08:48:21.201Z",
+        "endedAt": "2026-09-24T08:52:06.904Z",
+        "exitCode": 0
+      },
+      {
+        "command": "test:e2e",
+        "startedAt": "2026-09-24T08:52:06.911Z",
+        "endedAt": "2026-09-24T08:55:47.648Z",
+        "exitCode": 0
+      },
+      {
+        "command": "test:security",
+        "startedAt": "2026-09-24T08:55:47.650Z",
+        "endedAt": "2026-09-24T08:55:50.771Z",
+        "exitCode": 0
+      },
+      {
+        "command": "test:performance",
+        "startedAt": "2026-09-24T08:55:50.776Z",
+        "endedAt": "2026-09-24T09:10:30.541Z",
+        "exitCode": 0
+      },
+      {
+        "command": "test:fixtures",
+        "startedAt": "2026-09-24T09:10:30.544Z",
+        "endedAt": "2026-09-24T09:10:35.347Z",
+        "exitCode": 0
+      }
+    ],
+    "complete": true,
+    "passed": true
+  },
+  "historicalStage11": {
+    "schemaVersion": "stage11-deployment/v1",
+    "timestamp": "2026-09-24T08:36:18.619Z",
+    "environment": "test",
+    "build": {
+      "gitCommit": "81036b81a0e32193b0cc609afeaf0f14a6b13420",
+      "tag": "81036b81a0e32193b0cc609afeaf0f14a6b13420",
+      "buildTimestamp": "2026-09-24T08:36:18.456Z"
+    },
+    "sourceHash": "sha256:56cd224ec9974507032a5907a22e80462db870303d2f421fd680059f47d88354",
+    "workingTreeDirty": true,
+    "applicationVersion": "0.1.0",
+    "operationallyAccepted": false,
+    "migrationStatus": "passed",
+    "backupVerificationStatus": "passed",
+    "healthStatus": "passed",
+    "smokeStatus": "passed",
+    "deploymentResult": "passed",
+    "failedStep": null,
+    "smoke": {
+      "schemaVersion": "stage11-smoke/v1",
+      "timestamp": "2026-09-24T08:37:24.251Z",
+      "environment": "test",
+      "passed": true,
+      "applicationVersion": "0.1.0",
+      "gitCommit": "81036b81a0e32193b0cc609afeaf0f14a6b13420",
+      "catalogVersions": ["2022-p0"],
+      "ruleVersions": ["2022-p0"],
+      "authentication": "administrator-and-designer-passed",
+      "functionalCheck": "designer-demo-calculation",
+      "approvedRevisionMutated": false
+    }
+  },
+  "remote": {
+    "recordedAt": "2026-09-30T16:06:04.502Z",
+    "url": "https://github.com/MrToKa/Niedax-Generator/actions/runs/36737620712",
+    "status": "queued",
+    "event": "pull_request",
+    "commit": "3883afddabae42d5a637faea71167e682982f591",
+    "observationSource": "Read-only public Actions page in in-app browser; recorded after observation."
+  }
+}

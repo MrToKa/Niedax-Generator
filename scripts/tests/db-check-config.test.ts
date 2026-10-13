@@ -18,7 +18,7 @@ function safe(): DatabaseCheckConfig {
     services: {
       postgres: {
         image:
-          "postgres:18.4-alpine3.23@sha256:996d0920e4ff9df1fc19dacb904492f3c1ec0ec1cc338f0ad7123be7731c5f5e",
+          "postgres:18.6-alpine3.23@sha256:885cf05d376c7cf27afef02073e6bdac3841252537f16e244fd1c1e6a7c99fb1",
         environment: { POSTGRES_DB: "niedax_generator", POSTGRES_USER: "postgres" },
         networks: { database: {} },
         volumes: [

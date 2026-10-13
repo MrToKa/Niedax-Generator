@@ -9,6 +9,7 @@ import {
   Sha256Schema
 } from "../primitives.js";
 import type { DeepReadonly } from "../primitives.js";
+import { BuildIdentitySchema } from "../v1/system.js";
 import {
   CALCULATION_INPUT_V2,
   CALCULATION_RESULT_V2,
@@ -293,6 +294,18 @@ export const SupplyOptionV2Schema = z
   })
   .strict();
 
+/** Source facts only; no environmental suitability or structural capacity is inferred. */
+export const ProductSourceFactsV2Schema = z
+  .object({
+    indoorOnly: z.boolean(),
+    catalogSubstrate: HumanTextSchema.nullable(),
+    approvalNumber: HumanTextSchema.nullable(),
+    dopNumber: HumanTextSchema.nullable(),
+    engineeringNote: HumanTextSchema.nullable(),
+    source: SourceReferenceV2Schema
+  })
+  .strict();
+
 export const ProductSnapshotV2Schema = z
   .object({
     id: IdentifierSchema,
@@ -316,6 +329,7 @@ export const ProductSnapshotV2Schema = z
     orderable: z.boolean(),
     active: z.boolean(),
     engineeringReviewRequired: z.boolean(),
+    sourceFacts: ProductSourceFactsV2Schema.optional(),
     catalogSnapshotId: IdentifierSchema,
     supplyOptions: z.array(SupplyOptionV2Schema),
     includedItems: z.array(IncludedItemRelationV2Schema),
@@ -658,11 +672,20 @@ function addUnknownReference(
   if (!exists) context.addIssue({ code: "custom", message, path: [...path] });
 }
 
+/** Backend-captured build of this calculation; absent on retained historical inputs. */
+export const CalculationApplicationBuildV2Schema = BuildIdentitySchema.extend({
+  sourceFingerprint: Sha256Schema.optional()
+}).strict();
+
 export const CalculationInputV2Schema = z
   .object({
     schemaVersion: z.literal(CALCULATION_INPUT_V2),
     invocation: z
-      .object({ calculationRunId: IdentifierSchema, inputFingerprint: Sha256Schema })
+      .object({
+        calculationRunId: IdentifierSchema,
+        inputFingerprint: Sha256Schema,
+        applicationBuild: CalculationApplicationBuildV2Schema.optional()
+      })
       .strict(),
     project: z
       .object({
@@ -1445,6 +1468,9 @@ export type DecimalStringV2 = z.infer<typeof DecimalStringV2Schema>;
 export type QuantityV2 = DeepReadonly<z.infer<typeof QuantityV2Schema>>;
 export type SourceReferenceV2 = DeepReadonly<z.infer<typeof SourceReferenceV2Schema>>;
 export type ProductSnapshotV2 = DeepReadonly<z.infer<typeof ProductSnapshotV2Schema>>;
+export type CalculationApplicationBuildV2 = DeepReadonly<
+  z.infer<typeof CalculationApplicationBuildV2Schema>
+>;
 export type CalculationRuleV2 = DeepReadonly<z.infer<typeof CalculationRuleV2Schema>>;
 export type CompatibilityRelationV2 = DeepReadonly<z.infer<typeof CompatibilityRelationV2Schema>>;
 export type AssemblyTemplateV2 = DeepReadonly<z.infer<typeof AssemblyTemplateV2Schema>>;

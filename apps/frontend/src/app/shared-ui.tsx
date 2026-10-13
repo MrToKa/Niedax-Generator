@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { type ReactNode, useId } from "react";
 
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "../lib/i18n";
 
 export function AuthenticationRequired() {
   const { t } = useI18n();

@@ -37,7 +37,10 @@ const app = await buildApp({
   cookieSecure: config.cookieSecure,
   logger: true,
   catalogService: new CatalogAdminService(new PgCatalogAdminRepository(pool)),
-  projectService: new ProjectApplicationService(new PgProjectRepository(pool)),
+  projectService: new ProjectApplicationService(
+    new PgProjectRepository(pool),
+    config.identity.build
+  ),
   revisionService: new RevisionApplicationService(new PgRevisionRepository(pool)),
   exportService
 });

@@ -7,7 +7,7 @@ import type {
   ProjectListItemV2,
   ProjectV2
 } from "@niedax/domain";
-import { DatabaseIdV2Schema } from "@niedax/domain";
+import { CalculationApplicationBuildV2Schema, DatabaseIdV2Schema } from "@niedax/domain";
 import type { Pool, PoolClient } from "pg";
 
 import type { AppRole } from "./domain.js";
@@ -114,6 +114,9 @@ export interface CatalogProductRow {
   readonly availability_status: string;
   readonly is_orderable: boolean;
   readonly engineering_verification_required: boolean;
+  readonly indoor_only?: boolean;
+  readonly engineering_note?: string | null;
+  readonly source_verification_status?: string;
   readonly metadata: Readonly<Record<string, unknown>>;
   readonly source_id: string;
   readonly source_document: string;
@@ -414,12 +417,14 @@ async function loadCatalogRows(
                 product.base_unit::text AS base_unit,
                 product.minimum_package_quantity::text, product.packaging_unit::text,
                 product.availability_status, product.is_orderable,
-                product.engineering_verification_required, product.metadata,
+                product.engineering_verification_required, product.indoor_only,
+                product.engineering_note, product.metadata,
                 source.id AS source_id, source.title AS source_document,
-                source.source_page
+                source.source_page, source.verification_status AS source_verification_status
            FROM products product
            JOIN LATERAL (
-             SELECT product_source.id, product_source.title, product_source.source_page
+             SELECT product_source.id, product_source.title, product_source.source_page,
+                    product_source.verification_status
                FROM product_source_links link
                JOIN product_sources product_source ON product_source.id = link.source_id
               WHERE link.product_id = product.id
@@ -1455,6 +1460,7 @@ export class PgProjectRepository {
         started_at: Date;
         completed_at: Date;
         result_payload: CalculationResultV2;
+        application_build: unknown;
         catalog_version: string;
         catalog_content_hash: string;
         rule_set_version: string;
@@ -1463,6 +1469,7 @@ export class PgProjectRepository {
         `SELECT draft.id, draft.calculated_draft_version, draft.input_fingerprint,
                 draft.engine_version, draft.catalog_version_id, draft.rule_set_id,
                 draft.started_at, draft.completed_at, draft.result_payload,
+                draft.input_payload #> '{invocation,applicationBuild}' AS application_build,
                 catalog.version AS catalog_version,
                 catalog.content_hash AS catalog_content_hash,
                 rules.version AS rule_set_version,
@@ -1478,6 +1485,10 @@ export class PgProjectRepository {
       );
       const row = result.rows[0];
       if (!row || !row.completed_at) return null;
+      const applicationBuild =
+        row.application_build == null
+          ? undefined
+          : CalculationApplicationBuildV2Schema.parse(row.application_build);
       return {
         projectId,
         draftVersion: row.calculated_draft_version,
@@ -1486,6 +1497,7 @@ export class PgProjectRepository {
           status: "succeeded",
           inputFingerprint: row.input_fingerprint,
           engineVersion: row.engine_version,
+          ...(applicationBuild ? { applicationBuild } : {}),
           catalogSnapshot: {
             snapshotId: row.catalog_version_id,
             version: row.catalog_version,

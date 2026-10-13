@@ -13,6 +13,69 @@ import {
 import { validCalculationInputV1 } from "./fixtures/calculation-v1.js";
 
 describe("Stage 6 v2 runtime contracts", () => {
+  it("retains optional calculation-build evidence without defaulting historical metadata", () => {
+    const applicationBuild = {
+      application: "0.1.0",
+      gitCommit: "abc12345".repeat(5),
+      buildTimestamp: "2026-09-30T10:00:00.000Z",
+      environment: "test" as const
+    };
+    const input = {
+      ...allMajorRulesInputV2,
+      invocation: { ...allMajorRulesInputV2.invocation, applicationBuild }
+    };
+    expect(CalculationInputV2Schema.parse(input).invocation.applicationBuild).toEqual(
+      applicationBuild
+    );
+    expect(CalculationInputV2Schema.parse(allMajorRulesInputV2).invocation).toEqual(
+      allMajorRulesInputV2.invocation
+    );
+    for (const invalidBuild of [
+      { ...applicationBuild, gitCommit: "unknown" },
+      { ...applicationBuild, buildTimestamp: "not-a-date" },
+      { ...applicationBuild, sourceFingerprint: "unverified" },
+      { ...applicationBuild, currentSaver: true }
+    ])
+      expect(
+        CalculationInputV2Schema.safeParse({
+          ...input,
+          invocation: { ...input.invocation, applicationBuild: invalidBuild }
+        }).success
+      ).toBe(false);
+  });
+
+  it("preserves optional verified anchor facts while leaving legacy inputs unchanged", () => {
+    const anchor = allMajorRulesInputV2.products.find((product) => product.role === "anchor")!;
+    const sourceFacts = {
+      indoorOnly: true,
+      catalogSubstrate: "concrete",
+      approvalNumber: "ETA 15/0784",
+      dopNumber: null,
+      engineeringNote: "Verify applicable ETA and installation conditions.",
+      source: anchor.source
+    };
+    const input = {
+      ...allMajorRulesInputV2,
+      products: allMajorRulesInputV2.products.map((product) =>
+        product.id === anchor.id ? { ...product, sourceFacts } : product
+      )
+    };
+    expect(
+      CalculationInputV2Schema.parse(input).products.find((product) => product.id === anchor.id)
+        ?.sourceFacts
+    ).toEqual(sourceFacts);
+    expect(CalculationInputV2Schema.parse(allMajorRulesInputV2)).toEqual(allMajorRulesInputV2);
+    const invalid = {
+      ...input,
+      products: input.products.map((product) =>
+        product.id === anchor.id
+          ? { ...product, sourceFacts: { ...sourceFacts, indoorOnly: "true" } }
+          : product
+      )
+    };
+    expect(CalculationInputV2Schema.safeParse(invalid).success).toBe(false);
+  });
+
   it("preserves the retained v1 fixture and validates fully resolved v2 JSON", () => {
     expect(CalculationInputV1Schema.parse(validCalculationInputV1)).toEqual(
       validCalculationInputV1

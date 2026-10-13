@@ -8,6 +8,7 @@ import {
 import {
   CalculateProjectDraftResponseV2Schema,
   CalculationInputV2Schema,
+  CalculationApplicationBuildV2Schema,
   CalculationRuleV2Schema,
   CurrentCalculationResponseV2Schema,
   EditorCatalogResponseV2Schema,
@@ -19,6 +20,7 @@ import {
   type CalculateProjectDraftRequestV2,
   type CalculateProjectDraftResponseV2,
   type CalculationInputV2,
+  type CalculationApplicationBuildV2,
   type CalculationResultV2,
   type CreateProjectDraftRequestV2,
   type CurrentCalculationResponseV2,
@@ -33,6 +35,7 @@ import {
 } from "@niedax/domain";
 
 import { ProjectApplicationError } from "./project-errors.js";
+import { loadRuntimeIdentity } from "./system-diagnostics.js";
 import { canCreateProject, hasCapability, projectAccessFor } from "./authorization-policy.js";
 import type {
   PgProjectRepository,
@@ -292,6 +295,25 @@ function productSource(product: CatalogProductRow): JsonRecord {
   return source("catalogDocument", product.source_id, product.source_document, product.source_page);
 }
 
+function anchorSourceFacts(product: CatalogProductRow): JsonRecord | null {
+  if (
+    product.category !== "anchor" ||
+    product.source_verification_status !== "verified" ||
+    typeof product.indoor_only !== "boolean"
+  )
+    return null;
+  return {
+    indoorOnly: product.indoor_only,
+    catalogSubstrate: ["concrete", "steel", "masonry"].includes(product.series ?? "")
+      ? product.series
+      : null,
+    approvalNumber: stringValue(product.metadata.approvalNumber),
+    dopNumber: stringValue(product.metadata.dopNumber),
+    engineeringNote: stringValue(product.engineering_note),
+    source: productSource(product)
+  };
+}
+
 function supplyOptionId(productId: string, length: "3000" | "6000"): string {
   return `supply:${productId}:${length}`;
 }
@@ -430,6 +452,7 @@ function productSnapshots(
     catalog.products.filter(supportedProduct).map((product) => product.id)
   );
   return catalog.products.filter(supportedProduct).map((product) => {
+    const sourceFacts = anchorSourceFacts(product);
     const length = productLength(product);
     const option =
       roleFor(product, roles) === "straightSection" && length
@@ -457,6 +480,7 @@ function productSnapshots(
       orderable: product.is_orderable,
       active: product.availability_status === "active",
       engineeringReviewRequired: product.engineering_verification_required,
+      ...(sourceFacts ? { sourceFacts } : {}),
       catalogSnapshotId: catalog.pair.catalog_id,
       supplyOptions: option ? [option] : [],
       includedItems: catalog.includedItems
@@ -701,6 +725,7 @@ function editorCatalog(
 ): EditorCatalogResponseV2 {
   const roles = contextualRoles(catalog, null);
   const products = catalog.products.filter(supportedProduct).map((product) => {
+    const sourceFacts = anchorSourceFacts(product);
     const selection =
       product.category === "straightSection" ? projectSelection(catalog, product) : null;
     const length = productLength(product);
@@ -719,6 +744,7 @@ function editorCatalog(
       selectable:
         active && validOrderable && (product.category !== "straightSection" || selection !== null),
       engineeringReviewRequired: product.engineering_verification_required,
+      ...(sourceFacts ? { sourceFacts } : {}),
       selection,
       supplyOptions:
         product.category === "straightSection" && length
@@ -1639,7 +1665,8 @@ function calculationParts(
 
 function prepareCalculation(
   context: ProjectCalculationContext,
-  actor: ProjectActor
+  actor: ProjectActor,
+  applicationBuild: CalculationApplicationBuildV2
 ): PreparedCalculation {
   const draft = projectDraft(context.project);
   const blockingErrors = preflightIssues(context, draft);
@@ -1649,7 +1676,7 @@ function prepareCalculation(
   const inputFingerprint = calculationFingerprint(parts);
   const parsed = CalculationInputV2Schema.safeParse({
     ...parts,
-    invocation: { calculationRunId, inputFingerprint }
+    invocation: { calculationRunId, inputFingerprint, applicationBuild }
   });
   if (!parsed.success) {
     return {
@@ -1724,7 +1751,16 @@ function validationFromResult(
 }
 
 export class ProjectApplicationService implements ProjectOperations {
-  public constructor(private readonly repository: PgProjectRepository) {}
+  private readonly applicationBuild: CalculationApplicationBuildV2;
+
+  public constructor(
+    private readonly repository: PgProjectRepository,
+    applicationBuild: CalculationApplicationBuildV2 = loadRuntimeIdentity().build
+  ) {
+    this.applicationBuild = Object.freeze(
+      CalculationApplicationBuildV2Schema.parse(applicationBuild)
+    );
+  }
 
   public async listProjects(
     actor: ProjectActor,
@@ -1830,7 +1866,7 @@ export class ProjectApplicationService implements ProjectOperations {
     const context = await this.repository.getCalculationContext(projectId, actor);
     if (context.project.draftVersion !== request.expectedDraftVersion)
       conflict(request.expectedDraftVersion, context.project.draftVersion);
-    const prepared = prepareCalculation(context, actor);
+    const prepared = prepareCalculation(context, actor, this.applicationBuild);
     const result = prepared.input ? execute(prepared.input) : null;
     return validationFromResult(context, correlationId, prepared, result);
   }
@@ -1860,7 +1896,7 @@ export class ProjectApplicationService implements ProjectOperations {
     const context = await this.repository.getCalculationContext(projectId, actor);
     if (context.project.draftVersion !== request.expectedDraftVersion)
       conflict(request.expectedDraftVersion, context.project.draftVersion);
-    const prepared = prepareCalculation(context, actor);
+    const prepared = prepareCalculation(context, actor, this.applicationBuild);
     if (!prepared.input || prepared.blockingErrors.length) {
       throw new ProjectApplicationError(
         422,
@@ -1880,6 +1916,7 @@ export class ProjectApplicationService implements ProjectOperations {
         status: "succeeded",
         inputFingerprint: prepared.input.invocation.inputFingerprint,
         engineVersion: result.engineVersion,
+        applicationBuild: prepared.input.invocation.applicationBuild,
         catalogSnapshot: result.catalogSnapshot,
         ruleSnapshot: result.ruleSnapshot,
         startedAt: startedAt.toISOString(),

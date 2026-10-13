@@ -17,7 +17,14 @@ import {
 import type { BrowserComposeConfig } from "./lib/stage9-browser-config.js";
 import { runTestCommand } from "./lib/stage11-process.js";
 import { isProjectBackupFilename } from "./backup-policy.js";
-import { sourceIdentity } from "./lib/stage10-evidence.js";
+import { fileHash, sourceIdentity } from "./lib/stage10-evidence.js";
+import {
+  captureTestImages,
+  collectTestDeploymentIdentity,
+  TEST_IMAGE_SERVICES,
+  type TestDeploymentIdentity,
+  type TestImageService
+} from "./lib/stage11-identity.js";
 
 const workspace = resolve(".");
 const directory = resolve(workspace, "data/test");
@@ -180,12 +187,16 @@ const composeArgs = [
   "--profile",
   "tools"
 ];
-async function assertSafe(): Promise<void> {
+async function safeTopology(): Promise<BrowserComposeConfig> {
   await assertOwner();
   const model = JSON.parse(
     await runTestCommand("docker", [...composeArgs, "config", "--format", "json"], env)
   ) as BrowserComposeConfig;
   validateTestTopology(model, { workspace, ...binding, build });
+  return model;
+}
+async function assertSafe(): Promise<void> {
+  await safeTopology();
 }
 async function compose(args: readonly string[], input?: string): Promise<string> {
   await assertSafe();
@@ -260,7 +271,8 @@ async function smoke() {
   return runStage11Smoke({
     baseUrl: `http://127.0.0.1:${binding.port}`,
     accounts: await json(resolve(directory, "secrets/accounts.json")),
-    expectedGitCommit: build.gitCommit
+    expectedGitCommit: build.gitCommit,
+    expectedBuildTimestamp: build.buildTimestamp
   });
 }
 async function backup() {
@@ -274,6 +286,9 @@ async function start(): Promise<void> {
     environment: "test",
     build,
     sourceHash: await sourceIdentity(),
+    lockfileHash: await fileHash(resolve(workspace, "pnpm-lock.yaml")),
+    sourceUnchanged: null as boolean | null,
+    identity: null as TestDeploymentIdentity | null,
     workingTreeDirty: !!(await runTestCommand("git", ["status", "--porcelain"], env)),
     applicationVersion: (await json<{ version: string }>(resolve(workspace, "package.json")))
       .version,
@@ -297,9 +312,19 @@ async function start(): Promise<void> {
     step = "build";
     process.stdout.write("TEST build with pinned source identity...\n");
     await compose(["build", "migrations", "backend", "frontend", "gateway", "backup"]);
+    const model = await safeTopology();
+    const identityContext = {
+      assertSafe,
+      imageReferences: Object.fromEntries(
+        TEST_IMAGE_SERVICES.map((service) => [service, model.services[service]!.image])
+      ) as Record<TestImageService, string>,
+      runDocker: (args: readonly string[]) => runTestCommand("docker", args, env)
+    };
     const existingData = (await readdir(resolve(directory, "postgres"))).length > 0;
     step = "database";
     await compose(["up", "--detach", "--wait", "postgres"]);
+    // A fresh host may pull the pinned PostgreSQL image during `up`; observe it only afterward.
+    const imagesBeforeOperations = await captureTestImages(identityContext);
     // Quiesce application writes before the backup snapshot and migration boundary.
     await compose(["stop", "gateway", "backend"]);
     if (existingData) {
@@ -319,8 +344,22 @@ async function start(): Promise<void> {
     await compose(["up", "--detach", "--wait", "backend", "frontend", "gateway"]);
     record.healthStatus = "passed";
     step = "smoke";
-    record.smoke = await smoke();
+    const smokeResult = await smoke();
+    record.smoke = smokeResult;
     record.smokeStatus = "passed";
+    step = "identity";
+    record.identity = await collectTestDeploymentIdentity({
+      ...identityContext,
+      imagesBeforeOperations,
+      runCompose: compose,
+      lockfileHash: record.lockfileHash,
+      observedFeatureFlags: smokeResult.featureFlags,
+      observedActiveVersions: smokeResult.activeVersions
+    });
+    record.sourceUnchanged =
+      (await sourceIdentity()) === record.sourceHash &&
+      (await fileHash(resolve(workspace, "pnpm-lock.yaml"))) === record.lockfileHash;
+    assert(record.sourceUnchanged, "TEST source or lockfile changed during deployment");
     record.deploymentResult = "passed";
     try {
       await save(
@@ -340,8 +379,8 @@ async function start(): Promise<void> {
     if (step === "backup") record.backupVerificationStatus = "failed";
     if (step === "readiness") record.healthStatus = "failed";
     if (step === "migrations") record.migrationStatus = "failed";
-    if (step === "smoke") {
-      record.smokeStatus = "failed";
+    if (["smoke", "identity"].includes(step)) {
+      if (step === "smoke") record.smokeStatus = "failed";
       await compose(["stop", "gateway"]).catch(() => undefined);
     }
     throw error;

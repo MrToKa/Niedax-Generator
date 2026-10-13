@@ -239,6 +239,55 @@ function calculationContext(projectDraft: ProjectDraftInputV2): ProjectCalculati
 }
 
 describe("Stage 7 project application service", () => {
+  it.each([
+    ["NSA 6X35/FKK-T30 V", true, "ETA 15/0784", null, "157"],
+    ["DAM 6X5", false, "ETA-18/0541", "NI 001", "156"],
+    ["DAZ 8X10", false, "ETA-18/0542", "NI 002", "156"]
+  ] as const)(
+    "exposes verified %s source facts without inferring environmental suitability",
+    async (code, indoorOnly, approvalNumber, dopNumber, page) => {
+      const anchor = product(ids.anchor, code, "anchor", {
+        series: "concrete",
+        indoor_only: indoorOnly,
+        engineering_verification_required: true,
+        engineering_note:
+          "Suitability must be verified against the applicable ETA and installation instructions.",
+        source_verification_status: "verified",
+        source_document: "1.-Electrical-installation-materials.pdf",
+        source_page: page,
+        metadata: { approvalNumber, dopNumber }
+      });
+      const repository = {
+        getActiveCatalogContext: vi.fn(async () => catalog({ products: [anchor] }))
+      } as unknown as PgProjectRepository;
+      const result = await new ProjectApplicationService(repository).getEditorCatalog(
+        actor,
+        correlationId
+      );
+      expect(result.products[0]?.sourceFacts).toEqual({
+        indoorOnly,
+        catalogSubstrate: "concrete",
+        approvalNumber,
+        dopNumber,
+        engineeringNote: anchor.engineering_note,
+        source: {
+          kind: "catalogDocument",
+          id: anchor.source_id,
+          sourceDocument: anchor.source_document,
+          sourcePage: page
+        }
+      });
+      const unverified = { ...anchor, source_verification_status: "unverified" };
+      vi.mocked(repository.getActiveCatalogContext).mockResolvedValueOnce(
+        catalog({ products: [unverified] })
+      );
+      expect(
+        (await new ProjectApplicationService(repository).getEditorCatalog(actor, correlationId))
+          .products[0]?.sourceFacts
+      ).toBeUndefined();
+    }
+  );
+
   it("exposes history but no draft mutations for an authorized retained project", async () => {
     const repository = {
       getProjectMetadataForAccess: vi.fn(async () => ({
@@ -284,53 +333,71 @@ describe("Stage 7 project application service", () => {
     });
   });
 
-  it("replays a calculation before reading mutable draft or catalog state", async () => {
-    const result = CalculationResultV2Schema.parse({
-      ...expectedResult,
-      calculationRunId: ids.run
-    });
-    const response = CalculateProjectDraftResponseV2Schema.parse({
-      schemaVersion: "calculate-project-draft-response/v2",
-      correlationId,
-      calculation: {
-        projectId: ids.project,
-        draftVersion: 1,
-        run: {
-          id: ids.run,
-          status: "succeeded",
-          inputFingerprint: result.inputFingerprint,
-          engineVersion: result.engineVersion,
-          catalogSnapshot: result.catalogSnapshot,
-          ruleSnapshot: result.ruleSnapshot,
-          startedAt: "2026-09-01T08:00:00.000Z",
-          completedAt: "2026-09-01T08:00:01.000Z"
-        },
-        result,
-        stale: false
-      }
-    });
-    const repository = {
-      findCalculationReplay: vi.fn(async () => ({
-        statusCode: 200,
-        response,
-        replayed: true
-      })),
-      getCalculationContext: vi.fn(async () => {
-        throw new Error("mutable state must not be read on replay");
-      })
-    } as unknown as PgProjectRepository;
-    const service = new ProjectApplicationService(repository);
-    const replay = await service.calculateProject(
-      actor,
-      ids.project,
-      { schemaVersion: "calculate-project-draft-request/v2", expectedDraftVersion: 1 },
-      "calculation-replay-0001",
-      correlationId
-    );
-    expect(replay).toEqual({ statusCode: 200, body: response, replayed: true });
-    expect(repository.findCalculationReplay).toHaveBeenCalledOnce();
-    expect(repository.getCalculationContext).not.toHaveBeenCalled();
-  });
+  it.each([false, true])(
+    "replays a calculation before reading mutable draft, catalog or current build (%s)",
+    async (hasPreviousBuild) => {
+      const result = CalculationResultV2Schema.parse({
+        ...expectedResult,
+        calculationRunId: ids.run
+      });
+      const response = CalculateProjectDraftResponseV2Schema.parse({
+        schemaVersion: "calculate-project-draft-response/v2",
+        correlationId,
+        calculation: {
+          projectId: ids.project,
+          draftVersion: 1,
+          run: {
+            id: ids.run,
+            status: "succeeded",
+            inputFingerprint: result.inputFingerprint,
+            engineVersion: result.engineVersion,
+            ...(hasPreviousBuild
+              ? {
+                  applicationBuild: {
+                    application: "0.1.0",
+                    gitCommit: "abc12345".repeat(5),
+                    buildTimestamp: "2026-09-01T07:00:00.000Z",
+                    environment: "test" as const
+                  }
+                }
+              : {}),
+            catalogSnapshot: result.catalogSnapshot,
+            ruleSnapshot: result.ruleSnapshot,
+            startedAt: "2026-09-01T08:00:00.000Z",
+            completedAt: "2026-09-01T08:00:01.000Z"
+          },
+          result,
+          stale: false
+        }
+      });
+      const repository = {
+        findCalculationReplay: vi.fn(async () => ({
+          statusCode: 200,
+          response,
+          replayed: true
+        })),
+        getCalculationContext: vi.fn(async () => {
+          throw new Error("mutable state must not be read on replay");
+        })
+      } as unknown as PgProjectRepository;
+      const service = new ProjectApplicationService(repository, {
+        application: "0.1.1",
+        gitCommit: "def67890".repeat(5),
+        buildTimestamp: "2026-09-30T10:00:00.000Z",
+        environment: "test"
+      });
+      const replay = await service.calculateProject(
+        actor,
+        ids.project,
+        { schemaVersion: "calculate-project-draft-request/v2", expectedDraftVersion: 1 },
+        "calculation-replay-0001",
+        correlationId
+      );
+      expect(replay).toEqual({ statusCode: 200, body: response, replayed: true });
+      expect(repository.findCalculationReplay).toHaveBeenCalledOnce();
+      expect(repository.getCalculationContext).not.toHaveBeenCalled();
+    }
+  );
 
   it("excludes unsupported order units and any template that depends on them", async () => {
     const wstb = product(ids.wstb, "WSTB 2", "wstb", {
@@ -796,7 +863,15 @@ describe("Stage 7 project application service", () => {
     const support = product(ids.support, "KLTB 6 F", "support");
     const anchor = product(ids.anchor, "DAM 6X10", "anchor", {
       minimum_package_quantity: "50",
-      engineering_verification_required: true
+      engineering_verification_required: true,
+      indoor_only: false,
+      series: "concrete",
+      source_verification_status: "verified",
+      source_document: "1.-Electrical-installation-materials.pdf",
+      source_page: "156",
+      engineering_note:
+        "Suitability must be verified against the applicable ETA and installation instructions.",
+      metadata: { approvalNumber: "ETA-18/0541", dopNumber: "NI 001" }
     });
     const joint = product(ids.joint, "S7-SYN-JOINT", "connector", {
       minimum_package_quantity: "1",
@@ -929,7 +1004,14 @@ describe("Stage 7 project application service", () => {
       getCalculationContext: vi.fn(async () => context),
       storeCalculation
     } as unknown as PgProjectRepository;
-    const service = new ProjectApplicationService(repository);
+    const calculationBuild = {
+      application: "0.1.0",
+      gitCommit: "abc12345".repeat(5),
+      buildTimestamp: "2026-09-01T07:00:00.000Z",
+      environment: "test" as const
+    };
+    const service = new ProjectApplicationService(repository, calculationBuild);
+    calculationBuild.gitCommit = "def67890".repeat(5);
     const validation = await service.validateProject(
       actor,
       ids.project,
@@ -952,6 +1034,15 @@ describe("Stage 7 project application service", () => {
       expect.objectContaining({ kind: "manual", manualInputId: ids.manual })
     );
     expect(storeCalculation).toHaveBeenCalledOnce();
+    expect(response.body.calculation.run.applicationBuild).toEqual({
+      ...calculationBuild,
+      gitCommit: "abc12345".repeat(5)
+    });
+    expect(storeCalculation.mock.calls[0]?.[0]).toMatchObject({
+      calculationInput: {
+        invocation: { applicationBuild: response.body.calculation.run.applicationBuild }
+      }
+    });
     expect(storeCalculation.mock.calls[0]?.[0]).toMatchObject({
       expectedDraftVersion: 1,
       calculationInput: {
@@ -961,6 +1052,28 @@ describe("Stage 7 project application service", () => {
           connections: [{ id: ids.connection }]
         },
         manualItems: [{ id: ids.manual }]
+      }
+    });
+    expect(storeCalculation.mock.calls[0]?.[0]).toMatchObject({
+      calculationInput: {
+        products: expect.arrayContaining([
+          expect.objectContaining({
+            id: ids.anchor,
+            sourceFacts: {
+              indoorOnly: false,
+              catalogSubstrate: "concrete",
+              approvalNumber: "ETA-18/0541",
+              dopNumber: "NI 001",
+              engineeringNote: anchor.engineering_note,
+              source: {
+                kind: "catalogDocument",
+                id: anchor.source_id,
+                sourceDocument: anchor.source_document,
+                sourcePage: "156"
+              }
+            }
+          })
+        ])
       }
     });
 

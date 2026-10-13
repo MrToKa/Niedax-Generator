@@ -1,0 +1,54 @@
+[
+  {
+    "scenarioId": "T01",
+    "inputSha256": "sha256:6bc65d21fb50e43303fcb48da5ab41f421ae9a2052cb24079422ad800567263b"
+  },
+  {
+    "scenarioId": "T02",
+    "inputSha256": "sha256:904644ee866d87bd3bf43476cfcf2ac01e54178a3bb8b51416dfc6e37da5a8b6"
+  },
+  {
+    "scenarioId": "T03",
+    "inputSha256": "sha256:508f355aa8c9fc2f61953231a0f84347f0a8abfcd0b6ed954014c545026c3798"
+  },
+  {
+    "scenarioId": "T04",
+    "inputSha256": "sha256:152c4c809e9d570f457259b25e79e8bae560ca6b6b2aeddada28d77c9bd54dda"
+  },
+  {
+    "scenarioId": "T05",
+    "inputSha256": "sha256:8621d8f4ca13977a5ac9b49455bfc9b25f6a2de902d0a5cf13a83d672535513c"
+  },
+  {
+    "scenarioId": "T06",
+    "inputSha256": "sha256:0e586fb08b7fb7b40288394836af3278e8978989654f6c74f3df5a80ed90ff02"
+  },
+  {
+    "scenarioId": "T07",
+    "inputSha256": "sha256:2dba6069b01f38f1fae841d1afd7e45a4ed0916282f3e82f677ca51a5f0e7091"
+  },
+  {
+    "scenarioId": "T08",
+    "inputSha256": "sha256:c04e85954a969ddc2537f13383ccd9daaf935678c180228ae1beee28adef91ab"
+  },
+  {
+    "scenarioId": "T09-DAM",
+    "inputSha256": "sha256:11d6de37cb06f7222702726608279d1cbaa0d21316d3aa4fa0a4e0e7f2be473a"
+  },
+  {
+    "scenarioId": "T09-DAZ",
+    "inputSha256": "sha256:f00074a88d27ee3ebf9692116700046eef8530d3dc965cb032f90be1c28bf1f6"
+  },
+  {
+    "scenarioId": "T10",
+    "inputSha256": "sha256:d2b0aaa46db1265fa9f13d75e276043b7d8a40c6520adbaffa8b78023e9173c9"
+  },
+  {
+    "scenarioId": "T11",
+    "inputSha256": "sha256:768807c69885b19ce9f0de90f30590fa94f7aa94415b5e9d3240ff2c54ad1c24"
+  },
+  {
+    "scenarioId": "T12",
+    "inputSha256": "sha256:3648cd91ab9bca9ee823ed9520ae560b0b89decc810f676e3c6cb00f1e46804a"
+  }
+]

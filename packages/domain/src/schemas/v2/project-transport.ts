@@ -13,6 +13,7 @@ import {
 import { ValidationIssueV1Schema } from "../v1/transport.js";
 import {
   CalculationResultV2Schema,
+  CalculationApplicationBuildV2Schema,
   DecimalStringV2Schema,
   IntegerDecimalStringV2Schema,
   OrderUnitV2Schema,
@@ -24,6 +25,7 @@ import {
   PositiveMillimetresQuantityV2Schema,
   PositivePiecesQuantityV2Schema,
   PositiveQuantityV2Schema,
+  ProductSourceFactsV2Schema,
   SnapshotReferenceV2Schema
 } from "./calculation.js";
 import {
@@ -814,6 +816,7 @@ export const CalculationRunV2Schema = z
     status: z.literal("succeeded"),
     inputFingerprint: z.string().regex(/^sha256:[0-9a-f]{64}$/u),
     engineVersion: z.string().regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u),
+    applicationBuild: CalculationApplicationBuildV2Schema.optional(),
     catalogSnapshot: SnapshotReferenceV2Schema,
     ruleSnapshot: SnapshotReferenceV2Schema,
     startedAt: UtcDateTimeSchema,
@@ -936,6 +939,7 @@ export const EditorCatalogProductV2Schema = z
     orderable: z.boolean(),
     selectable: z.boolean(),
     engineeringReviewRequired: z.boolean(),
+    sourceFacts: ProductSourceFactsV2Schema.optional(),
     selection: EditorProductSelectionV2Schema.nullable(),
     supplyOptions: z.array(EditorSupplyOptionV2Schema)
   })
