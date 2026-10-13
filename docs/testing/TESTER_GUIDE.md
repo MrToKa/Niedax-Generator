@@ -8,6 +8,13 @@ recording results.
 Obtain approved TEST credentials privately from the TEST operator. Passwords are never listed
 in this guide, defect reports or shared screenshots.
 
+Before formal UAT, inspect the [Stage 12 acceptance package](STAGE12_ACCEPTANCE.md) and its
+genuine go/no-go record. Use the [T01–T15 checklist](UAT_CHECKLIST.md),
+[defect template](DEFECT_TEMPLATE.md) and [central register](stage12-defects.md).
+Preserve saved demo baseline revisions; create an owned project through Create project and
+enter the checklist inputs for working copies. There is no general project-clone operation.
+Demo names alone do not identify exact regression inputs or independent expected results.
+
 | Account              | Role          | Intended use                                                                  |
 | -------------------- | ------------- | ----------------------------------------------------------------------------- |
 | `test.designer`      | Designer      | Edit permitted projects, calculate and save revisions.                        |

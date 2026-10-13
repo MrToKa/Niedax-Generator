@@ -19,7 +19,7 @@ import {
   type Stage11Accounts
 } from "./stage11-seed-contract.js";
 import { stage11DemoProjects } from "./stage11-demo-projects.js";
-import type { ProjectDraftInputV2 } from "@niedax/domain";
+import type { CalculationApplicationBuildV2, ProjectDraftInputV2 } from "@niedax/domain";
 
 export async function provisionStage11Users(
   store: UserStore,
@@ -228,7 +228,8 @@ export async function seedStage11(
   pool: Pool,
   pepper: string,
   rawAccounts: unknown,
-  catalogDirectory: string
+  catalogDirectory: string,
+  applicationBuild: CalculationApplicationBuildV2
 ) {
   const accounts = parseStage11Accounts(rawAccounts);
   // A dedicated session lock serializes concurrent setup/deployment processes without adding a migration framework.
@@ -257,7 +258,7 @@ export async function seedStage11(
       actors.administrator.id,
       acceptance.contentHash
     );
-    const projects = new ProjectApplicationService(new PgProjectRepository(pool));
+    const projects = new ProjectApplicationService(new PgProjectRepository(pool), applicationBuild);
     const revisions = new RevisionApplicationService(new PgRevisionRepository(pool));
     const editor = await projects.getEditorCatalog(actors.designer, "stage11-seed-editor");
     const demos = [];

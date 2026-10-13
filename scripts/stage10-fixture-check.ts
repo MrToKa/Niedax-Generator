@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import { canonicalJson } from "../packages/calculation-engine/src/index.js";
+import type { JsonValue } from "../packages/calculation-engine/src/stable/canonical-json.js";
 import { stage10Scenarios } from "../packages/calculation-engine/tests/helpers/stage10-scenarios.js";
 import focusedExpected from "../packages/calculation-engine/tests/fixtures/stage10-expected.json" with { type: "json" };
 import {
@@ -164,7 +165,9 @@ try {
         focusedExpected.scenarios[input.key as keyof typeof focusedExpected.scenarios];
       assert(create && expected, "Missing independently specified scenario input/expectation");
       assert.equal(
-        hash(canonicalJson(create())),
+        // These controlled fixture factories return JSON data. Optional contract fields
+        // need a type boundary; keep the original canonical hashing unchanged.
+        hash(canonicalJson(create() as unknown as JsonValue)),
         input.canonicalInputSha256,
         `Scenario input drift: ${input.key}`
       );

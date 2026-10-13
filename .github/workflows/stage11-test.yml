@@ -49,7 +49,7 @@ jobs:
       - name: Check dedicated internal host
         run: |
           if ($env:NIEDAX_TEST_DEPLOY_RUNNER -ne '1') { throw 'Dedicated TEST deployment runner opt-in missing' }
-          if ((node --version) -ne 'v24.19.0') { throw 'Node 24.19.0 required' }
+          if ((node --version) -ne 'v24.21.0') { throw 'Node 24.21.0 required' }
           docker version
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Install pinned tooling

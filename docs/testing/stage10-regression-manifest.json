@@ -248,10 +248,10 @@
       "catalogVersion": "acceptance-v2",
       "ruleVersion": "acceptance-v2",
       "fixtureSha256": "7b6305dbd316d067122ab62bb3b6a6a46fdf0c013df61df80874f05ad01d82df",
-      "expectedSha256": "e2cd3ca5ebd329d29baec2ebb50cbc27cf0f2f0eca6ea2085e210b3b8879b741",
+      "expectedSha256": "ccf973bc9c56569c46850b886d716aaa05a75ea1ef335120558cd7e3c2c389a1",
       "engineVersion": "0.1.0",
       "reviewStatus": "pending-domain-review",
-      "changeReason": "Stage10 additional executable coverage; retained quantities unchanged"
+      "changeReason": "Stage12 adds actual original-build provenance and immutable JSON assertions through saved/Checked/Approved lifecycle and later mutations. Existing quantity, role, export, lifecycle assertions, fixture inputs, independent expected quantities and golden bytes retained; human domain review remains pending."
     },
     {
       "id": "approved-change-order-26",
@@ -274,9 +274,9 @@
       "id": "stage10-varied-properties",
       "scenarioIds": ["T03", "T04", "T05", "T09", "T11", "T12"],
       "fixturePath": "packages/calculation-engine/tests/property.test.ts",
-      "fixtureSha256": "a11ed00910004bd3e40c1576e699e1aedc3a2f2263cd5c393068555ba3e3a6c2",
+      "fixtureSha256": "c9fbfeb3c9b5b6f9e4b5a4b09fb7e77a5b3905b4eea98ad0b79ba0461e111e34",
       "expectedPath": "packages/calculation-engine/tests/property.test.ts",
-      "expectedSha256": "a11ed00910004bd3e40c1576e699e1aedc3a2f2263cd5c393068555ba3e3a6c2",
+      "expectedSha256": "c9fbfeb3c9b5b6f9e4b5a4b09fb7e77a5b3905b4eea98ad0b79ba0461e111e34",
       "catalogVersion": "stage10-synthetic-v1",
       "ruleVersion": "stage10-synthetic-v1",
       "engineVersion": "0.1.0",
@@ -289,7 +289,7 @@
         "replays varied inputs and unordered permutations with complete reconciliation"
       ],
       "reviewStatus": "pending-domain-review",
-      "changeReason": "New varied generated inputs with independent integer references, fixed replay seeds and public-result reconciliation; no accepted golden was regenerated"
+      "changeReason": "Stage12 optional sourceFacts typing boundary only; same canonical input replay, independent BigInt expectations, seeds, counts and reconciliation assertions. No scenario input, expected quantity or golden regenerated; domain approval remains pending."
     }
   ],
   "fixtureDependencies": [
@@ -307,7 +307,7 @@
     },
     {
       "path": "packages/calculation-engine/tests/property.test.ts",
-      "sha256": "a11ed00910004bd3e40c1576e699e1aedc3a2f2263cd5c393068555ba3e3a6c2"
+      "sha256": "c9fbfeb3c9b5b6f9e4b5a4b09fb7e77a5b3905b4eea98ad0b79ba0461e111e34"
     },
     {
       "path": "catalogue/imports/niedax-p0-2022/products.csv",

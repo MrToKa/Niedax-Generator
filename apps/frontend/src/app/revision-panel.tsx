@@ -39,6 +39,8 @@ import {
 import { workflowErrorKey } from "@/lib/workflow-error";
 
 import { CalculationResults } from "./calculation-results";
+import { AnchorSourceFacts } from "./anchor-source-facts";
+import { CalculationBuildProvenance } from "./calculation-build-provenance";
 import { ConfirmationDialog } from "./confirmation-dialog";
 import { RevisionExportPanel } from "./revision-export-panel";
 import { useSession } from "./session-provider";
@@ -763,6 +765,27 @@ function RevisionDetail({
         ) : null}
       </div>
       <CalculationResults result={detail.snapshot.calculationResult} stale={false} />
+      <CalculationBuildProvenance
+        build={detail.snapshot.calculationInput.invocation.applicationBuild}
+        language={language}
+      />
+      {detail.snapshot.calculationInput.products
+        .filter(
+          (product) =>
+            product.role === "anchor" &&
+            product.sourceFacts &&
+            detail.snapshot.calculationInput.project.routes.some(
+              (route) => route.supports.anchorProductId === product.id
+            )
+        )
+        .map((product) => (
+          <AnchorSourceFacts
+            key={product.id}
+            code={product.code}
+            facts={product.sourceFacts}
+            language={language}
+          />
+        ))}
       <details className="editor-card checksum-details">
         <summary>{t("checksums")}</summary>
         <dl className="revision-metadata">

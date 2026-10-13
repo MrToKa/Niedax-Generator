@@ -218,12 +218,26 @@ describe("TEST smoke safe failure paths", () => {
         baseUrl: "http://127.0.0.1:18080",
         accounts,
         expectedGitCommit: build.gitCommit,
+        expectedBuildTimestamp: build.buildTimestamp,
         fetch: request
       });
       expect(report.passed).toBe(true);
       expect(paths.filter((path) => path === "/api/v1/auth/logout")).toHaveLength(2);
       expect(paths.some((path) => path.includes("revisions"))).toBe(false);
       expect(JSON.stringify(report)).not.toContain(password);
+      expect(report.featureFlags).toEqual({ operationalMetrics: metricsEnabled });
+      expect(report.activeVersions.catalogues[0]?.id).toBe(catalogId);
+      await expect(
+        runStage11Smoke({
+          baseUrl: "http://127.0.0.1:18080",
+          accounts,
+          expectedGitCommit: build.gitCommit,
+          expectedBuildTimestamp: "2026-09-24T10:00:01Z",
+          fetch: request
+        })
+      ).rejects.toThrow(
+        "Persistent TEST smoke failed at system-info; response and credentials withheld"
+      );
     }
   );
 

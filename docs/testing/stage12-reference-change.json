@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "stage12-reference-change/v2",
+  "changes": [
+    {
+      "schemaVersion": "stage12-reference-change/v1",
+      "observedAt": "2026-09-30T16:15:57.410Z",
+      "path": "packages/calculation-engine/tests/property.test.ts",
+      "hashMode": "normalized-text",
+      "oldHash": "a11ed00910004bd3e40c1576e699e1aedc3a2f2263cd5c393068555ba3e3a6c2",
+      "newHash": "c9fbfeb3c9b5b6f9e4b5a4b09fb7e77a5b3905b4eea98ad0b79ba0461e111e34",
+      "scope": "Stage12 optional sourceFacts typing boundary only; same canonical input replay, independent BigInt expectations, seeds, counts and reconciliation assertions. No scenario input, expected quantity or golden regenerated; domain approval remains pending."
+    },
+    {
+      "observedAt": "2026-09-30T18:26:55.102Z",
+      "path": "apps/backend/tests/project-flow.integration.test.ts",
+      "hashMode": "normalized-text",
+      "oldHash": "e2cd3ca5ebd329d29baec2ebb50cbc27cf0f2f0eca6ea2085e210b3b8879b741",
+      "newHash": "ccf973bc9c56569c46850b886d716aaa05a75ea1ef335120558cd7e3c2c389a1",
+      "field": "baselines[stage10-persisted-roles].expectedSha256",
+      "scope": "Stage12 adds actual original-build provenance and immutable JSON assertions through saved/Checked/Approved lifecycle and later mutations. Existing quantity, role, export, lifecycle assertions, fixture inputs, independent expected quantities and golden bytes retained; human domain review remains pending.",
+      "interpretation": "expectedPath is this executable test source; updated hash binds added assertions, not regenerated expected quantities."
+    }
+  ],
+  "domainApprovalStatus": "pending",
+  "expectedQuantityOrGoldenRegenerated": false
+}

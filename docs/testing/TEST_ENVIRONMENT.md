@@ -158,6 +158,17 @@ CI run/attempt is uploaded; never upload `data/test`.
 The smoke checks frontend/gateway, health, identity, active versions, role login and a real
 demo calculation without changing an approved saved revision.
 
+Stage 12 extends the sanitized deployment record with observed immutable image IDs for all six
+services (and registry digests only when actually present), matched running runtime containers,
+lockfile and verified migration-history hashes, active catalog/rule UUIDs/content hashes, actual
+feature flags/hash, and safe stored demo revision/export identities. The observation rejects
+source/lockfile/image drift and mismatch with smoke's active versions/build timestamp. It selects
+only explicit safe fields; environment variables, secrets, snapshot payloads and workbook bytes
+are excluded. The representative graph hash reuses the existing backup fingerprint. Individual
+saved revision IDs/checksums and ready export hashes have their own scope. Existing snapshots
+are explicitly not attributed to the observed application build. Missing registry digests stay
+empty; a local image ID is recorded as such, not relabeled a registry manifest digest.
+
 ## Rollback and troubleshooting
 
 Before changing persisted state, deployment creates/verifies a TEST backup. Keep prior immutable

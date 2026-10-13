@@ -6,7 +6,7 @@
   "description": "Local modular Docker foundation for Niedax Generator",
   "packageManager": "pnpm@11.21.0",
   "engines": {
-    "node": ">=24.0.0 <25",
+    "node": ">=24.21.0 <25",
     "pnpm": "11.21.0"
   },
   "scripts": {
@@ -66,14 +66,16 @@
     "test-env:smoke": "tsx scripts/test-environment.ts smoke",
     "test-env:backup": "tsx scripts/test-environment.ts backup",
     "test-env:verify-restore": "tsx scripts/test-environment.ts verify-restore",
-    "test:stage11": "vitest run stage11 system-diagnostics system-information"
+    "test:stage11": "vitest run stage11 system-diagnostics system-information",
+    "test:stage12": "vitest run stage12",
+    "stage12:report": "tsx scripts/stage12-acceptance.ts"
   },
   "devDependencies": {
     "@eslint/js": "9.39.2",
     "@playwright/test": "1.63.0",
     "@types/node": "26.2.0",
     "eslint": "9.39.2",
-    "eslint-config-next": "16.3.3",
+    "eslint-config-next": "16.3.6",
     "prettier": "3.9.6",
     "tsx": "4.23.12",
     "typescript": "6.0.3",

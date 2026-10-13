@@ -1,0 +1,438 @@
+{
+  "schemaVersion": "stage12-acceptance/v1",
+  "hashing": {
+    "algorithm": "sha256",
+    "canonicalization": "engine-canonical-json/v1"
+  },
+  "authoring": {
+    "inspectedCommit": "3883afddabae42d5a637faea71167e682982f591",
+    "branch": "codex/stage12-acceptance-prompt",
+    "inspectedAt": "2026-09-30T15:41:20.187Z",
+    "initiallyClean": true,
+    "collectedAt": "2026-09-30T16:06:04.502Z",
+    "checkoutCommit": "3883afddabae42d5a637faea71167e682982f591",
+    "checkoutSourceHash": "sha256:72292e8bbbc010a83bf971fa255c721cb65cf3815472f2d9310e29e5e65a59e8",
+    "checkoutDirty": true,
+    "proposedRepositoryIdentities": [
+      "applicationVersion",
+      "engineVersion",
+      "formulaCatalogVersion",
+      "lockfileHash",
+      "formulaCatalogHash",
+      "regressionManifestHash",
+      "expectedResultsHash",
+      "scenarioInputsHash",
+      "demoDatasetHash",
+      "exportTemplateVersion",
+      "exportTemplateHash",
+      "exportMappingVersion",
+      "exportMappingHash",
+      "exportRendererVersion",
+      "exportRendererHash"
+    ],
+    "hashScopes": {
+      "scenarioInputsHash": "Canonical JSON array of exact scenarioId/input canonical SHA256 pairs from Stage10 generator; each original input hash is retained by manifest.",
+      "demoDatasetHash": "Normalized LF Stage11 demo definition source, not actual running input/snapshot state.",
+      "exportTemplateHash": "Configured original approved-template file-byte SHA256 from production mapping metadata; original workbook remains private/ignored. Separate approvedGolden artifact hash is not equated with template identity.",
+      "exportMappingHash": "Canonical JSON of actual sanitized approved production mapping; normalized mapping source and exportContext/exportSafety dependency hashes retained separately.",
+      "exportRendererHash": "Normalized LF renderer.ts; whole behavior inventory identified by checkoutSourceHash, not one file."
+    },
+    "successfulRemoteCiUrl": null,
+    "successfulDeploymentRunUrl": null,
+    "verifiedRestoreReference": null,
+    "latestRemoteObservation": {
+      "recordedAt": "2026-09-30T16:06:04.502Z",
+      "url": "https://github.com/MrToKa/Niedax-Generator/actions/runs/36737620712",
+      "status": "queued",
+      "event": "pull_request",
+      "commit": "3883afddabae42d5a637faea71167e682982f591"
+    },
+    "automatedVerification": [],
+    "humanExecutionStatus": "pending",
+    "domainReviewStatus": "pending"
+  },
+  "candidate": {
+    "id": "stage12-candidate-2026-09-30-3883afdd",
+    "createdAt": "2026-09-30T15:41:20.187Z",
+    "identity": {
+      "applicationVersion": "0.1.0",
+      "deployedCommit": null,
+      "buildTimestamp": null,
+      "sourceFingerprint": null,
+      "sourceState": null,
+      "environmentId": null,
+      "testUrl": null,
+      "frontendImage": null,
+      "backendImage": null,
+      "gatewayImage": null,
+      "postgresImage": null,
+      "migrationsImage": null,
+      "backupImage": null,
+      "lockfileHash": "sha256:0ea90062871d16be184861b59e8ed9266f7b9a3fa8172809cea62029aa33ce9d",
+      "migrationHistoryHash": null,
+      "catalogId": null,
+      "catalogVersion": null,
+      "catalogHash": null,
+      "ruleId": null,
+      "ruleVersion": null,
+      "ruleHash": null,
+      "engineVersion": "0.1.0",
+      "formulaCatalogVersion": "1.0.0",
+      "formulaCatalogHash": "sha256:fdf9ef219031c65ac0b06cc1481a92930d39af34cc5bed37178244145164f6cb",
+      "exportTemplateVersion": "change-order-clients-scope-26",
+      "exportTemplateHash": "sha256:0f1dde6a901cd319870bec8995b37021ab0c38ad887eac846825805deba8a261",
+      "exportMappingVersion": "change-order-clients-scope-26-1",
+      "exportMappingHash": "sha256:156c96431e9e7684c97387c11a01815722e922144f953b22f7d621d9cc5418d0",
+      "exportRendererVersion": "stage9-exceljs-2",
+      "exportRendererHash": "sha256:763b6996c7b52ab654a7157537cb1de596dbffef807d925884e746a946d7992f",
+      "featureFlagsHash": null,
+      "regressionManifestHash": "sha256:3c313d1183c23f9c0c3a89ec6b00fe4f65d1a444aff06161285d0143a2ed0f58",
+      "scenarioInputsHash": "sha256:05d99a23020e0e64266bbbdfd84c77e285f746fc51b101ad1a35c058bda265ea",
+      "expectedResultsHash": "sha256:0616376f6bb902553dde0f83bd8b4b12583ab282f37908b8d73676151ebb900f",
+      "demoDatasetHash": "sha256:872f473b3cb38f0169ad30e5a702f76c8786e091f995f0fe3b3bc3602d1a771e",
+      "savedRevisionsHash": null,
+      "exportsHash": null
+    },
+    "operationallyAccepted": false,
+    "freeze": {
+      "status": "provisional",
+      "frozenAt": null,
+      "evidenceDigest": null
+    }
+  },
+  "artifacts": [
+    {
+      "id": "lockfileHash",
+      "path": "pnpm-lock.yaml",
+      "hashMode": "file-bytes",
+      "sha256": "sha256:0ea90062871d16be184861b59e8ed9266f7b9a3fa8172809cea62029aa33ce9d"
+    },
+    {
+      "id": "formulaCatalogHash",
+      "path": "packages/calculation-engine/src/trace/formula-catalog.ts",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:fdf9ef219031c65ac0b06cc1481a92930d39af34cc5bed37178244145164f6cb"
+    },
+    {
+      "id": "regressionManifestHash",
+      "path": "docs/testing/stage10-regression-manifest.json",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:3c313d1183c23f9c0c3a89ec6b00fe4f65d1a444aff06161285d0143a2ed0f58"
+    },
+    {
+      "id": "expectedResultsHash",
+      "path": "packages/calculation-engine/tests/fixtures/stage10-expected.json",
+      "hashMode": "canonical-json",
+      "sha256": "sha256:0616376f6bb902553dde0f83bd8b4b12583ab282f37908b8d73676151ebb900f"
+    },
+    {
+      "id": "scenarioInputsHash",
+      "path": "docs/testing/stage12-scenario-identities.json",
+      "hashMode": "canonical-json",
+      "sha256": "sha256:05d99a23020e0e64266bbbdfd84c77e285f746fc51b101ad1a35c058bda265ea"
+    },
+    {
+      "id": "demoDatasetHash",
+      "path": "apps/backend/src/stage11-demo-projects.ts",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:872f473b3cb38f0169ad30e5a702f76c8786e091f995f0fe3b3bc3602d1a771e"
+    },
+    {
+      "id": "approvedGolden",
+      "path": "packages/export/tests/fixtures/change-order-control.xlsx",
+      "hashMode": "file-bytes",
+      "sha256": "sha256:351b6dcf642ffebf53b6c5c7e57898ae8d4a7f1839183bbdc1eac66085ddc337"
+    },
+    {
+      "id": "exportMappingHash",
+      "path": "docs/testing/stage12-export-mapping.json",
+      "hashMode": "canonical-json",
+      "sha256": "sha256:156c96431e9e7684c97387c11a01815722e922144f953b22f7d621d9cc5418d0"
+    },
+    {
+      "id": "exportMappingSource",
+      "path": "packages/export/src/workbook-mapping.ts",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:c4e342ff423b492688048ac72fe453ef6e89911ca2c53365f85feae9ad11d1d5"
+    },
+    {
+      "id": "exportRendererHash",
+      "path": "packages/export/src/renderer.ts",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:763b6996c7b52ab654a7157537cb1de596dbffef807d925884e746a946d7992f"
+    },
+    {
+      "id": "originalPlan",
+      "path": "Niedax_Implementation_Plan_to_Test_Phase_BG.docx",
+      "hashMode": "file-bytes",
+      "sha256": "sha256:292e9c774ac8c9f674de9310d084ff5fbf86accbfd6f0de0328ccaa4c63b7eee"
+    },
+    {
+      "id": "exportContext",
+      "path": "packages/export/src/context.ts",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:b2c1a6aa592a6ed5a817a7983af59523545f2b4a7dbc680261d3b6e86b951f5e"
+    },
+    {
+      "id": "exportSafety",
+      "path": "packages/export/src/excel-safety.ts",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:3140dc4c197e30c294e5f232a142676a346e0d2589e8eed1cbb8063b9556e0bb"
+    },
+    {
+      "id": "scenarioSource",
+      "path": "packages/calculation-engine/tests/helpers/stage10-scenarios.ts",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:4227d489bce40fe34c837a8feab70dc19637c67bc663a0743890a5cc21768990"
+    },
+    {
+      "id": "scenarioHelpers",
+      "path": "packages/calculation-engine/tests/helpers/stage10-fixtures.ts",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:aadf5c485bcef130bddc3c5a75e7c52847b0e2986aba24c568c8058d02d640c5"
+    },
+    {
+      "id": "regressionReview",
+      "path": "docs/testing/stage10-regression-review.md",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:4771326d1f8706fa158b5cb4287b97f5158964b34b11f28fb804634d4a15ee5e"
+    },
+    {
+      "id": "proposedBudgets",
+      "path": "docs/testing/stage10-performance.md",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:24de5f09e3e4a3c2d0203ca93a3b244cf3cd5d45a262bbca1a996de7171f823c"
+    },
+    {
+      "id": "packageIndex",
+      "path": "docs/testing/STAGE12_ACCEPTANCE.md",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:0c882d3552b6eb97552afcdcd2199bc976e6b4aa1c169a3e400df5e59ecd40d3"
+    },
+    {
+      "id": "checklist",
+      "path": "docs/testing/UAT_CHECKLIST.md",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:51e1ae9e3b8d26b02ef8d18c853969d66360d064e37192b9a5d5accff0e2782a"
+    },
+    {
+      "id": "defectTemplate",
+      "path": "docs/testing/DEFECT_TEMPLATE.md",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:e45821717482707eff1dc9acef2c33a558fa4da99e4b1cfac29d66dbbee365c0"
+    },
+    {
+      "id": "defectRegister",
+      "path": "docs/testing/stage12-defects.md",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:96afafea243867aaef03bb7752205cca53c7b87a9da074dbf3a91e0494b7ce17"
+    },
+    {
+      "id": "decisionProtocol",
+      "path": "docs/testing/stage12-go-no-go.md",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:1fff83dc4d772324540cb98ec16d3bb474b74e829227be020c97f351d7915f72"
+    },
+    {
+      "id": "currentEvidence",
+      "path": "docs/testing/stage12-evidence.md",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:dda460929051fd97ae2ca887a94fb66f9a77184d4cefe2c36d3eb8eda66453eb"
+    },
+    {
+      "id": "testerGuide",
+      "path": "docs/testing/TESTER_GUIDE.md",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:c60dbb44c5cb8be54e150b69f3edf9bfaf03365c2b8022db93a9e01ba7d1f1d0"
+    },
+    {
+      "id": "inspection",
+      "path": "docs/testing/stage12-observations.json",
+      "hashMode": "normalized-text",
+      "sha256": "sha256:d17b4a6fd25c2b1cf588f665586928360f3f763cb200885d5d8df9481597be3c"
+    }
+  ],
+  "criteria": [
+    {
+      "id": "E01",
+      "status": "blocked",
+      "responsibleRole": "TEST operator",
+      "nextAction": "Provide accepted gated TEST LAN deployment identity, URL, second-device reachability and exact smoke.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E02",
+      "status": "pending",
+      "responsibleRole": "TEST operator/catalog administrator",
+      "nextAction": "Capture actual candidate active catalog/rule validation, IDs, versions, content hashes and activation audit.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E03",
+      "status": "pending",
+      "responsibleRole": "Technical owner/domain reviewer",
+      "nextAction": "Bind current unit rule coverage and agreed rule scope to the accepted candidate.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E04",
+      "status": "blocked",
+      "responsibleRole": "Product owner/domain reviewer",
+      "nextAction": "Approve exact T01-T15 input/expected/manifest hashes, both T09 variants and proposed performance budgets.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E05",
+      "status": "blocked",
+      "responsibleRole": "Technical owner/product owner",
+      "nextAction": "Resolve all open central entry blockers; verify any S1/S2 fixes.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E06",
+      "status": "pending",
+      "responsibleRole": "Technical owner/TEST operator",
+      "nextAction": "Bind disposable roles/revision checks and actual accepted TEST accounts to the candidate.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E07",
+      "status": "pending",
+      "responsibleRole": "Excel observer/domain reviewer",
+      "nextAction": "Reconcile exact saved workbook and record attributable native Excel no-repair/visual observation.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E08",
+      "status": "blocked",
+      "responsibleRole": "Domain engineer/product owner",
+      "nextAction": "Review warnings and resolve mandatory P0 relationship capability and NSA environment-contract scope.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E09",
+      "status": "blocked",
+      "responsibleRole": "Technical owner/product owner",
+      "nextAction": "Verify build/catalog/rule evidence and decide or implement missing saved-revision application-build traceability.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E10",
+      "status": "pending",
+      "responsibleRole": "Technical owner/QA lead",
+      "nextAction": "Verify prepared package hashes and bind checklist/guide/register to accepted candidate.",
+      "candidateDigest": null,
+      "evidence": []
+    },
+    {
+      "id": "E11",
+      "status": "blocked",
+      "responsibleRole": "CI/security/technical owner/TEST operator",
+      "nextAction": "Provide successful exact main CI, exact-image disposition, domain/budget approval, gated deployment and candidate restore evidence.",
+      "candidateDigest": null,
+      "evidence": []
+    }
+  ],
+  "defects": [
+    {
+      "id": "S12-B01",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    },
+    {
+      "id": "S12-B02",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    },
+    {
+      "id": "S12-B03",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    },
+    {
+      "id": "S12-B04",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    },
+    {
+      "id": "S12-B05",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    },
+    {
+      "id": "S12-B06",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    },
+    {
+      "id": "S12-B07",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    },
+    {
+      "id": "S12-B08",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    },
+    {
+      "id": "S12-B09",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    },
+    {
+      "id": "S12-B10",
+      "severity": null,
+      "blocking": true,
+      "status": "open",
+      "baselineId": "stage12-candidate-2026-09-30-3883afdd",
+      "reference": "docs/testing/stage12-defects.md",
+      "residualAcceptance": null
+    }
+  ],
+  "signoffs": []
+}

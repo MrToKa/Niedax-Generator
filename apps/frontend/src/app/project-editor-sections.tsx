@@ -33,6 +33,7 @@ import { type TranslationKey, useI18n } from "@/lib/i18n";
 import { isManualItemValid, removeManualItem, upsertManualItem } from "@/lib/manual-items";
 
 import { FormField, StatusNotice } from "./shared-ui";
+import { AnchorSourceFacts } from "./anchor-source-facts";
 
 export type EditorStep =
   "project" | "routes" | "geometry" | "connections" | "supports" | "load" | "results" | "revisions";
@@ -1605,7 +1606,7 @@ function SupportsSection({
   onBufferedChange,
   update
 }: SectionProps) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const route = draft.routes.find((item) => item.id === selectedRouteId) ?? draft.routes[0] ?? null;
   const [extraQuantity, setExtraQuantity] = useState("0");
   const [extraReason, setExtraReason] = useState("");
@@ -1913,6 +1914,17 @@ function SupportsSection({
               </select>
             )}
           </FormField>
+          <AnchorSourceFacts
+            code={
+              catalog?.products.find((product) => product.id === route.supports.anchorProductId)
+                ?.code ?? ""
+            }
+            facts={
+              catalog?.products.find((product) => product.id === route.supports.anchorProductId)
+                ?.sourceFacts
+            }
+            language={language}
+          />
           {hasTemplateWstbComponent ? (
             <FormField
               error={

@@ -28,6 +28,11 @@ and concurrency tests, Playwright workflows, dependency/security gates and measu
 See the [test plan](docs/testing/stage10-test-plan.md), [current evidence](docs/testing/stage10-evidence.md)
 and [domain review package](docs/testing/stage10-regression-review.md) for acceptance status.
 
+Stage 11 provides gated isolated TEST operations and safe deployment diagnostics. Stage 12 adds
+the [UAT acceptance package](docs/testing/STAGE12_ACCEPTANCE.md), exact checklist, baseline,
+defect register and read-only `corepack pnpm stage12:report` consistency check. Package preparation
+and local test success remain separate from accepted deployment and genuine human GO signatures.
+
 ## Architecture and access
 
 Open `http://localhost:8080`. A colleague on the same private LAN can use an address printed by
@@ -54,7 +59,7 @@ More detail is in [architecture](docs/architecture.md), [security](docs/security
 
 - Windows 11 with Docker Desktop (Linux containers), or a current Linux Docker Engine
 - Docker Engine with Compose v2 supporting long-form dependency conditions and Compose secrets
-- Node.js `24.19.0` (Node 24 Active LTS) and pnpm `11.21.0`
+- Node.js `24.21.0` (Node 24 Active LTS) and pnpm `11.21.0`
 - At least 8 GiB RAM and enough disk for images plus `data/postgres` and backups
 
 Enable the pinned package manager with `corepack enable pnpm`. On a locked-down Windows Node

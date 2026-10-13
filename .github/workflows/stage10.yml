@@ -39,7 +39,7 @@ jobs:
         run: |
           if ($env:NIEDAX_STAGE10_DEDICATED_RUNNER -ne '1') { throw 'Dedicated runner opt-in is missing' }
           $nodeVersion = node --version
-          if ($nodeVersion -ne 'v24.19.0') { throw 'Runner must provide Node 24.19.0' }
+          if ($nodeVersion -ne 'v24.21.0') { throw 'Runner must provide Node 24.21.0' }
           $existing = docker ps -a --format '{{.Names}}'
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           if ($existing | Where-Object { $_ -match '^niedax-(frontend|backend|postgres|gateway|migrations|backup)$' }) {

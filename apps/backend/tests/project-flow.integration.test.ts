@@ -6,7 +6,8 @@ import {
   CalculationResultV2Schema,
   ErrorEnvelopeV1Schema,
   ProjectDraftInputV2Schema,
-  type AppRole
+  type AppRole,
+  type CalculationApplicationBuildV2
 } from "@niedax/domain";
 import type { Pool } from "pg";
 
@@ -31,6 +32,13 @@ import {
 } from "./persisted-project-fixture.js";
 
 const enabled = process.env.STAGE7_ACCEPTANCE === "1";
+// Disposable lifecycle fixture identity; not a deployed or customer build claim.
+const calculationBuild: CalculationApplicationBuildV2 = {
+  application: "0.1.0",
+  gitCommit: "abc12345".repeat(5),
+  buildTimestamp: "2026-09-01T07:00:00.000Z",
+  environment: "test"
+};
 
 async function revisionPersistenceCounts(
   pool: Pool,
@@ -337,7 +345,7 @@ describe.skipIf(!enabled)("Stage 7 persisted two-route application flow", () => 
     pool = databasePool();
     await seedAcceptanceCatalog(pool);
     disposableDesigner = await verifyDisposableFourRoleAuthentication(pool);
-    service = new ProjectApplicationService(new PgProjectRepository(pool));
+    service = new ProjectApplicationService(new PgProjectRepository(pool), calculationBuild);
     revisionService = new RevisionApplicationService(new PgRevisionRepository(pool));
   });
 
@@ -483,6 +491,7 @@ describe.skipIf(!enabled)("Stage 7 persisted two-route application flow", () => 
       "stage7-acceptance-calculate-correlation"
     );
     expect(calculation.statusCode).toBe(200);
+    expect(calculation.body.calculation.run.applicationBuild).toEqual(calculationBuild);
     expect(calculation.body.calculation.result.calculationStatus).toBe("completeWithWarnings");
     expect(calculation.body.calculation.result.summary.approvalReady).toBe(false);
     expect(calculation.body.calculation.result.warnings).toContainEqual(
@@ -506,6 +515,7 @@ describe.skipIf(!enabled)("Stage 7 persisted two-route application flow", () => 
     );
     expect(current.calculation?.stale).toBe(false);
     expect(current.calculation?.run.id).toBe(calculation.body.calculation.run.id);
+    expect(current.calculation?.run.applicationBuild).toEqual(calculationBuild);
     expect(current.calculation?.result).toEqual(calculation.body.calculation.result);
 
     const persisted = await pool.query<{
@@ -518,6 +528,7 @@ describe.skipIf(!enabled)("Stage 7 persisted two-route application flow", () => 
       [projectId]
     );
     const input = CalculationInputV2Schema.parse(persisted.rows[0]?.input_payload);
+    expect(input.invocation.applicationBuild).toEqual(calculationBuild);
     const result = CalculationResultV2Schema.parse(persisted.rows[0]?.result_payload);
     expect(input.project.routes.map((route) => route.id)).toEqual([ids.routeA, ids.routeB]);
     expect(input.project.connections.map((connection) => connection.id)).toEqual([ids.connection]);
@@ -970,7 +981,10 @@ describe.skipIf(!enabled)("Stage 7 persisted two-route application flow", () => 
       throw new Error("A new Stage 8 save cannot return a retained v1 revision");
     const revision2 = savedRevision2.body.revision;
     expect(revision2.summary.revisionNumber).toBe(2);
-    await revisionService.checkRevision(
+    expect(revision2.snapshot.calculationInput.invocation.applicationBuild).toEqual(
+      calculationBuild
+    );
+    const checkedRevision2 = await revisionService.checkRevision(
       otherReviewer,
       revision2.summary.id,
       {
@@ -983,6 +997,10 @@ describe.skipIf(!enabled)("Stage 7 persisted two-route application flow", () => 
       "stage8-check-revision-0002",
       "stage8-check-revision-correlation-0002"
     );
+    if ("recordVersion" in checkedRevision2.body.revision)
+      throw new Error("A checked Stage 8 revision cannot become retained v1");
+    expect(checkedRevision2.body.revision.snapshot).toEqual(revision2.snapshot);
+    expect(checkedRevision2.body.revision.checksums).toEqual(revision2.checksums);
     const approvedRevision2 = await revisionService.approveRevision(
       otherReviewer,
       revision2.summary.id,
@@ -1000,6 +1018,8 @@ describe.skipIf(!enabled)("Stage 7 persisted two-route application flow", () => 
       throw new Error("An approved Stage 8 revision cannot become retained v1");
     const approvedDetail = approvedRevision2.body.revision;
     expect(approvedDetail.summary.status).toBe("approved");
+    expect(approvedDetail.snapshot).toEqual(revision2.snapshot);
+    expect(approvedDetail.checksums).toEqual(revision2.checksums);
 
     const laterDraft = ProjectDraftInputV2Schema.parse({
       ...approvalReadyDraft(),

@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { lstat, mkdir, readFile, realpath, writeFile } from "node:fs/promises";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 
 export const evidenceDirectory = resolve(".artifacts/stage10/safe");
 
@@ -24,6 +24,37 @@ export function commitIdentity(): string {
   return result.stdout.trim();
 }
 
+function withinRoot(root: string, target: string): boolean {
+  const path = relative(root, target);
+  return !!path && !isAbsolute(path) && path !== ".." && !path.startsWith(`..${sep}`);
+}
+
+/** Validate every component before reading; a source filename cannot redirect to private data. */
+async function sourceFile(root: string, path: string): Promise<string> {
+  if (
+    isAbsolute(path) ||
+    path.includes("\\") ||
+    path.split("/").some((part) => !part || part === "." || part === "..")
+  )
+    throw new Error("Source path escaped workspace");
+  const target = resolve(root, path);
+  if (!withinRoot(root, target)) throw new Error("Source path escaped workspace");
+  const components = relative(root, target).split(sep);
+  let current = root;
+  for (const [index, component] of components.entries()) {
+    current = resolve(current, component);
+    const metadata = await lstat(current);
+    if (
+      metadata.isSymbolicLink() ||
+      (metadata.isFile() && metadata.nlink !== 1) ||
+      (index === components.length - 1 ? !metadata.isFile() : !metadata.isDirectory())
+    )
+      throw new Error("Source inventory must contain regular unlinked files and directories");
+  }
+  if (!withinRoot(root, await realpath(target))) throw new Error("Source path escaped workspace");
+  return target;
+}
+
 /** Working-tree identity includes uncommitted source/tests/config, without opening data or secrets. */
 export async function sourceIdentity(): Promise<string> {
   const inventory = spawnSync(
@@ -36,19 +67,22 @@ export async function sourceIdentity(): Promise<string> {
     .filter(
       (path) =>
         path &&
-        !/^(?:data\/|docs\/|\.artifacts\/)/u.test(path) &&
-        /\.(?:ts|tsx|js|jsx|cjs|mjs|json|yaml|yml|sql|csv|html|css|sh|ps1|toml|ini|conf)$|Dockerfile|Caddyfile|(?:^|\/)\.env\.example$|^\.(?:dockerignore|gitignore|gitattributes|prettierignore)$/u.test(
+        !/^(?:data\/|docs\/|\.artifacts\/)/iu.test(path) &&
+        /\.(?:ts|tsx|js|jsx|cjs|mjs|go|json|yaml|yml|sql|csv|html|css|sh|ps1|toml|ini|conf)$|Dockerfile|Caddyfile|(?:^|\/)go\.(?:mod|sum)$|(?:^|\/)\.env\.example$|^\.(?:dockerignore|gitignore|gitattributes|prettierignore|node-version)$/u.test(
           path
         )
     )
     .sort();
   const hash = createHash("sha256");
-  for (const path of paths)
+  const root = await realpath(resolve("."));
+  for (const path of paths) {
+    const target = await sourceFile(root, path);
     hash
       .update(path)
       .update("\0")
-      .update((await readFile(path, "utf8")).replaceAll("\r\n", "\n"))
+      .update((await readFile(target, "utf8")).replaceAll("\r\n", "\n"))
       .update("\0");
+  }
   return `sha256:${hash.digest("hex")}`;
 }
 
